@@ -1,0 +1,14 @@
+{
+  "contracts": {},
+  "solidityLibs": {},
+  "proxies": {
+    "playground/Box": [
+      {
+        "address": "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab",
+        "kind": "NonProxy",
+        "bytecodeHash": "7684ac2352a16d4c7e9ad1151f813ac83ebd85b34a69c846c4814521747d1f72"
+      }
+    ]
+  },
+  "manifestVersion": "2.2"
+}
