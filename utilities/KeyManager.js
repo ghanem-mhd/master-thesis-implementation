@@ -1,5 +1,6 @@
 require('dotenv').config()
 var ethers = require('ethers')
+var web3 = require('web3');
 
 module.exports = {
   genereateAndSave: function(password){
@@ -24,8 +25,16 @@ module.exports = {
     return ethers.Wallet.fromMnemonic(mnemonic);
   },
   readFromFile: function(filePath, password){
-    let json = JSON.stringify(filePath);
+    let json = JSON.stringify(require(filePath));
     return ethers.Wallet.fromEncryptedJson(json, password);
+  },
+  getAddrees: function(keystoreName){
+    let json = require(`../keystore/${keystoreName}.json`)
+    if(json.hasOwnProperty('address')){
+      return web3.utils.toChecksumAddress(json['address'])
+    }else{
+      return undefined
+    }
   }
 }
 

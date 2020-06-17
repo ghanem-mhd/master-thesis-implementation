@@ -1,7 +1,6 @@
-const MachinesManager = artifacts.require("MachinesManager");
-var EthereumDIDRegistry = artifacts.require("EthereumDIDRegistry");
+var contract = require("@truffle/contract");
+const ProductionLine = artifacts.require("ProductionLine");
 
 module.exports = function(deployer) {
-  deployer.deploy(MachinesManager);
-  deployer.deploy(EthereumDIDRegistry);
+  deployer.deploy(ProductionLine);
 };

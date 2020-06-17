@@ -1,3 +1,8 @@
+require('dotenv').config();
+
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const infuraProjectId = process.env.INFURA_PROJECT_ID;
+
 /**
  * Use this file to configure your truffle project. It's seeded with some
  * common settings for different networks and features like migrations,
@@ -51,7 +56,11 @@ module.exports = {
       host: "127.0.0.1",
       port: 8545,
       network_id: "*",
-    }
+    },
+    rinkeby: {
+      provider: () => new HDWalletProvider(process.env.DEV_MNEMONIC, "https://rinkeby.infura.io/v3/" + infuraProjectId),
+      network_id: 4,
+    },
 
     // Another network with more advanced options...
     // advanced: {
