@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
+import "../contracts/BaseContract.sol";
 
-contract ProductionLine {
+
+contract ProductionLine is BaseContract {
 
 	struct Machine{
 		address id;
@@ -13,6 +15,7 @@ contract ProductionLine {
     address[] public machinesAccounts;
 
 	function setMachine(address _address, string memory name) public {
+        require(hasRole(MANUFACTURER_ROLE, msg.sender), "Caller is not a manfacteurer");
         machines[_address] = Machine(_address, name);
         machinesAccounts.push(_address);
     }
