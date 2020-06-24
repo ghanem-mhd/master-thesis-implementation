@@ -1,6 +1,6 @@
 var contract = require("@truffle/contract");
-const ProductionLine = artifacts.require("ProductionLine");
+const RoleManager = artifacts.require("RoleManager");
 
 module.exports = function(deployer) {
-  deployer.deploy(ProductionLine);
+  deployer.deploy(RoleManager);
 };

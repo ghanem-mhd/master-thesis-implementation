@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "oz compile && mocha --exit --recursive test",
-    "start": "node ./backend/server.js"
+    "start": "node ./backend/server.js",
+    "seed": "node ./utilities/SeedingManager.js seedEntities dev_cli"
   },
   "author": "Mohammad Ghanem",
   "license": "ISC",

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/EnumerableMap.sol";
 
-contract Product is ERC721 {
+contract Product is ERC721  {
 
     using Counters for Counters.Counter;
     using EnumerableMap for EnumerableMap.UintToAddressMap;

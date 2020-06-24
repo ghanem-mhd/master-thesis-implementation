@@ -6,3 +6,4 @@ build/
 .openzeppelin/.session
 .openzeppelin/dev-*.json
 .env
+.vscode
