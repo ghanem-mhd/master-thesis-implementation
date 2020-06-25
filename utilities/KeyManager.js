@@ -36,7 +36,7 @@ module.exports = {
       return undefined
     }
   },
-  getAdminAddrees: function(){
-    return ethers.Wallet.fromMnemonic(process.env.DEV_MNEMONIC).address
+  getAddreesFromMnemonic: function(mnemonic){
+    return ethers.Wallet.fromMnemonic(mnemonic).address
   }
 }
