@@ -3,6 +3,7 @@ yarn.lock
 package-lock.json
 .idea/
 build/
+logs/
 .openzeppelin/.session
 .openzeppelin/dev-*.json
 .env
