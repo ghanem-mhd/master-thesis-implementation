@@ -1,0 +1,21 @@
+{
+  "contracts": {},
+  "solidityLibs": {},
+  "proxies": {
+    "playground/Product": [
+      {
+        "address": "0xdFf681054C123C0464339FD4Da7F3531588cB181",
+        "kind": "NonProxy",
+        "bytecodeHash": "3bc3cfa52309a3ef1234620cbaaba323c39cd7b4b01b47cd70e71d8b9fda2c46"
+      }
+    ],
+    "playground/ProductionLine1": [
+      {
+        "address": "0x5BD1222e9cC82B68cecE69713f72e2041AC0EaA4",
+        "kind": "NonProxy",
+        "bytecodeHash": "41b6469a6a934912bdc040e438d2f0a0f3b42a2a6a1010cc808c9a6bea76f945"
+      }
+    ]
+  },
+  "manifestVersion": "2.2"
+}

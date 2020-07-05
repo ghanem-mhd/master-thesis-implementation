@@ -11,21 +11,33 @@ contract Product is ERC721  {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     Counters.Counter private _productIds;
-    EnumerableMap.UintToAddressMap private _productDIDs;
+    EnumerableMap.UintToAddressMap private tokenProductMapping;
+    mapping (address => uint256) private productTokenMapping;
 
     constructor() ERC721("Product", "PR") public {
     }
 
-    function createProduct(address owner, address productDID) public returns (uint256) {
+    function createProduct(address owner, address product) public returns (uint256) {
         _productIds.increment();
         uint256 newProductId = _productIds.current();
         _mint(owner, newProductId);
-        _productDIDs.set(newProductId, productDID);
+        tokenProductMapping.set(newProductId, product);
+        productTokenMapping[product] = newProductId;
         return newProductId;
     }
 
-    function getProductIdentityFromID(uint256 productId) public view returns (address){
-        require(_exists(productId), "Product: operator query for nonexistent product");
-        return _productDIDs.get(productId);
+    function transferProduct(address from, address to, address product) public{
+        require(productTokenMapping[product] != 0, "Product not found.");
+        transferFrom(from, to, productTokenMapping[product]);
+    }
+
+    function ownerOfProduct(address product) public view returns (address){
+        require(productTokenMapping[product] != 0, "Product not found.");
+        return super.ownerOf(productTokenMapping[product]);
+    }
+
+    function approveProduct(address to,address product) public{
+        require(productTokenMapping[product] != 0, "Product not found.");
+        super.approve(to, productTokenMapping[product]);
     }
 }
