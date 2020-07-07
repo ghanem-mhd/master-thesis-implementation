@@ -28,7 +28,7 @@ contract Product is ERC721  {
 
     function transferProduct(address from, address to, address product) public{
         require(productTokenMapping[product] != 0, "Product not found.");
-        transferFrom(from, to, productTokenMapping[product]);
+        safeTransferFrom(from, to, productTokenMapping[product]);
     }
 
     function ownerOfProduct(address product) public view returns (address){
@@ -36,8 +36,18 @@ contract Product is ERC721  {
         return super.ownerOf(productTokenMapping[product]);
     }
 
-    function approveProduct(address to,address product) public{
+    function approveDevice(address device, address product) public{
         require(productTokenMapping[product] != 0, "Product not found.");
-        super.approve(to, productTokenMapping[product]);
+        super.approve(device, productTokenMapping[product]);
+    }
+
+    function disapprove(address product) public{
+        require(productTokenMapping[product] != 0, "Product not found.");
+        super.approve(address(0), productTokenMapping[product]);
+    }
+
+    function getApprovedDevice(address product) public view returns(address){
+        require(productTokenMapping[product] != 0, "Product not found.");
+        return super.getApproved(productTokenMapping[product]);
     }
 }

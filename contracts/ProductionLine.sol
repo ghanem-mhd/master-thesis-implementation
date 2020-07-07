@@ -20,6 +20,9 @@ abstract contract ProductionLine is Ownable{
         address device;
     }
 
+    event TaskAssinged(address indexed device, string taskName);
+    event ProductCreated(address indexed product, address indexed creator);
+
     address private _roleManagerContractAddress = address(0);
     address private _productContractAddress = address(0);
 
@@ -47,6 +50,7 @@ abstract contract ProductionLine is Ownable{
     }
 
     function addTask(uint taskIndex, string memory taskName) internal{
+        require(taskIndex >= 1, "Task index must be greator than 1.");
         require(!tasksIds.exists(taskIndex), "Task already exist.");
         tasksIds.insert(taskIndex);
         Task storage task = tasks[taskIndex];
@@ -54,9 +58,10 @@ abstract contract ProductionLine is Ownable{
         task.device = address(0);
     }
 
-    function assignTask(uint taskIndex, address deviceId) public{
+    function assignTask(uint taskIndex, address deviceId) internal{
         require(tasksIds.exists(taskIndex), "Task doesn't exist.");
         tasks[taskIndex].device = deviceId;
+        emit TaskAssinged(deviceId, tasks[taskIndex].name);
     }
 
     function getDeviceAssinged(uint taskIndex) public view returns (address){
@@ -69,17 +74,27 @@ abstract contract ProductionLine is Ownable{
         return tasks[taskIndex].name;
     }
 
-    function executeTask(address product, uint taskIndex) public{
+    function executeTask(address product, uint taskIndex) internal{
         require(tasksIds.exists(taskIndex), "Task doesn't exist.");
         require(_productContractAddress != address(0), "Product contract not assigned.");
         require(tasks[taskIndex].device != address(0), "No device assign for the task.");
 
         productStatus[product] = taskIndex;
-        Product(_productContractAddress).transferProduct(msg.sender, tasks[taskIndex].device, product);
+        Product(_productContractAddress).approveDevice(tasks[taskIndex].device, product);
     }
 
-    function createProduct(address product) public{
+    function confirmTask(address product, uint taskIndex) internal{
+        require(tasksIds.exists(taskIndex), "Task doesn't exist.");
         require(_productContractAddress != address(0), "Product contract not assigned.");
-        Product(_productContractAddress).createProduct(msg.sender, product);
+        require(tasks[taskIndex].device != address(0), "No device assign for the task.");
+        require(tasks[taskIndex].device == _msgSender(), "Task can only be confirmed by the assigned device.");
+
+        Product(_productContractAddress).disapprove(product);
+    }
+
+    function createProduct(address product) internal{
+        require(_productContractAddress != address(0), "Product contract not assigned.");
+        Product(_productContractAddress).createProduct(address(this), product);
+        emit ProductCreated(product, _msgSender());
     }
 }
