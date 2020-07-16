@@ -3,7 +3,7 @@ var ethers = require('ethers')
 var web3 = require('web3');
 
 module.exports = {
-  genereateAndSave: function(password){
+  generateAndSave: function(password){
     var keythereum = require("keythereum");
     var dk = keythereum.create();
     var export_options = {
@@ -24,11 +24,11 @@ module.exports = {
   generateMnemonic: function(mnemonic){
     return ethers.Wallet.fromMnemonic(mnemonic);
   },
-  readFromFile: function(filePath, password){
-    let json = JSON.stringify(require(filePath));
+  readFromFile: function(keystoreName, password){
+    let json = JSON.stringify(require(`../keystore/${keystoreName}.json`));
     return ethers.Wallet.fromEncryptedJson(json, password);
   },
-  getAddrees: function(keystoreName){
+  getAddress: function(keystoreName){
     let json = require(`../keystore/${keystoreName}.json`)
     if(json.hasOwnProperty('address')){
       return web3.utils.toChecksumAddress(json['address'])
@@ -36,7 +36,7 @@ module.exports = {
       return undefined
     }
   },
-  getAddreesFromMnemonic: function(mnemonic){
+  getAddressFromMnemonic: function(mnemonic){
     return ethers.Wallet.fromMnemonic(mnemonic).address
   }
 }

@@ -8,7 +8,7 @@ const logger = winston.createLogger({
             format: winston.format.combine(
                 winston.format.prettyPrint()
               ),
-            filename: 'logs/verbos.log',
+            filename: 'logs/verbose.log',
             options: { flags: 'w' }
         }),
         new winston.transports.Console({
