@@ -18,7 +18,7 @@ module.exports = {
             var supplierAddress = KeyManager.getAddressFromMnemonic(process.env.SUPPLIER_MNEMONIC)
             var manufacturerAddress = KeyManager.getAddressFromMnemonic(process.env.MANUFACTURER_MNEMONIC)
 
-            var entitiesInstance = await ContractsManager.getTruffleContract(networkName, 'Entities', process.env.ADMIN_MNEMONIC)
+            var entitiesInstance = await ContractsManager.getTruffleContract(provider, 'Entities')
 
             var receipt;
             receipt = await entitiesInstance.addEntity(customerAddress, "Customer 1", {from:adminAddress})
@@ -44,9 +44,8 @@ module.exports = {
             Logger.logTx('Sending ether to ' + machine1Id, receipt)
         } catch(err){
             Logger.error(err.message)
-        }finally{
-            provider.engine.stop()
         }
+        provider.engine.stop()
     },
     seedRoles: async function(networkName){
         Logger.info('Seeding roles')
@@ -54,7 +53,7 @@ module.exports = {
         try{
             var adminAddress = KeyManager.getAddressFromMnemonic(process.env.ADMIN_MNEMONIC)
 
-            var roleManagerInstance = await ContractsManager.getTruffleContract(networkName, 'RoleManager', process.env.ADMIN_MNEMONIC)
+            var roleManagerInstance = await ContractsManager.getTruffleContract(provider, 'RoleManager')
 
             var receipt;
 
@@ -74,16 +73,15 @@ module.exports = {
             Logger.logTx('Grant MANUFACTURER_ROLE to ' + manufacturerAddress, receipt)
         } catch(err){
             Logger.error(err.message)
-        }finally{
-            provider.engine.stop()
         }
+        provider.engine.stop()
     },
     seedDevices: async function(networkName){
         Logger.info('Seeding devices')
         var provider = ProvidersManager.getHttpProvider(networkName, process.env.MANUFACTURER_MNEMONIC)
         try{
             var manufacturerAddress = KeyManager.getAddressFromMnemonic(process.env.MANUFACTURER_MNEMONIC)
-            var devicesInstance = await ContractsManager.getTruffleContract(networkName, 'Devices', process.env.MANUFACTURER_MNEMONIC)
+            var devicesInstance = await ContractsManager.getTruffleContract(provider, 'Devices')
 
             var receipt;
 
@@ -98,38 +96,35 @@ module.exports = {
             
         } catch(err){
             Logger.error(err)
-        }finally{
-            provider.engine.stop()
         }
+        provider.engine.stop()
     },
     seedProductionPipeline: async function(networkName){
-        Logger.info('Seeding pipeline')
+        Logger.info('Seeding pipeline')        
         var provider = ProvidersManager.getHttpProvider(networkName, process.env.ADMIN_MNEMONIC)
         try{
             var adminAddress = KeyManager.getAddressFromMnemonic(process.env.ADMIN_MNEMONIC)
-            var productContract = await  ContractsManager.getTruffleContract(networkName, 'Product', process.env.ADMIN_MNEMONIC)
-            var productionLine = await ContractsManager.getTruffleContract(networkName, 'DemoProductionLine', process.env.ADMIN_MNEMONIC)
+            var productContract = await  ContractsManager.getTruffleContract(provider, 'Product')
+            var productionLine = await ContractsManager.getTruffleContract(provider, 'DemoProductionLine')
 
             var device1 = KeyManager.getAddress('m1')
 
             var receipt;
 
             var task = await productionLine.WAREHOUSE_TASK();
-            receipt = await productionLine.setProductContractAddress(productContract.address, {from: adminAddress});
+            productionLine.setProductContractAddress(productContract.address, {from: adminAddress});
             Logger.logTx('Setting product contract address', receipt)
 
-            receipt = await productionLine.assignWarehouseTask(device1, {from: adminAddress});
+            productionLine.assignWarehouseTask(device1, {from: adminAddress});
             Logger.logTx('Assign warehouse task to device ' + device1, receipt)
 
 
-            receipt = await productionLine.createDemoProduct(device1, 'Red' , {from: adminAddress});
+            productionLine.createDemoProduct(device1, 'Red' , {from: adminAddress});
             Logger.logTx('Creating a demo product', receipt)
-
         } catch(err){
             Logger.error(err.stack)
-        }finally{
-            provider.engine.stop()
         }
+        provider.engine.stop()
     },
     sendFund: async function(networkName, address, fund){
         Logger.info('Seeding fund')
@@ -141,9 +136,8 @@ module.exports = {
             Logger.logTx(`Sending ${fund} ether to ` + address, receipt)
         } catch(err){
             Logger.error(err.message)
-        }finally{
-            provider.engine.stop()
         }
+        provider.engine.stop()
     },
     seed:function(networkName){
         module.exports.seedEntities(networkName).then( ()=> {

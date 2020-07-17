@@ -15,8 +15,7 @@ module.exports = {
         var deployedInstance = await contract.deployed()
         return new web3.eth.Contract(artifact.abi, deployedInstance.address);
     },
-    getTruffleContract: async function(networkName, contractName, privateKeyOrMnemonic) {
-        var provider = ProvidersManager.getHttpProvider(networkName, privateKeyOrMnemonic)
+    getTruffleContract: async function(provider, contractName) {
         var artifact = require(`../build/contracts/${contractName}.json`)
         var contract = TruffleContract(artifact)
         contract.setProvider(provider)
