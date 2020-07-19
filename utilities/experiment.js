@@ -17,8 +17,8 @@ module.exports = {
                 product = event.returnValues['product']
                 Logger.info(`Product ${product} is done`)
                 try {
-                    receipt = await DemoProductionLine1.confirmWarehouseTask(product, {from: wallet.address})
-                    Logger.logTx('confirmWarehouseTask', receipt)
+                    receipt = await DemoProductionLine1.finishWarehouseTask(product, {from: wallet.address})
+                    Logger.logTx('finishWarehouseTask', receipt)
                 } catch (error) {
                     Logger.error(error.toString())
                 }
