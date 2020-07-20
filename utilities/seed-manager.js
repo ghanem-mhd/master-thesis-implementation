@@ -30,18 +30,31 @@ module.exports = {
             receipt = await entitiesInstance.addEntity(manufacturerAddress, "Manufacturer 1", {from:adminAddress})
             Logger.logTx('Adding entity Manufacturer 1', receipt)
 
-            receipt = await web3.eth.sendTransaction({from:adminAddress, to:customerAddress, value:web3.utils.toWei("10","ether")})
+            receipt = await web3.eth.sendTransaction({from:adminAddress, to:customerAddress, value:web3.utils.toWei("5","ether")})
             Logger.logTx('Sending ether to ' + customerAddress, receipt)
 
-            receipt = await web3.eth.sendTransaction({from:adminAddress, to:supplierAddress, value:web3.utils.toWei("10","ether")})
+            receipt = await web3.eth.sendTransaction({from:adminAddress, to:supplierAddress, value:web3.utils.toWei("5","ether")})
             Logger.logTx('Sending ether to ' + supplierAddress, receipt)
 
-            receipt = await web3.eth.sendTransaction({from:adminAddress, to:manufacturerAddress, value:web3.utils.toWei("10","ether")})
+            receipt = await web3.eth.sendTransaction({from:adminAddress, to:manufacturerAddress, value:web3.utils.toWei("5","ether")})
             Logger.logTx('Sending ether to ' + manufacturerAddress, receipt)
 
             var machine1Id = KeyManager.getAddress('m1')
-            receipt = await web3.eth.sendTransaction({from:adminAddress, to:machine1Id, value:web3.utils.toWei("10","ether")})
+            receipt = await web3.eth.sendTransaction({from:adminAddress, to:machine1Id, value:web3.utils.toWei("5","ether")})
             Logger.logTx('Sending ether to ' + machine1Id, receipt)
+
+            var machine2Id = KeyManager.getAddress('m2')
+            receipt = await web3.eth.sendTransaction({from:adminAddress, to:machine2Id, value:web3.utils.toWei("5","ether")})
+            Logger.logTx('Sending ether to ' + machine2Id, receipt)
+
+            var machine3Id = KeyManager.getAddress('m3')
+            receipt = await web3.eth.sendTransaction({from:adminAddress, to:machine3Id, value:web3.utils.toWei("5","ether")})
+            Logger.logTx('Sending ether to ' + machine3Id, receipt)
+
+
+            var machine4Id = KeyManager.getAddress('m4')
+            receipt = await web3.eth.sendTransaction({from:adminAddress, to:machine4Id, value:web3.utils.toWei("5","ether")})
+            Logger.logTx('Sending ether to ' + machine4Id, receipt)
         } catch(err){
             Logger.error(err.message)
         }
@@ -108,19 +121,34 @@ module.exports = {
             var productionLine = await ContractsManager.getTruffleContract(provider, 'DemoProductionLine')
 
             var device1 = KeyManager.getAddress('m1')
+            var device2 = KeyManager.getAddress('m2')
+            var device3 = KeyManager.getAddress('m3')
+            var device4 = KeyManager.getAddress('m4')
 
             var receipt;
 
-            var task = await productionLine.WAREHOUSE_TASK();
-            productionLine.setProductContractAddress(productContract.address, {from: adminAddress});
+            var task1 = await productionLine.WAREHOUSE_TASK();
+            var task2 = await productionLine.TRANSFER_TASK();
+            var task3 = await productionLine.MAIN_TASK();
+            var task4 = await productionLine.SORTING_TASK();
+
+            receipt = await productionLine.setProductContractAddress(productContract.address, {from: adminAddress});
             Logger.logTx('Setting product contract address', receipt)
 
-            productionLine.assignWarehouseTask(device1, {from: adminAddress});
+            receipt = await productionLine.assignWarehouseTask(device1, {from: adminAddress});
             Logger.logTx('Assign warehouse task to device ' + device1, receipt)
 
 
-            productionLine.createDemoProduct(device1, 'Red' , {from: adminAddress});
-            Logger.logTx('Creating a demo product', receipt)
+            receipt = await productionLine.assignTransferTask(device2, {from: adminAddress});
+            Logger.logTx('Assign transfer task to device ' + device2, receipt)
+
+
+            receipt = await productionLine.assignMainTask(device3, {from: adminAddress});
+            Logger.logTx('Assign main task to device ' + device3, receipt)
+
+
+            receipt = await productionLine.assignSortingTask(device4, {from: adminAddress});
+            Logger.logTx('Assign sorting task to device ' + device4, receipt)
         } catch(err){
             Logger.error(err.stack)
         }

@@ -22,11 +22,13 @@ const logger = winston.createLogger({
 });
 
 logger.logTx = function(desc, receipt){
+    // + ": " + receipt.transactionHash
     if(receipt.hasOwnProperty('transactionHash')){
-        logger.info(desc + ": " + receipt.transactionHash)
+        logger.info(desc )
     }
+    // + ": " + receipt.tx
     if(receipt.hasOwnProperty('tx')){
-        logger.info(desc + ": " + receipt.tx)
+        logger.info(desc)
     }
     logger.verbose({desc,receipt})
 }

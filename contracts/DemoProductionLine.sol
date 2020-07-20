@@ -62,7 +62,7 @@ contract DemoProductionLine is ProductionLine{
 
     function finishSortingTask(address product, uint taskId, bytes32 param) public {
         super.finishTask(product, taskId);
-        super.addParam(taskId, "param", param);
+        super.addParam(taskId, "sorting param", param);
     }
 
     function assignWarehouseTask(address device) public{

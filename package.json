@@ -10,9 +10,10 @@
     "test": "oz compile && mocha --exit --recursive test",
     "test-mini": "oz compile && mocha -g 'DemoProductionLine' --exit --recursive test",
     "start": "node ./backend/server.js",
-    "seed": "node ./utilities/seed-manager.js seed dev_cli",
-    "exp": "node ./utilities/experiment.js experiment dev_cli",
-    "deploy": "truffle migrate --network dev_cli"
+    "seed": "node ./utilities/seed-manager.js seed-all dev_cli",
+    "pipeline" : "node ./utilities/experiment.js man dev_cli",
+    "create": "node ./utilities/experiment.js create dev_cli",
+    "show": "node ./utilities/experiment.js show dev_cli"
   },
   "author": "Mohammad Ghanem",
   "license": "ISC",
