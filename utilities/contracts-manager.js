@@ -21,5 +21,12 @@ module.exports = {
         contract.setProvider(provider)
         var deployedInstance = await contract.deployed()
         return deployedInstance;
+    },
+    getRegistryContract: async function(provider){
+        var artifact = require("../ethr-did-registry/build/contracts/EthereumDIDRegistry.json")
+        var contract = TruffleContract(artifact)
+        contract.setProvider(provider)
+        var deployedInstance = await contract.deployed()
+        return deployedInstance;  
     }
 }
