@@ -30,8 +30,8 @@ abstract contract ProductionLine is Ownable{
         address device;
         address product;
         address taskType;
-        uint executionTimestamp;
-        uint finishationTimestamp;
+        uint startTimestamp;
+        uint finishTimestamp;
         mapping (bytes32 => bytes32) params;
         bytes32[] paramsNames;
     }
@@ -83,7 +83,8 @@ abstract contract ProductionLine is Ownable{
         task.taskType = taskType;
         task.product = product;
         task.device = devicesAssigned[taskType];
-        task.executionTimestamp = now;
+        task.startTimestamp = now;
+        task.finishTimestamp = 0;
 
         address device = getDeviceAssigned(taskType);
 
@@ -97,6 +98,9 @@ abstract contract ProductionLine is Ownable{
 
     function finishTask(address product, uint taskId) internal{
         require(tasksIds.exists(taskId), "Task doesn't exist.");
+
+        require(tasks[taskId].finishTimestamp == 0, "Task already finished.");
+
         require(_productContractAddress != address(0), "Product contract not assigned.");
 
         address taskType  = tasks[taskId].taskType;
@@ -109,7 +113,7 @@ abstract contract ProductionLine is Ownable{
 
         Product(_productContractAddress).disapprove(product);
 
-        tasks[taskId].finishationTimestamp = now;
+        tasks[taskId].finishTimestamp = now;
     }
 
     function createProduct(address product) internal{
@@ -128,10 +132,19 @@ abstract contract ProductionLine is Ownable{
         return (tasks[taskId].device, 
             tasks[taskId].product,
             tasks[taskId].taskType,
-            tasks[taskId].executionTimestamp,
-            tasks[taskId].finishationTimestamp,
+            tasks[taskId].startTimestamp,
+            tasks[taskId].finishTimestamp,
             tasks[taskId].paramsNames
         );
+    }
+
+    function isTaskFinished(uint taskId) public view returns(bool){
+        require(tasksIds.exists(taskId), "Task doesn't exist.");
+        if (tasks[taskId].finishTimestamp == 0){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     function getTaskParameter(uint taskId, bytes32 paramName) public view returns (bytes32){

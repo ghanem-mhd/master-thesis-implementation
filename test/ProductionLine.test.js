@@ -76,4 +76,17 @@ describe('ProductionLine', function () {
         receipt = await this.MockProductionLineContract.getTaskParameter(1,param2Name, {from: device1});
         expect(receipt).to.equal(web3.utils.padRight(web3.utils.asciiToHex("Big"), 64));     
     });
+
+    it('should revert if the task is already finished', async function () {
+        await this.MockProductionLineContract.assignDummyTask(device1, {from: admin});
+        await this.MockProductionLineContract.createDummyProduct(product1, {from: admin});
+        await this.MockProductionLineContract.startDummyTask(product1, {from: admin});
+        var receipt = await this.MockProductionLineContract.isTaskFinished(1, {from: device1});
+        expect(receipt).to.equal(false);
+        await this.MockProductionLineContract.finishDummyTask(product1, 1, {from: device1});
+        receipt = await this.MockProductionLineContract.isTaskFinished(1, {from: device1});
+        expect(receipt).to.equal(true);
+        receipt = this.MockProductionLineContract.finishDummyTask(product1, 1, {from: device1});
+        expectRevert(receipt, "Task already finished.")
+    });
 })
