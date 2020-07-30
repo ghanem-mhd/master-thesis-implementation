@@ -20,8 +20,6 @@ abstract contract ProductionLine is Ownable{
     Counters.Counter private _taskIds;
 
     mapping (address => address) devicesAssigned;
-
-
     mapping (address => uint[]) productsTasks;
     mapping (address => uint[]) devicesTasks;
 
@@ -35,6 +33,7 @@ abstract contract ProductionLine is Ownable{
         mapping (bytes32 => bytes32) params;
         bytes32[] paramsNames;
     }
+    mapping (address => bytes32) tasksNames;
     AddressSet.Set private taskTypes;
 
     UintSet.Set private tasksIds;
@@ -44,9 +43,19 @@ abstract contract ProductionLine is Ownable{
     event ProductCreated(address indexed product, address indexed creator);
     event NewTask(uint indexed taskId, address indexed device, address indexed product);
 
-    function addTaskType(address taskType) internal{
+    function addTaskType(address taskType, bytes32 taskName) internal{
         require(!taskTypes.exists(taskType), "Task already exist.");
         taskTypes.insert(taskType);
+        tasksNames[taskType] = taskName;
+    }
+
+    function getTasksTypes() public view returns (address [] memory){
+        return taskTypes.keyList;
+    }
+
+    function getTaskName(address taskType) public view returns (bytes32){
+        require(taskTypes.exists(taskType), "Task type doesn't exist.");
+        return tasksNames[taskType];
     }
 
     function assignTaskType(address taskType, address device) internal{
@@ -116,6 +125,13 @@ abstract contract ProductionLine is Ownable{
         tasks[taskId].finishTimestamp = now;
     }
 
+    function killTask(uint taskId) public onlyOwner{
+        require(tasksIds.exists(taskId), "Task doesn't exist.");
+        require(tasks[taskId].finishTimestamp == 0, "Task already finished.");
+
+        tasks[taskId].finishTimestamp = 1;
+    }
+
     function createProduct(address product) internal{
         require(_productContractAddress != address(0), "Product contract not assigned.");
         Product(_productContractAddress).createProduct(address(this), product);
@@ -127,20 +143,25 @@ abstract contract ProductionLine is Ownable{
         tasks[taskId].paramsNames.push(paramName);
     }
 
-    function getTask(uint taskId) public view returns(address, address, address, uint, uint, bytes32 [] memory){
+    function getTask(uint taskId) public view returns(address, address, address, bytes32, uint, uint, bytes32 [] memory){
         require(tasksIds.exists(taskId), "Task doesn't exist.");
         return (tasks[taskId].device, 
             tasks[taskId].product,
             tasks[taskId].taskType,
+            tasksNames[tasks[taskId].taskType],
             tasks[taskId].startTimestamp,
             tasks[taskId].finishTimestamp,
             tasks[taskId].paramsNames
         );
     }
 
+    function getTasksCount() public view returns (uint){
+        return _taskIds.current();
+    }
+
     function isTaskFinished(uint taskId) public view returns(bool){
         require(tasksIds.exists(taskId), "Task doesn't exist.");
-        if (tasks[taskId].finishTimestamp == 0){
+        if (tasks[taskId].finishTimestamp == 0 || tasks[taskId].finishTimestamp == 1){
             return false;
         }else{
             return true;

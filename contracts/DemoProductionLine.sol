@@ -11,10 +11,10 @@ contract DemoProductionLine is ProductionLine{
     address public SORTING_TASK     = 0x885Cc8847c4adb8ba40151c751DABcF7A4BE78d7;
 
     constructor() public {
-        super.addTaskType(WAREHOUSE_TASK);
-        super.addTaskType(TRANSFER_TASK);
-        super.addTaskType(MAIN_TASK);
-        super.addTaskType(SORTING_TASK);
+        super.addTaskType(WAREHOUSE_TASK, "Warehouse Task");
+        super.addTaskType(TRANSFER_TASK, "Transfer Task");
+        super.addTaskType(MAIN_TASK, "Main Task");
+        super.addTaskType(SORTING_TASK, "Sorting Task");
     }
 
     function createDemoProduct(address product, bytes32 productColor) public{

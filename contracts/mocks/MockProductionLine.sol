@@ -10,7 +10,7 @@ contract MockProductionLine is ProductionLine{
     event exeDummyTask(address indexed task, address indexed device, string paramter);
 
     constructor() public {
-        super.addTaskType(DUMMY_TASK_TYPE);
+        super.addTaskType(DUMMY_TASK_TYPE, "Dummy Task");
     }
 
     function assignDummyTask(address device) public {
@@ -29,5 +29,6 @@ contract MockProductionLine is ProductionLine{
 
     function createDummyProduct(address product) public {
         super.createProduct(product);
+        startDummyTask(product);
     }
 }

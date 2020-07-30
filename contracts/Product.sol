@@ -50,4 +50,12 @@ contract Product is ERC721  {
         require(productTokenMapping[product] != 0, "Product not found.");
         return super.getApproved(productTokenMapping[product]);
     }
+
+    function getProductsCount() public view returns(uint){
+        return _productIds.current();
+    }
+
+    function getProductById(uint id) public view returns(address){
+        return tokenProductMapping.get(id);
+    }
 }

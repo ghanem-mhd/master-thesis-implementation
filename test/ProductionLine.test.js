@@ -29,17 +29,20 @@ describe('ProductionLine', function () {
     });
 
     it('should create product', async function () {
-        const receipt = await this.MockProductionLineContract.createDummyProduct(product1, {from: admin});
+        await this.MockProductionLineContract.assignDummyTask(device1, {from: admin});
+        var receipt = await this.MockProductionLineContract.createDummyProduct(product1, {from: admin});
         expectEvent(receipt, 'ProductCreated', { product: product1, creator: admin });
         const currentProductOwner = await this.productContract.ownerOfProduct(product1);
         expect(currentProductOwner).to.equal(this.MockProductionLineContract.address);
+        receipt = await this.MockProductionLineContract.getTasksCount();
+        expect(receipt.toString()).to.equal("1");
     });
 
     it('should start Dummy Task', async function () {
         await this.MockProductionLineContract.assignDummyTask(device1, {from: admin});
         await this.MockProductionLineContract.createDummyProduct(product1, {from: admin});
         var receipt = await this.MockProductionLineContract.startDummyTask(product1, {from: admin});
-        expectEvent(receipt, 'NewTask', { device: device1, product: product1, taskId: "1" });
+        expectEvent(receipt, 'NewTask', { device: device1, product: product1, taskId: "2" });
         const currentApprovedDevice = await this.productContract.getApprovedDevice(product1);
         expect(currentApprovedDevice).to.equal(device1);
     });      
@@ -47,7 +50,6 @@ describe('ProductionLine', function () {
     it('should finish Dummy Task', async function () {
         await this.MockProductionLineContract.assignDummyTask(device1, {from: admin});
         await this.MockProductionLineContract.createDummyProduct(product1, {from: admin});
-        await this.MockProductionLineContract.startDummyTask(product1, {from: admin});
         await this.MockProductionLineContract.finishDummyTask(product1, 1, {from: device1});
         const currentApprovedDevice = await this.productContract.getApprovedDevice(product1);
         expect(currentApprovedDevice).to.equal(constants.ZERO_ADDRESS);
@@ -56,7 +58,6 @@ describe('ProductionLine', function () {
     it('should get correct params', async function () {
         await this.MockProductionLineContract.assignDummyTask(device1, {from: admin});
         await this.MockProductionLineContract.createDummyProduct(product1, {from: admin});
-        await this.MockProductionLineContract.startDummyTask(product1, {from: admin});
         await this.MockProductionLineContract.finishDummyTask(product1, 1, {from: device1});
 
         var receipt = await this.MockProductionLineContract.getTask(1, {from: device1});
@@ -69,7 +70,7 @@ describe('ProductionLine', function () {
         expect(receipt[0]).to.equal(device1);
         expect(receipt[1]).to.equal(product1);
         expect(receipt[2]).to.equal(this.dummyTaskType);
-        expect(receipt[5]).to.deep.equal([param1Name, param2Name ]);
+        expect(receipt[6]).to.deep.equal([param1Name, param2Name ]);
         
         var receipt = await this.MockProductionLineContract.getTaskParameter(1,param1Name, {from: device1});
         expect(receipt).to.equal(web3.utils.padRight(web3.utils.asciiToHex("Red"), 64));
@@ -89,4 +90,20 @@ describe('ProductionLine', function () {
         receipt = this.MockProductionLineContract.finishDummyTask(product1, 1, {from: device1});
         expectRevert(receipt, "Task already finished.")
     });
+
+    it('should get all tasks types', async function () {
+        var receipt = await this.MockProductionLineContract.getTasksTypes();
+        expect(receipt[0]).to.equal(this.dummyTaskType);
+    });
+
+    it('should get the name of the task', async function () {
+        var receipt = await this.MockProductionLineContract.getTaskName(this.dummyTaskType);
+        expect(receipt).to.equal('0x44756d6d79205461736b00000000000000000000000000000000000000000000');
+    });
+
+    it('should get the number of tasks', async function () {
+        var receipt = await this.MockProductionLineContract.getTasksCount();
+        expect(receipt.toString()).to.equal("0");
+    });
+    
 })
