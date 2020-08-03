@@ -6,6 +6,10 @@ IFS=
 
 pkill -f ganache-cli # stop the running instance if 
 
-nohup ganache-cli -m $ADMIN_MNEMONIC > /dev/null 2>&1 & # run new blockchain with admin mnemonic
+nohup ganache-cli -m $ADMIN_MNEMONIC -e 1000 > /dev/null 2>&1 & # run new blockchain with admin mnemonic
 
-truffle migrate --network dev_cli # deploy contracts
+truffle migrate --network dev_cli # deploy main contracts
+
+cd ethr-did-registry
+
+truffle migrate --network dev_cli # deploy EthereumDIDRegistry contract
