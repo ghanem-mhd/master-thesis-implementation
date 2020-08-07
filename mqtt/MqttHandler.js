@@ -1,5 +1,6 @@
 require('dotenv').config()
 const mqtt = require('mqtt');
+var Logger = require('../utilities/logger');
 
 class MqttHandler {
   constructor() {
@@ -13,7 +14,7 @@ class MqttHandler {
     // Connect mqtt with credentials (in case of needed, otherwise we can omit 2nd param)
     this.mqttClient = mqtt.connect(this.host);
 
-    // Mqtt error calback
+    // Mqtt error callback
     this.mqttClient.on('error', (err) => {
       console.log(err);
       this.mqttClient.end();
@@ -25,21 +26,19 @@ class MqttHandler {
     });
 
     // mqtt subscriptions
-    this.mqttClient.subscribe('mytopic', {qos: 0});
+    //this.mqttClient.subscribe('fl/hbw/ack', {qos: 0});
 
     // When a message arrives, console.log it
     this.mqttClient.on('message', function (topic, message) {
-      console.log(message.toString());
+      Logger.info({
+        'topic' : topic,
+        'message': JSON.parse(message.toString())
+      });
     });
 
     this.mqttClient.on('close', () => {
       console.log(`mqtt client disconnected`);
     });
-  }
-
-  // Sends a mqtt message to topic: mytopic
-  sendMessage(message) {
-    this.mqttClient.publish('mytopic', message);
   }
 }
 
