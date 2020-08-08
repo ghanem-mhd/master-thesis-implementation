@@ -4,6 +4,7 @@ const Entities = artifacts.require("Entities");
 const Devices = artifacts.require("Devices");
 const Product = artifacts.require("Product");
 const DemoProductionLine = artifacts.require("DemoProductionLine");
+const SupplyLine = artifacts.require("SupplyLine");
 
 module.exports = function(deployer) {
   deployer.then(async () => {
@@ -12,5 +13,6 @@ module.exports = function(deployer) {
     await deployer.deploy(Devices, RoleManagerDeployed.address);
     await deployer.deploy(Product);
     await deployer.deploy(DemoProductionLine);
+    await deployer.deploy(SupplyLine);
   });
 };

@@ -113,16 +113,41 @@ abstract contract ProductionLine is Ownable{
         require(_productContractAddress != address(0), "Product contract not assigned.");
 
         address taskType  = tasks[taskId].taskType;
-        
+
         require(devicesAssigned[taskType] != address(0), "No device assign for the task.");
         require(devicesAssigned[taskType] == _msgSender(), "Task can only be finished by the assigned device.");
-        
+
         address approvedDevice = Product(_productContractAddress).getApprovedDevice(product);
         require(approvedDevice == _msgSender(), "Task can only be finished by the approved device.");
 
         Product(_productContractAddress).disapprove(product);
 
         tasks[taskId].finishTimestamp = now;
+    }
+
+    function executeTask(address product, address taskType) internal returns (uint){
+        require(taskTypes.exists(taskType), "Task type doesn't exist.");
+        require(_productContractAddress != address(0), "Product contract not assigned.");
+        require(devicesAssigned[taskType] != address(0), "No device assign for the task.");
+
+        _taskIds.increment();
+        uint256 newTaskId = _taskIds.current();
+
+        tasksIds.insert(newTaskId);
+
+        Task storage task = tasks[newTaskId];
+        task.taskType = taskType;
+        task.product = product;
+        task.device = devicesAssigned[taskType];
+        task.startTimestamp = 0;
+        task.finishTimestamp = now;
+
+        address device = getDeviceAssigned(taskType);
+
+        productsTasks[product].push(newTaskId);
+        devicesTasks[device].push(newTaskId);
+
+        return newTaskId;
     }
 
     function killTask(uint taskId) public onlyOwner{
@@ -145,7 +170,7 @@ abstract contract ProductionLine is Ownable{
 
     function getTask(uint taskId) public view returns(address, address, address, bytes32, uint, uint, bytes32 [] memory){
         require(tasksIds.exists(taskId), "Task doesn't exist.");
-        return (tasks[taskId].device, 
+        return (tasks[taskId].device,
             tasks[taskId].product,
             tasks[taskId].taskType,
             tasksNames[tasks[taskId].taskType],
