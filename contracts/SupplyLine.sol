@@ -13,25 +13,24 @@ contract SupplyLine is ProductionLine {
         super.addTaskType(TRANSFER_TASK, "Transfer Task");
     }
 
-    function newRawMaterial(address product, bytes32 productColor) public {
+    function newRawMaterial(address product) public {
         super.createProduct(product);
-        uint newTaskId = super.executeTask(product, TRANSFER_TASK);
-        super.addParam(newTaskId, "color", productColor);
-        startFetchContainer();
+        super.executeTask(product, TRANSFER_TASK);
     }
 
-    function startFetchContainer() private {
+    function startFetchContainer(string memory details) public {
         uint newTaskId = super.startTask(address(0), WAREHOUSE_TASK);
+        super.addParam(newTaskId, "details", details);
         super.addParam(newTaskId, "type", "HBW_FETCHCONTAINER");
     }
 
     function finishFetchContainer(uint taskId) public {
         super.finishTask(address(0), taskId);
-        startStoreRawMaterial();
     }
 
-    function startStoreRawMaterial() private {
+    function startStoreRawMaterial(string memory details) public {
         uint newTaskId = super.startTask(address(0), WAREHOUSE_TASK);
+        super.addParam(newTaskId, "details", details);
         super.addParam(newTaskId, "type", "HBW_STORE_WP");
     }
 

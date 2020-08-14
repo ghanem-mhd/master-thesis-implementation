@@ -3,9 +3,6 @@ var TruffleContract = require('@truffle/contract')
 var ProvidersManager = require('./providers-manager')
 
 module.exports = {
-
-    
-
     getWeb3Contract: async function(networkName, contractName) {
         var provider = ProvidersManager.getWSProvider(networkName)
         var web3 = new Web3(provider)

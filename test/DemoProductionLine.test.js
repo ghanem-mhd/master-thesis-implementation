@@ -26,13 +26,12 @@ describe('DemoProductionLine', function () {
     });
 
     it('should execute demo production pipeline', async function () {
-        await this.demoProductionLineContract.createDemoProduct(product1, toByteArray("color") , {from: admin});
+        await this.demoProductionLineContract.createDemoProduct(product1, "color", {from: admin});
         await this.demoProductionLineContract.finishWarehouseTask(product1, "1" , {from: device1});
         await this.demoProductionLineContract.finishTransferTask(product1, "2" , {from: device2});
         await this.demoProductionLineContract.finishMainTask(product1, "3" , {from: device3});
         await this.demoProductionLineContract.finishTransferTask(product1, "4" , {from: device2});
-        var someValue = web3.utils.asciiToHex("Big")
-        await this.demoProductionLineContract.finishSortingTask(product1, "5" , someValue, {from: device4});
+        await this.demoProductionLineContract.finishSortingTask(product1, "5" , "Big", {from: device4});
     });
 
  

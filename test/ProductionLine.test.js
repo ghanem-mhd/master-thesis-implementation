@@ -72,10 +72,10 @@ describe('ProductionLine', function () {
         expect(receipt[2]).to.equal(this.dummyTaskType);
         expect(receipt[6]).to.deep.equal([param1Name, param2Name ]);
         
-        var receipt = await this.MockProductionLineContract.getTaskParameter(1,param1Name, {from: device1});
-        expect(receipt).to.equal(web3.utils.padRight(web3.utils.asciiToHex("Red"), 64));
+        var receipt = await this.MockProductionLineContract.getTaskParameter(1, param1Name, {from: device1});
+        expect(receipt).to.equal("Red");
         receipt = await this.MockProductionLineContract.getTaskParameter(1,param2Name, {from: device1});
-        expect(receipt).to.equal(web3.utils.padRight(web3.utils.asciiToHex("Big"), 64));     
+        expect(receipt).to.equal("Big");     
     });
 
     it('should revert if the task is already finished', async function () {

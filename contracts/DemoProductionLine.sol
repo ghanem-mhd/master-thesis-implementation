@@ -17,17 +17,17 @@ contract DemoProductionLine is ProductionLine{
         super.addTaskType(SORTING_TASK, "Sorting Task");
     }
 
-    function createDemoProduct(address product, bytes32 productColor) public{
+    function createDemoProduct(address product, string memory productColor) public{
         super.createProduct(product);
         startWarehouseTask(product, productColor);
     }
 
-    function startWarehouseTask(address product, bytes32 productColor) private {
+    function startWarehouseTask(address product, string memory productColor) private {
          uint newTaskId = super.startTask(product, WAREHOUSE_TASK);
         super.addParam(newTaskId, "color", productColor);
     }
 
-    function startTransferTask(address product, bytes32 direction) private {
+    function startTransferTask(address product, string memory direction) private {
         uint newTaskId = super.startTask(product, TRANSFER_TASK);
         super.addParam(newTaskId, "direction", direction);
     }
@@ -47,8 +47,8 @@ contract DemoProductionLine is ProductionLine{
 
     function finishTransferTask(address product, uint taskId) public {
         super.finishTask(product, taskId);
-        bytes32 direction = super.getTaskParameter(taskId, "direction");
-        if (direction == "d1"){
+        string memory direction = super.getTaskParameter(taskId, "direction");
+        if (keccak256(bytes(direction)) == keccak256(bytes("d1"))){
             startMainTask(product);
         }else{
            startSortingTask(product);
@@ -60,7 +60,7 @@ contract DemoProductionLine is ProductionLine{
         startTransferTask(product, "d2");
     }
 
-    function finishSortingTask(address product, uint taskId, bytes32 param) public {
+    function finishSortingTask(address product, uint taskId, string memory param) public {
         super.finishTask(product, taskId);
         super.addParam(taskId, "sorting param", param);
     }

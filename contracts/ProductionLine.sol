@@ -30,7 +30,7 @@ abstract contract ProductionLine is Ownable{
         address taskType;
         uint startTimestamp;
         uint finishTimestamp;
-        mapping (bytes32 => bytes32) params;
+        mapping (bytes32 => string) params;
         bytes32[] paramsNames;
     }
     mapping (address => bytes32) tasksNames;
@@ -166,7 +166,7 @@ abstract contract ProductionLine is Ownable{
         emit ProductCreated(product, _msgSender());
     }
 
-    function addParam(uint taskId,bytes32 paramName, bytes32 paramValue) internal{
+    function addParam(uint taskId,bytes32 paramName, string memory paramValue) internal{
         tasks[taskId].params[paramName] = paramValue;
         tasks[taskId].paramsNames.push(paramName);
     }
@@ -196,7 +196,7 @@ abstract contract ProductionLine is Ownable{
         }
     }
 
-    function getTaskParameter(uint taskId, bytes32 paramName) public view returns (bytes32){
+    function getTaskParameter(uint taskId, bytes32 paramName) public view returns (string memory){
         require(tasksIds.exists(taskId), "Task doesn't exist.");
         return (tasks[taskId].params[paramName]);
     }
