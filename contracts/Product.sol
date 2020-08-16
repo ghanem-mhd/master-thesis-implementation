@@ -36,9 +36,9 @@ contract Product is ERC721  {
         return super.ownerOf(productTokenMapping[product]);
     }
 
-    function approveDevice(address device, address product) public{
+    function approveMachine(address machine, address product) public{
         require(productTokenMapping[product] != 0, "Product not found.");
-        super.approve(device, productTokenMapping[product]);
+        super.approve(machine, productTokenMapping[product]);
     }
 
     function disapprove(address product) public{
@@ -46,7 +46,7 @@ contract Product is ERC721  {
         super.approve(address(0), productTokenMapping[product]);
     }
 
-    function getApprovedDevice(address product) public view returns(address){
+    function getApprovedMachine(address product) public view returns(address){
         require(productTokenMapping[product] != 0, "Product not found.");
         return super.getApproved(productTokenMapping[product]);
     }

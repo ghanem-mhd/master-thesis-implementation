@@ -65,19 +65,19 @@ contract DemoProductionLine is ProductionLine{
         super.addParam(taskId, "sorting param", param);
     }
 
-    function assignWarehouseTask(address device) public{
-        super.assignTaskType(WAREHOUSE_TASK, device);
+    function assignWarehouseTask(address machine) public{
+        super.assignTaskType(WAREHOUSE_TASK, machine);
     }
 
-    function assignTransferTask(address device) public{
-        super.assignTaskType(TRANSFER_TASK, device);
+    function assignTransferTask(address machine) public{
+        super.assignTaskType(TRANSFER_TASK, machine);
     }
 
-    function assignMainTask(address device) public{
-        super.assignTaskType(MAIN_TASK, device);
+    function assignMainTask(address machine) public{
+        super.assignTaskType(MAIN_TASK, machine);
     }
 
-    function assignSortingTask(address device) public{
-        super.assignTaskType(SORTING_TASK, device);
+    function assignSortingTask(address machine) public{
+        super.assignTaskType(SORTING_TASK, machine);
     }
 }

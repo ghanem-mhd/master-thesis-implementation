@@ -19,13 +19,13 @@ abstract contract ProductionLine is Ownable{
 
     Counters.Counter private _taskIds;
 
-    mapping (address => address) devicesAssigned;
+    mapping (address => address) machinesAssigned;
     mapping (address => uint[]) productsTasks;
-    mapping (address => uint[]) devicesTasks;
+    mapping (address => uint[]) machinesTasks;
 
     struct Task{
         uint id;
-        address device;
+        address machine;
         address product;
         address taskType;
         uint startTimestamp;
@@ -39,9 +39,9 @@ abstract contract ProductionLine is Ownable{
     UintSet.Set private tasksIds;
     mapping (uint => Task) tasks;
 
-    event TaskTypeAssigned(address indexed taskType, address indexed device, bool status);
+    event TaskTypeAssigned(address indexed taskType, address indexed machine, bool status);
     event ProductCreated(address indexed product, address indexed creator);
-    event NewTask(uint indexed taskId, address indexed device, address indexed product);
+    event NewTask(uint indexed taskId, address indexed machine, address indexed product);
 
     function addTaskType(address taskType, bytes32 taskName) internal{
         require(!taskTypes.exists(taskType), "Task already exist.");
@@ -58,30 +58,30 @@ abstract contract ProductionLine is Ownable{
         return tasksNames[taskType];
     }
 
-    function assignTaskType(address taskType, address device) internal{
+    function assignTaskType(address taskType, address machine) internal{
         require(taskTypes.exists(taskType), "Task type doesn't exist.");
-        devicesAssigned[taskType] = device;
-        emit TaskTypeAssigned(taskType, device, true);
+        machinesAssigned[taskType] = machine;
+        emit TaskTypeAssigned(taskType, machine, true);
     }
 
-    function diassignTaskType(address taskType, address device) internal{
+    function diassignTaskType(address taskType, address machine) internal{
         require(taskTypes.exists(taskType), "Task type doesn't exist.");
-        devicesAssigned[taskType] = address(0);
-        emit TaskTypeAssigned(taskType, device, false);
+        machinesAssigned[taskType] = address(0);
+        emit TaskTypeAssigned(taskType, machine, false);
     }
 
-    function getDeviceAssigned(address taskType) public view returns (address){
+    function getMachineAssigned(address taskType) public view returns (address){
         require(taskTypes.exists(taskType), "Task type doesn't exist.");
-        return devicesAssigned[taskType];
+        return machinesAssigned[taskType];
     }
 
     function startTask(address product, address taskType) internal returns (uint){
         require(taskTypes.exists(taskType), "Task type doesn't exist.");
-        require(devicesAssigned[taskType] != address(0), "No device assign for the task.");
+        require(machinesAssigned[taskType] != address(0), "No machine assign for the task.");
 
         if(product != address(0)){
             require(_productContractAddress != address(0), "Product contract not assigned.");
-            Product(_productContractAddress).approveDevice(devicesAssigned[taskType], product);
+            Product(_productContractAddress).approveMachine(machinesAssigned[taskType], product);
         }
 
         _taskIds.increment();
@@ -92,18 +92,18 @@ abstract contract ProductionLine is Ownable{
         Task storage task = tasks[newTaskId];
         task.taskType = taskType;
         task.product = product;
-        task.device = devicesAssigned[taskType];
+        task.machine = machinesAssigned[taskType];
         task.startTimestamp = now;
         task.finishTimestamp = 0;
 
-        address device = getDeviceAssigned(taskType);
+        address machine = getMachineAssigned(taskType);
 
-        emit NewTask(newTaskId, device, product);
+        emit NewTask(newTaskId, machine, product);
 
         if(product != address(0)){
             productsTasks[product].push(newTaskId);
         }
-        devicesTasks[device].push(newTaskId);
+        machinesTasks[machine].push(newTaskId);
 
         return newTaskId;
     }
@@ -114,13 +114,13 @@ abstract contract ProductionLine is Ownable{
 
         address taskType  = tasks[taskId].taskType;
 
-        require(devicesAssigned[taskType] != address(0), "No device assign for the task.");
-        require(devicesAssigned[taskType] == _msgSender(), "Task can only be finished by the assigned device.");
+        require(machinesAssigned[taskType] != address(0), "No machine assign for the task.");
+        require(machinesAssigned[taskType] == _msgSender(), "Task can only be finished by the assigned machine.");
 
         if(product != address(0)){
             require(_productContractAddress != address(0), "Product contract not assigned.");
-            address approvedDevice = Product(_productContractAddress).getApprovedDevice(product);
-            require(approvedDevice == _msgSender(), "Task can only be finished by the approved device.");
+            address approvedMachine = Product(_productContractAddress).getApprovedMachine(product);
+            require(approvedMachine == _msgSender(), "Task can only be finished by the approved machine.");
             Product(_productContractAddress).disapprove(product);
         }
 
@@ -130,7 +130,7 @@ abstract contract ProductionLine is Ownable{
     function executeTask(address product, address taskType) internal returns (uint){
         require(taskTypes.exists(taskType), "Task type doesn't exist.");
         require(_productContractAddress != address(0), "Product contract not assigned.");
-        require(devicesAssigned[taskType] != address(0), "No device assign for the task.");
+        require(machinesAssigned[taskType] != address(0), "No machine assign for the task.");
 
         _taskIds.increment();
         uint256 newTaskId = _taskIds.current();
@@ -140,15 +140,15 @@ abstract contract ProductionLine is Ownable{
         Task storage task = tasks[newTaskId];
         task.taskType = taskType;
         task.product = product;
-        task.device = devicesAssigned[taskType];
+        task.machine = machinesAssigned[taskType];
         task.startTimestamp = 0;
         task.finishTimestamp = now;
 
         if(product != address(0)){
             productsTasks[product].push(newTaskId);
         }
-        address device = getDeviceAssigned(taskType);
-        devicesTasks[device].push(newTaskId);
+        address machine = getMachineAssigned(taskType);
+        machinesTasks[machine].push(newTaskId);
 
         return newTaskId;
     }
@@ -173,7 +173,7 @@ abstract contract ProductionLine is Ownable{
 
     function getTask(uint taskId) public view returns(address, address, address, bytes32, uint, uint, bytes32 [] memory){
         require(tasksIds.exists(taskId), "Task doesn't exist.");
-        return (tasks[taskId].device,
+        return (tasks[taskId].machine,
             tasks[taskId].product,
             tasks[taskId].taskType,
             tasksNames[tasks[taskId].taskType],
@@ -224,7 +224,7 @@ abstract contract ProductionLine is Ownable{
         return productsTasks[product];
     }
 
-    function getDeviceTasks(address device) public view returns(uint[] memory){
-        return devicesTasks[device];
+    function getMachineTasks(address machine) public view returns(uint[] memory){
+        return machinesTasks[machine];
     }
 }

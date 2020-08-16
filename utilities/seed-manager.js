@@ -89,41 +89,41 @@ module.exports = {
         }
         provider.engine.stop()
     },
-    seedDevices: async function(networkName){
-        Logger.info('Seeding devices')
+    seedMachines: async function(networkName){
+        Logger.info('Seeding machines')
         var provider = ProvidersManager.getHttpProvider(networkName, process.env.MANUFACTURER_MNEMONIC)
         try{
             var manufacturerAddress = KeyManager.getAddressFromMnemonic(process.env.MANUFACTURER_MNEMONIC)
-            var devicesInstance = await ContractsManager.getTruffleContract(provider, 'Devices')
+            var machinesInstance = await ContractsManager.getTruffleContract(provider, 'Machines')
 
             var receipt;
 
             var machine1Id = KeyManager.getAddress('m1')
             var machine2Id = KeyManager.getAddress('m2')
 
-            receipt = await devicesInstance.addDevice(machine1Id, 'Machine 1', {from:manufacturerAddress})
+            receipt = await machinesInstance.addMachine(machine1Id, 'Machine 1', {from:manufacturerAddress})
             Logger.logTx('Adding machine ' + machine1Id, receipt)
 
-            receipt = await devicesInstance.addDevice(machine2Id, 'Machine 2', {from:manufacturerAddress})
+            receipt = await machinesInstance.addMachine(machine2Id, 'Machine 2', {from:manufacturerAddress})
             Logger.logTx('Adding machine ' + machine2Id, receipt)
-            
+
         } catch(err){
             Logger.error(err)
         }
         provider.engine.stop()
     },
     seedProductionPipeline: async function(networkName){
-        Logger.info('Seeding pipeline')        
+        Logger.info('Seeding pipeline')
         var provider = ProvidersManager.getHttpProvider(networkName, process.env.ADMIN_MNEMONIC)
         try{
             var adminAddress = KeyManager.getAddressFromMnemonic(process.env.ADMIN_MNEMONIC)
             var productContract = await  ContractsManager.getTruffleContract(provider, 'Product')
             var productionLine = await ContractsManager.getTruffleContract(provider, 'DemoProductionLine')
 
-            var device1 = KeyManager.getAddress('m1')
-            var device2 = KeyManager.getAddress('m2')
-            var device3 = KeyManager.getAddress('m3')
-            var device4 = KeyManager.getAddress('m4')
+            var machine1 = KeyManager.getAddress('m1')
+            var machine2 = KeyManager.getAddress('m2')
+            var machine3 = KeyManager.getAddress('m3')
+            var machine4 = KeyManager.getAddress('m4')
 
             var receipt;
 
@@ -135,20 +135,20 @@ module.exports = {
             receipt = await productionLine.setProductContractAddress(productContract.address, {from: adminAddress});
             Logger.logTx('Setting product contract address', receipt)
 
-            receipt = await productionLine.assignWarehouseTask(device1, {from: adminAddress});
-            Logger.logTx('Assign warehouse task to device ' + device1, receipt)
+            receipt = await productionLine.assignWarehouseTask(machine1, {from: adminAddress});
+            Logger.logTx('Assign warehouse task to machine ' + machine1, receipt)
 
 
-            receipt = await productionLine.assignTransferTask(device2, {from: adminAddress});
-            Logger.logTx('Assign transfer task to device ' + device2, receipt)
+            receipt = await productionLine.assignTransferTask(machine2, {from: adminAddress});
+            Logger.logTx('Assign transfer task to machine ' + machine2, receipt)
 
 
-            receipt = await productionLine.assignMainTask(device3, {from: adminAddress});
-            Logger.logTx('Assign main task to device ' + device3, receipt)
+            receipt = await productionLine.assignMainTask(machine3, {from: adminAddress});
+            Logger.logTx('Assign main task to machine ' + machine3, receipt)
 
 
-            receipt = await productionLine.assignSortingTask(device4, {from: adminAddress});
-            Logger.logTx('Assign sorting task to device ' + device4, receipt)
+            receipt = await productionLine.assignSortingTask(machine4, {from: adminAddress});
+            Logger.logTx('Assign sorting task to machine ' + machine4, receipt)
         } catch(err){
             Logger.error(err.stack)
         }
@@ -170,7 +170,7 @@ module.exports = {
     seed:function(networkName){
         module.exports.seedEntities(networkName).then( ()=> {
             module.exports.seedRoles(networkName).then( () => {
-                module.exports.seedDevices(networkName).then( () => {
+                module.exports.seedMachines(networkName).then( () => {
                     module.exports.seedProductionPipeline(networkName);
                 });
             })

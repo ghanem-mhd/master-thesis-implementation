@@ -38,11 +38,11 @@ contract SupplyLine is ProductionLine {
         super.finishTask(address(0), taskId);
     }
 
-    function assignTransferTask(address device) public{
-        super.assignTaskType(TRANSFER_TASK, device);
+    function assignTransferTask(address machine) public{
+        super.assignTaskType(TRANSFER_TASK, machine);
     }
 
-    function assignWarehouseTask(address device) public{
-        super.assignTaskType(WAREHOUSE_TASK, device);
+    function assignWarehouseTask(address machine) public{
+        super.assignTaskType(WAREHOUSE_TASK, machine);
     }
 }

@@ -12,22 +12,22 @@ module.exports = {
     init: async function(networkName){
         Logger.info("Initializing Wallets")
 
-        Logger.info("Initializing wallet for device 1")
+        Logger.info("Initializing wallet for machine 1")
         this.wallet1 = await KeyManager.readFromFile('m1', 'test');
         this.provider1 = ProvidersManager.getHttpProvider(networkName, this.wallet1.privateKey);
         this.httpContract1 = await ContractManager.getTruffleContract(this.provider1, 'DemoProductionLine');
-        
-        Logger.info("Initializing wallet for device 2")
+
+        Logger.info("Initializing wallet for machine 2")
         this.wallet2 = await KeyManager.readFromFile('m2', 'test');
         this.provider2 = ProvidersManager.getHttpProvider(networkName, this.wallet2.privateKey);
         this.httpContract2 = await ContractManager.getTruffleContract(this.provider2, 'DemoProductionLine');
 
-        Logger.info("Initializing wallet for device 3")
+        Logger.info("Initializing wallet for machine 3")
         this.wallet3 = await KeyManager.readFromFile('m3', 'test');
         this.provider3 = ProvidersManager.getHttpProvider(networkName, this.wallet3.privateKey);
         this.httpContract3 = await ContractManager.getTruffleContract(this.provider3, 'DemoProductionLine');
 
-        Logger.info("Initializing wallet for device 4")
+        Logger.info("Initializing wallet for machine 4")
         this.wallet4 = await KeyManager.readFromFile('m4', 'test');
         this.provider4 = ProvidersManager.getHttpProvider(networkName, this.wallet4.privateKey);
         this.httpContract4 = await ContractManager.getTruffleContract(this.provider4, 'DemoProductionLine');
@@ -76,7 +76,7 @@ module.exports = {
             Logger.info("Executing sorting task")
 
             await sleep(2000)
-            
+
             var someValue = Web3.utils.asciiToHex("someValue")
 
             var receipt = await this.httpContract4.finishSortingTask(product, taskId, someValue, {from: this.wallet4.address})
@@ -103,49 +103,49 @@ module.exports = {
         try {
             var webSocketContract = await ContractManager.getWeb3Contract(networkName, 'DemoProductionLine');
             Logger.info("Starting listening for tasks...");
-            webSocketContract.events.NewTask({ filter:{ device: this.wallet1.address } , fromBlock: 0}, async function(error, event){
+            webSocketContract.events.NewTask({ filter:{ machine: this.wallet1.address } , fromBlock: 0}, async function(error, event){
                 if (error){
                     console.log(error)
                 }else{
                     product = event.returnValues['product']
                     taskId = event.returnValues['taskId']
-                    device = event.returnValues['device']
+                    machine = event.returnValues['machine']
                     Logger.info("Received warehouse task with id " + taskId);
                     module.exports.warehouseTask(networkName, product, taskId);
                 }
             });
 
-            webSocketContract.events.NewTask({ filter:{ device: this.wallet2.address } , fromBlock: 0}, async function(error, event){
+            webSocketContract.events.NewTask({ filter:{ machine: this.wallet2.address } , fromBlock: 0}, async function(error, event){
                 if (error){
                     console.log(error)
                 }else{
                     product = event.returnValues['product']
                     taskId = event.returnValues['taskId']
-                    device = event.returnValues['device']
+                    machine = event.returnValues['machine']
                     Logger.info("Received transfer task with id " + taskId);
                     module.exports.transferTask(networkName, product, taskId);
                 }
             });
 
-            webSocketContract.events.NewTask({ filter:{ device: this.wallet3.address } , fromBlock: 0}, async function(error, event){
+            webSocketContract.events.NewTask({ filter:{ machine: this.wallet3.address } , fromBlock: 0}, async function(error, event){
                 if (error){
                     console.log(error)
                 }else{
                     product = event.returnValues['product']
                     taskId = event.returnValues['taskId']
-                    device = event.returnValues['device']
+                    machine = event.returnValues['machine']
                     Logger.info("Received main task with id " + taskId);
                     module.exports.mainTask(networkName, product, taskId);
                 }
             });
 
-            webSocketContract.events.NewTask({ filter:{ device: this.wallet4.address } , fromBlock: 0}, async function(error, event){
+            webSocketContract.events.NewTask({ filter:{ machine: this.wallet4.address } , fromBlock: 0}, async function(error, event){
                 if (error){
                     console.log(error)
                 }else{
                     product = event.returnValues['product']
                     taskId = event.returnValues['taskId']
-                    device = event.returnValues['device']
+                    machine = event.returnValues['machine']
                     Logger.info("Received sorting task with id " + taskId);
                     module.exports.sortTask(networkName, product, taskId);
                 }
@@ -177,7 +177,7 @@ module.exports = {
             DemoProductionLine1.getTask(taskId).then( (taskInfo) => {
                 Logger.info(`Task ${taskId} info:`)
                 console.log({
-                    'Executed by device': taskInfo[0],
+                    'Executed by machine': taskInfo[0],
                     'Product Id': taskInfo[1],
                     'Task type': taskInfo[2],
                     'Starting time': new Date(taskInfo[3].toString() * 1000),

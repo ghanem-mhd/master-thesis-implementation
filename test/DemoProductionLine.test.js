@@ -7,7 +7,7 @@ const Product = contract.fromArtifact('Product');
 const DemoProductionLine = contract.fromArtifact('DemoProductionLine');
 
 describe('DemoProductionLine', function () {
-    const [ admin, nonAdmin, device1, device2, device3, device4, product1 ] = accounts;
+    const [ admin, nonAdmin, machine1, machine2, machine3, machine4, product1 ] = accounts;
 
     function toByteArray(string){
         hex =  web3.utils.asciiToHex(string)
@@ -19,20 +19,20 @@ describe('DemoProductionLine', function () {
         this.productContract = await Product.new({from: admin});
         this.demoProductionLineContract = await DemoProductionLine.new({from: admin});
         await this.demoProductionLineContract.setProductContractAddress(this.productContract.address, {from: admin});
-        await this.demoProductionLineContract.assignWarehouseTask(device1 , {from:admin})
-        await this.demoProductionLineContract.assignTransferTask(device2 , {from:admin})
-        await this.demoProductionLineContract.assignMainTask(device3 , {from:admin})
-        await this.demoProductionLineContract.assignSortingTask(device4 , {from:admin})
+        await this.demoProductionLineContract.assignWarehouseTask(machine1 , {from:admin})
+        await this.demoProductionLineContract.assignTransferTask(machine2 , {from:admin})
+        await this.demoProductionLineContract.assignMainTask(machine3 , {from:admin})
+        await this.demoProductionLineContract.assignSortingTask(machine4 , {from:admin})
     });
 
     it('should execute demo production pipeline', async function () {
         await this.demoProductionLineContract.createDemoProduct(product1, "color", {from: admin});
-        await this.demoProductionLineContract.finishWarehouseTask(product1, "1" , {from: device1});
-        await this.demoProductionLineContract.finishTransferTask(product1, "2" , {from: device2});
-        await this.demoProductionLineContract.finishMainTask(product1, "3" , {from: device3});
-        await this.demoProductionLineContract.finishTransferTask(product1, "4" , {from: device2});
-        await this.demoProductionLineContract.finishSortingTask(product1, "5" , "Big", {from: device4});
+        await this.demoProductionLineContract.finishWarehouseTask(product1, "1" , {from: machine1});
+        await this.demoProductionLineContract.finishTransferTask(product1, "2" , {from: machine2});
+        await this.demoProductionLineContract.finishMainTask(product1, "3" , {from: machine3});
+        await this.demoProductionLineContract.finishTransferTask(product1, "4" , {from: machine2});
+        await this.demoProductionLineContract.finishSortingTask(product1, "5" , "Big", {from: machine4});
     });
 
- 
+
 })
