@@ -1,48 +1,53 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
-import "../contracts/ProductionLine.sol";
+import "../contracts/machines/VGR.sol";
+import "../contracts/machines/HBW.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SupplyLine is ProductionLine {
+contract SupplyLine is Ownable {
 
-    address public WAREHOUSE_TASK   = 0xc990B94f0Aaf1d70FBb9b20845AeF92Ad478b722;
-    address public TRANSFER_TASK    = 0xB7D7638bEa2d28D56C5237211b0678993a5CDE5d;
+    address private _roleManagerContractAddress = address(0);
+    address private _VGRContractAddress = address(0);
+    address private _HBWContractAddress = address(0);
 
-    constructor() public {
-        super.addTaskType(WAREHOUSE_TASK, "Warehouse Task");
-        super.addTaskType(TRANSFER_TASK, "Transfer Task");
+    modifier contractsReady(){
+        require(
+            _VGRContractAddress != address(0),
+            "VGR contract address not assigned."
+        );
+        require(
+            _HBWContractAddress != address(0),
+            "HBW contract address not assigned."
+        );
+        _;
     }
 
-    function newRawMaterial(address product) public {
-        super.createProduct(product);
-        super.executeTask(product, TRANSFER_TASK);
+    function setRoleManagerContractAddress(address roleManagerContractAddress) public onlyOwner {
+        _roleManagerContractAddress = roleManagerContractAddress;
     }
 
-    function startFetchContainer(string memory details) public {
-        uint newTaskId = super.startTask(address(0), WAREHOUSE_TASK);
-        super.addParam(newTaskId, "details", details);
-        super.addParam(newTaskId, "type", "HBW_FETCHCONTAINER");
+    function setVGRContractAddress(address VGRContractAddress) public onlyOwner {
+        _VGRContractAddress = VGRContractAddress;
     }
 
-    function finishFetchContainer(uint taskId) public {
-        super.finishTask(address(0), taskId);
+    function setHBWContractAddress(address HBWContractAddress) public onlyOwner {
+        _HBWContractAddress = HBWContractAddress;
     }
 
-    function startStoreRawMaterial(string memory details) public {
-        uint newTaskId = super.startTask(address(0), WAREHOUSE_TASK);
-        super.addParam(newTaskId, "details", details);
-        super.addParam(newTaskId, "type", "HBW_STORE_WP");
+    function newRawMaterial() public contractsReady {
+        VGR(_VGRContractAddress).getInfo();
     }
 
-    function finishStoreRawMaterial(uint taskId) public {
-        super.finishTask(address(0), taskId);
+    function getInfoFinished() public contractsReady {
+        HBW(_HBWContractAddress).fetchContainer();
     }
 
-    function assignTransferTask(address machine) public{
-        super.assignTaskType(TRANSFER_TASK, machine);
+    function fetchContainerFinished() public contractsReady{
+        HBW(_HBWContractAddress).storeWB();
     }
 
-    function assignWarehouseTask(address machine) public{
-        super.assignTaskType(WAREHOUSE_TASK, machine);
+    function finishStoreWBc(uint taskID) public contractsReady{
+        HBW(_HBWContractAddress).finishTask(taskID);
     }
 }

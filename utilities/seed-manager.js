@@ -91,66 +91,14 @@ module.exports = {
     },
     seedMachines: async function(networkName){
         Logger.info('Seeding machines')
-        var provider = ProvidersManager.getHttpProvider(networkName, process.env.MANUFACTURER_MNEMONIC)
-        try{
-            var manufacturerAddress = KeyManager.getAddressFromMnemonic(process.env.MANUFACTURER_MNEMONIC)
-            var machinesInstance = await ContractsManager.getTruffleContract(provider, 'Machines')
-
-            var receipt;
-
-            var machine1Id = KeyManager.getAddress('m1')
-            var machine2Id = KeyManager.getAddress('m2')
-
-            receipt = await machinesInstance.addMachine(machine1Id, 'Machine 1', {from:manufacturerAddress})
-            Logger.logTx('Adding machine ' + machine1Id, receipt)
-
-            receipt = await machinesInstance.addMachine(machine2Id, 'Machine 2', {from:manufacturerAddress})
-            Logger.logTx('Adding machine ' + machine2Id, receipt)
-
-        } catch(err){
-            Logger.error(err)
-        }
-        provider.engine.stop()
-    },
-    seedProductionPipeline: async function(networkName){
-        Logger.info('Seeding pipeline')
         var provider = ProvidersManager.getHttpProvider(networkName, process.env.ADMIN_MNEMONIC)
         try{
+            var VGRContractInstance = await ContractsManager.getTruffleContract(provider, 'VGR')
             var adminAddress = KeyManager.getAddressFromMnemonic(process.env.ADMIN_MNEMONIC)
-            var productContract = await  ContractsManager.getTruffleContract(provider, 'Product')
-            var productionLine = await ContractsManager.getTruffleContract(provider, 'DemoProductionLine')
-
-            var machine1 = KeyManager.getAddress('m1')
-            var machine2 = KeyManager.getAddress('m2')
-            var machine3 = KeyManager.getAddress('m3')
-            var machine4 = KeyManager.getAddress('m4')
-
-            var receipt;
-
-            var task1 = await productionLine.WAREHOUSE_TASK();
-            var task2 = await productionLine.TRANSFER_TASK();
-            var task3 = await productionLine.MAIN_TASK();
-            var task4 = await productionLine.SORTING_TASK();
-
-            receipt = await productionLine.setProductContractAddress(productContract.address, {from: adminAddress});
-            Logger.logTx('Setting product contract address', receipt)
-
-            receipt = await productionLine.assignWarehouseTask(machine1, {from: adminAddress});
-            Logger.logTx('Assign warehouse task to machine ' + machine1, receipt)
-
-
-            receipt = await productionLine.assignTransferTask(machine2, {from: adminAddress});
-            Logger.logTx('Assign transfer task to machine ' + machine2, receipt)
-
-
-            receipt = await productionLine.assignMainTask(machine3, {from: adminAddress});
-            Logger.logTx('Assign main task to machine ' + machine3, receipt)
-
-
-            receipt = await productionLine.assignSortingTask(machine4, {from: adminAddress});
-            Logger.logTx('Assign sorting task to machine ' + machine4, receipt)
+            receipt = await VGRContractInstance.setMachineID(provider.addresses[1], {from:adminAddress})
+            Logger.logTx('setMachineID', receipt)
         } catch(err){
-            Logger.error(err.stack)
+            Logger.error(err)
         }
         provider.engine.stop()
     },
@@ -168,13 +116,9 @@ module.exports = {
         provider.engine.stop()
     },
     seed:function(networkName){
-        module.exports.seedEntities(networkName).then( ()=> {
-            module.exports.seedRoles(networkName).then( () => {
-                module.exports.seedMachines(networkName).then( () => {
-                    module.exports.seedProductionPipeline(networkName);
-                });
-            })
-        })
+        module.exports.seedMachines(networkName).then( () => {
+
+        });
     },
 }
 
@@ -182,12 +126,6 @@ for (var i=0; i<process.argv.length;i++) {
     switch (process.argv[i]) {
         case 'seed-all':
             module.exports.seed(process.argv[i+1])
-        break;
-        case 'seed':
-            module.exports.seedProductionPipeline(process.argv[i+1])
-        break;
-        case 'fund':
-            module.exports.sendFund(process.argv[i+1], process.argv[i+2], process.argv[i+3])
         break;
     }
 }
