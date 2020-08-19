@@ -94,7 +94,7 @@ abstract contract Machine is Ownable {
     mapping (uint => Status) private statuses;
 
     // to notifiy the machine to perfome a task
-    event NewTask(uint indexed taskID);
+    event NewTask(uint indexed taskID, string taskName);
     // to nitifiy others that a task has been finished
     event TaskFinished(uint indexed taskID);
     // to notifiy the machine to send a new reading from a certian type e.g. temperature..
@@ -111,12 +111,12 @@ abstract contract Machine is Ownable {
     }
 
     modifier onlyMachineOwner(){
-        require(_msgSender() == machineID, "Only machine can call this function.");
+        require(_msgSender() == machineOwner, "Only machine owner can call this function.");
         _;
     }
 
     modifier onlyManufacturer(){
-        require(manufacturers.exists(_msgSender()) , "Only authorized manufactures can call this function.");
+        require( manufacturers.exists(_msgSender()) || (_msgSender() == machineOwner)  , "Only authorized manufactures can call this function.");
         _;
     }
 
@@ -155,7 +155,7 @@ abstract contract Machine is Ownable {
         return newtaskID;
     }
 
-    function startTask(uint taskID) internal onlyManufacturer {
+    function startTask(uint taskID, string memory taskName) internal onlyManufacturer {
         require(tasksIds.exists(taskID), "Task doesn't exist.");
         require(tasks[taskID].startTimestamp == 0, "Task already started.");
 
@@ -163,7 +163,7 @@ abstract contract Machine is Ownable {
 
         currentTaskID = taskID;
 
-        emit NewTask(taskID);
+        emit NewTask(taskID, taskName);
     }
 
     function finishTask(uint taskID) public onlyMachine {
@@ -187,6 +187,11 @@ abstract contract Machine is Ownable {
     function addParam(uint taskId, bytes32 paramName, string memory paramValue) internal{
         tasks[taskId].params[paramName] = paramValue;
         tasks[taskId].paramsNames.push(paramName);
+    }
+
+    function getTaskParameter(uint taskId, bytes32 paramName) public view returns (string memory){
+        require(tasksIds.exists(taskId), "Task doesn't exist.");
+        return (tasks[taskId].params[paramName]);
     }
 
     function getTask(uint taskId) public view returns(address, string memory, uint, uint, bytes32 [] memory){

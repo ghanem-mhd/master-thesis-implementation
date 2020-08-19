@@ -36,18 +36,18 @@ contract SupplyLine is Ownable {
     }
 
     function newRawMaterial() public contractsReady {
-        VGR(_VGRContractAddress).getInfo();
+        //(_VGRContractAddress).getInfo();
     }
 
     function getInfoFinished() public contractsReady {
-        HBW(_HBWContractAddress).fetchContainer();
+        //HBW(_HBWContractAddress).fetchContainer();
     }
 
     function fetchContainerFinished() public contractsReady{
-        HBW(_HBWContractAddress).storeWB();
+        //HBW(_HBWContractAddress).storeWB();
     }
 
     function finishStoreWBc(uint taskID) public contractsReady{
-        HBW(_HBWContractAddress).finishTask(taskID);
+        //HBW(_HBWContractAddress).finishTask(taskID);
     }
 }

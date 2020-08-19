@@ -16,7 +16,7 @@ contract VGR is Machine {
 
     function getInfo() public{
         uint newTaskId = super.createTask(address(0), getTaskName(TasksNames.GetInfo));
-        super.startTask(newTaskId);
+        super.startTask(newTaskId, "");
     }
 
     function storeVGRReading(Machine.ReadingType readingType, int readingValue) public {

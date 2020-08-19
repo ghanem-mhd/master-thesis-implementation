@@ -2,7 +2,7 @@ require('dotenv').config()
 
 const mqtt = require('mqtt');
 
-class VGRMQTTHandler {
+class VgrMQTTHandler {
   constructor() {
     this.mqttClient = null;
     this.host = process.env.MQTT_HOST;

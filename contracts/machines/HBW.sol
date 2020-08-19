@@ -7,7 +7,6 @@ contract HBW is Machine {
 
     constructor(address _machineOwner, address _machineID) Machine(_machineOwner, _machineID) public {}
 
-
     enum TasksNames { FetchContainer, StoreContainer, FetchWB, StoreWB }
 
     function getTaskName(TasksNames taskName) internal pure returns (string memory) {
@@ -18,27 +17,36 @@ contract HBW is Machine {
         if (TasksNames.FetchWB == taskName) return "FetchWB";
     }
 
-    function fetchContainer() public {
-        uint newTaskId = super.createTask(address(0), getTaskName(TasksNames.FetchContainer));
-        // store params
-        super.startTask(newTaskId);
+    function fetchContainer(string memory id, string memory color) public {
+        string memory taskName = getTaskName(TasksNames.FetchContainer);
+        uint newTaskID = super.createTask(address(0), taskName);
+        super.addParam(newTaskID, "id", id);
+        super.addParam(newTaskID, "code", "1");
+        super.addParam(newTaskID, "color", color);
+        super.startTask(newTaskID, taskName);
     }
 
     function storeContainer() public {
-        uint newTaskId = super.createTask(address(0), getTaskName(TasksNames.StoreContainer));
-        // store params
-        super.startTask(newTaskId);
+        string memory taskName = getTaskName(TasksNames.StoreContainer);
+        uint newTaskID = super.createTask(address(0), taskName);
+        super.addParam(newTaskID, "code", "4");
+        super.startTask(newTaskID, taskName);
     }
 
-    function fetchWB() public {
-        uint newTaskId = super.createTask(address(0), getTaskName(TasksNames.FetchWB));
-        // store params
-        super.startTask(newTaskId);
+    function fetchWB(string memory color) public {
+        string memory taskName = getTaskName(TasksNames.FetchWB);
+        uint newTaskID = super.createTask(address(0), taskName);
+        super.addParam(newTaskID, "code", "3");
+        super.addParam(newTaskID, "color", color);
+        super.startTask(newTaskID, taskName);
     }
 
-    function storeWB() public {
-        uint newTaskId = super.createTask(address(0), getTaskName(TasksNames.StoreWB));
-        // store params
-        super.startTask(newTaskId);
+    function storeWB(string memory id, string memory color) public {
+        string memory taskName = getTaskName(TasksNames.StoreWB);
+        uint newTaskID = super.createTask(address(0), taskName);
+        super.addParam(newTaskID, "id", id);
+        super.addParam(newTaskID, "code", "2");
+        super.addParam(newTaskID, "color", color);
+        super.startTask(newTaskID, taskName);
     }
 }

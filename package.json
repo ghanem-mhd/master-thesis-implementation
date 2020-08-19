@@ -9,7 +9,7 @@
     "test": "oz compile && mocha --exit --recursive test",
     "test-mini": "oz compile && mocha -g 'VGR' --exit --recursive test",
     "seed": "node ./utilities/seed-manager.js seed-all dev_cli",
-    "pipeline" : "node ./utilities/experiment.js man dev_cli",
+    "pipeline": "node ./utilities/experiment.js man dev_cli",
     "create": "node ./utilities/experiment.js create dev_cli",
     "show": "node ./utilities/experiment.js show dev_cli"
   },

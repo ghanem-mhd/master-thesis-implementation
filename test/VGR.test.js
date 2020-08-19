@@ -12,7 +12,7 @@ describe('VGR', function () {
 
     beforeEach(async function () {
         this.VGRContract = await VGRArtifact.new(VGROwner, machineID, {from: VGROwner});
-        await this.VGRContract.authorizeManufacturer(Manufacturer, {from:machineID});
+        await this.VGRContract.authorizeManufacturer(Manufacturer, {from:VGROwner});
     });
 
     it('should let the owner set the machine ID', async function () {
@@ -29,7 +29,7 @@ describe('VGR', function () {
     });
 
     it('should create a new GetInfo task', async function () {
-        receipt = await this.VGRContract.getInfo({from:Manufacturer});
+        receipt = await this.VGRContract.getInfo({from:VGROwner});
         expectEvent(receipt, 'NewTask', { taskID: "1" });
         receipt = await this.VGRContract.getTask(1);
         expect(receipt[1]).to.equal("GetInfo");
@@ -61,7 +61,7 @@ describe('VGR', function () {
     });
 
     it('should deauthorize manufacturer', async function () {
-        await this.VGRContract.deauthorizeManufacturer(Manufacturer, {from:machineID});
+        await this.VGRContract.deauthorizeManufacturer(Manufacturer, {from:VGROwner});
         receipt = this.VGRContract.getInfo({from:Manufacturer});
         expectRevert(receipt, "Only authorized manufactures can call this function.");
     });
