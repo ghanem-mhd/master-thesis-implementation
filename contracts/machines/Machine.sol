@@ -204,12 +204,16 @@ abstract contract Machine is Ownable {
         );
     }
 
+    function getTasksCount() public view returns (uint) {
+        return tasksIds.count();
+    }
+
     function isTaskFinished(uint taskID) public view returns(bool){
         require(tasksIds.exists(taskID), "Task doesn't exist.");
-        if (tasks[taskID].finishTimestamp == 0 || tasks[taskID].finishTimestamp == 1){
-            return false;
-        }else{
+        if (tasks[taskID].finishTimestamp != 0 || tasks[taskID].finishTimestamp == 1){
             return true;
+        }else{
+            return false;
         }
     }
 

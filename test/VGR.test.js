@@ -33,6 +33,8 @@ describe('VGR', function () {
         expectEvent(receipt, 'NewTask', { taskID: "1" });
         receipt = await this.VGRContract.getTask(1);
         expect(receipt[1]).to.equal("GetInfo");
+        receipt = await this.VGRContract.getTasksCount();
+        expect(receipt.toString()).to.equal("1");
     });
 
     it('should let only the machine to finish a task', async function () {

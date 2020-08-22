@@ -47,6 +47,12 @@ mqttClient.on("message", function (topic, messageBuffer) {
     var message = JSON.parse(messageBuffer.toString());
     message["topic"] = topic;
     Logger.info(JSON.stringify(message));
+    if(topic == "i/ldr"){
+        console.log(message);
+    }
+    if (topic == "i/bme680"){
+        console.log(message);
+    }
 });
 
 
