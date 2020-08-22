@@ -32,7 +32,7 @@ mqttClient.on("error", (err) => {
 mqttClient.on("connect", () => {
     Logger.info("MPO MQTT client connected");
     mqttClient.subscribe(TOPIC_MPO_ACK, {qos: 0});
-    mqttClient.subscribe(TOPIC_MPO_STATE, {qos: 0});
+    //mqttClient.subscribe(TOPIC_MPO_STATE, {qos: 0});
 });
 
 mqttClient.on("close", () => {
@@ -53,6 +53,8 @@ mqttClient.on("message", function (topic, messageBuffer) {
 
         var taskID = message["taskID"];
         var code = message["code"];
+
+        console.log(message);
 
         if (code == 1){
             Logger.info("MPO start processing");
