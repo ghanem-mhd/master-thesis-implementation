@@ -18,43 +18,38 @@ contract VGR is Machine {
     }
 
     function getInfo() public{
-        string memory taskName = getTaskName(TasksNames.GetInfo);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.GetInfo));
         super.addParam(newTaskID, "code", "1");
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function finishGetInfo(string memory id, string memory color) public{
-        string memory taskName = getTaskName(TasksNames.GetInfo);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.GetInfo));
         super.addParam(newTaskID, "id", id);
         super.addParam(newTaskID, "color", color);
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function hbwDrop(string memory id, string memory color) public{
-        string memory taskName = getTaskName(TasksNames.HBWDrop);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.HBWDrop));
         super.addParam(newTaskID, "code", "2");
         super.addParam(newTaskID, "id", id);
         super.addParam(newTaskID, "color", color);
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function order(string memory color) public{
-        string memory taskName = getTaskName(TasksNames.Order);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.Order));
         super.addParam(newTaskID, "color", color);
         super.addParam(newTaskID, "code", "5");
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function pickSorted(string memory color) public{
-        string memory taskName = getTaskName(TasksNames.PickSorted);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.PickSorted));
         super.addParam(newTaskID, "color", color);
         super.addParam(newTaskID, "code", "4");
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function storeVGRReading(Machine.ReadingType readingType, int readingValue) public {

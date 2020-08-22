@@ -96,7 +96,7 @@ abstract contract Machine is Ownable {
     // to notifiy the machine to perfome a task
     event NewTask(uint indexed taskID, string taskName);
     // to nitifiy others that a task has been finished
-    event TaskFinished(uint indexed taskID);
+    event TaskFinished(uint indexed taskID, string taskName);
     // to notifiy the machine to send a new reading from a certian type e.g. temperature..
     event NewReading(ReadingType indexed readingType);
     // to notifiy someone about the new issue
@@ -155,7 +155,7 @@ abstract contract Machine is Ownable {
         return newtaskID;
     }
 
-    function startTask(uint taskID, string memory taskName) internal onlyManufacturer {
+    function startTask(uint taskID) internal onlyManufacturer {
         require(tasksIds.exists(taskID), "Task doesn't exist.");
         require(tasks[taskID].startTimestamp == 0, "Task already started.");
 
@@ -163,7 +163,12 @@ abstract contract Machine is Ownable {
 
         currentTaskID = taskID;
 
-        emit NewTask(taskID, taskName);
+        emit NewTask(taskID, getTaskName(taskID));
+    }
+
+    function getTaskName(uint taskID) public view returns (string memory) {
+        require(tasksIds.exists(taskID), "Task doesn't exist.");
+        return tasks[taskID].taskName;
     }
 
     function finishTask(uint taskID) public onlyMachine {
@@ -174,7 +179,7 @@ abstract contract Machine is Ownable {
 
         currentTaskID = 0;
 
-        emit TaskFinished(taskID);
+        emit TaskFinished(taskID, getTaskName(taskID));
     }
 
     function killTask(uint taskID) public onlyOwner{

@@ -15,10 +15,9 @@ contract SLD is Machine {
     }
 
     function startSorting() public {
-        string memory taskName = getTaskName(TasksNames.StartSorting);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.StartSorting));
         super.addParam(newTaskID, "code", "8");
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function finishSorting(uint taskID, string memory color) public {

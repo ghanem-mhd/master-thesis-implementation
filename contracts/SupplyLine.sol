@@ -35,19 +35,23 @@ contract SupplyLine is Ownable {
         _HBWContractAddress = HBWContractAddress;
     }
 
-    function newRawMaterial() public contractsReady {
-        //(_VGRContractAddress).getInfo();
+    function getInfo() public contractsReady {
+        VGR(_VGRContractAddress).getInfo();
     }
 
-    function getInfoFinished() public contractsReady {
-        //HBW(_HBWContractAddress).fetchContainer();
+    function getInfoFinished(uint taskID) public contractsReady {
+        string memory color = VGR(_VGRContractAddress).getTaskParameter(taskID, "color");
+        string memory id    = VGR(_VGRContractAddress).getTaskParameter(taskID, "id");
+        HBW(_HBWContractAddress).fetchContainer(id, color);
     }
 
-    function fetchContainerFinished() public contractsReady{
-        //HBW(_HBWContractAddress).storeWB();
+    function fetchContainerFinished(uint taskID) public contractsReady{
+        string memory color = VGR(_VGRContractAddress).getTaskParameter(taskID, "color");
+        string memory id    = VGR(_VGRContractAddress).getTaskParameter(taskID, "id");
+        VGR(_VGRContractAddress).hbwDrop(id, color);
     }
 
-    function finishStoreWBc(uint taskID) public contractsReady{
-        //HBW(_HBWContractAddress).finishTask(taskID);
+    function finishHbwDrop() public contractsReady{
+        HBW(_HBWContractAddress).storeContainer();
     }
 }

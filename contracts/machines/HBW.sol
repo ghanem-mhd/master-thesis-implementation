@@ -18,35 +18,31 @@ contract HBW is Machine {
     }
 
     function fetchContainer(string memory id, string memory color) public {
-        string memory taskName = getTaskName(TasksNames.FetchContainer);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.FetchContainer));
         super.addParam(newTaskID, "id", id);
         super.addParam(newTaskID, "code", "1");
         super.addParam(newTaskID, "color", color);
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function storeContainer() public {
-        string memory taskName = getTaskName(TasksNames.StoreContainer);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.StoreContainer));
         super.addParam(newTaskID, "code", "4");
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function fetchWB(string memory color) public {
-        string memory taskName = getTaskName(TasksNames.FetchWB);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.FetchWB));
         super.addParam(newTaskID, "code", "3");
         super.addParam(newTaskID, "color", color);
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 
     function storeWB(string memory id, string memory color) public {
-        string memory taskName = getTaskName(TasksNames.StoreWB);
-        uint newTaskID = super.createTask(address(0), taskName);
+        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.StoreWB));
         super.addParam(newTaskID, "id", id);
         super.addParam(newTaskID, "code", "2");
         super.addParam(newTaskID, "color", color);
-        super.startTask(newTaskID, taskName);
+        super.startTask(newTaskID);
     }
 }
