@@ -1,18 +1,17 @@
 require("dotenv").config()
 
 const mqtt = require("mqtt");
-var Web3 = require("web3");
 
 var ProvidersManager = require("../../utilities/providers-manager");
 var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
 var Helper = require("../../utilities/helper");
 
-class MPOClient{
+class SLDClient{
 
-    static TOPIC_MPO_STATE = "f/i/state/mpo"
-    static TOPIC_MPO_ACK   = "fl/mpo/ack"
-    static TOPIC_MPO_DO    = "fl/mpo/do"
+    static TOPIC_SLD_STATE = "f/i/state/sld"
+    static TOPIC_SLD_ACK   = "fl/sld/ack"
+    static TOPIC_SLD_DO    = "fl/sld/do"
 
     constructor(){
         this.provider = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);
@@ -32,29 +31,29 @@ class MPOClient{
     }
 
     onMQTTConnect(){
-        Logger.info("MPO MQTT client connected");
-        this.mqttClient.subscribe(MPOClient.TOPIC_MPO_ACK, {qos: 0});
-        this.mqttClient.subscribe(MPOClient.TOPIC_MPO_STATE, {qos: 0});
+        Logger.info("SLD MQTT client connected");
+        this.mqttClient.subscribe(SLDClient.TOPIC_SLD_ACK, {qos: 0});
+        this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
 
-        ContractManager.getWeb3Contract(process.env.NETWORK, "MPO").then( MPOContract => {
-            this.MPOContract = MPOContract;
-            Logger.info("MPOClient started listening for tasks...");
-            this.MPOContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
+        ContractManager.getWeb3Contract(process.env.NETWORK, "SLD").then( SLDContract => {
+            this.SLDContract = SLDContract;
+            Logger.info("SLDClient started listening for tasks...");
+            this.SLDContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
         });
     }
 
     onMQTTClose(){
-        Logger.info("MPO MQTT client disconnected");
+        Logger.info("SLD MQTT client disconnected");
     }
 
     onMQTTMessage(topic, messageBuffer){
-        if (topic == MPOClient.TOPIC_MPO_STATE){
+        if (topic == SLDClient.TOPIC_SLD_STATE){
             var message = JSON.parse(messageBuffer.toString());
-            Logger.info("MPO status: " + messageBuffer.toString());
+            Logger.info("SLD status: " + messageBuffer.toString());
         }
 
-        if (topic == MPOClient.TOPIC_MPO_ACK){
-            Logger.info("Received TOPIC_MPO_ACK message");
+        if (topic == SLDClient.TOPIC_SLD_ACK){
+            Logger.info("Received TOPIC_SLD_ACK message");
 
             var message = JSON.parse(messageBuffer.toString());
 
@@ -64,10 +63,13 @@ class MPOClient{
             console.log(message);
 
             if (code == 1){
-                Logger.info("MPO start processing");
+                Logger.info("SLD start sorting");
             }else{
-                Logger.info("MPO finished processing");
-                this.MPOContract.methods.finishTask(taskID).send({from:process.env.MPO, gas: 6721975, gasPrice: '30000000'}).then( receipt => {
+                Logger.info("SLD finished sorting");
+
+                var color = message["type"];
+
+                this.SLDContract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: 6721975, gasPrice: '30000000'}).then( receipt => {
                     Logger.info("Task " + taskID + " is finished");
                 }).catch(error => {
                     Logger.error(error.stack);
@@ -84,7 +86,7 @@ class MPOClient{
             var taskName    = event.returnValues["taskName"];
             Logger.info("Start processing TaskID " + taskID + " " + taskName);
 
-            var isTaskFinished = await this.MPOContract.methods.isTaskFinished(taskID).call({});
+            var isTaskFinished = await this.SLDContract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
                 Logger.info("Task " + taskID + " is already finished");
@@ -98,20 +100,20 @@ class MPOClient{
             taskMessage["taskID"]       = parseInt(taskID);
             taskMessage["ts"]           = new Date().toISOString();
 
-            if (taskName == "StartProcessing"){
+            if (taskName == "StartSorting"){
                 var ParamsRequests = [
-                    this.MPOContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({})
+                    this.SLDContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({})
                 ];
 
                 Promise.all(ParamsRequests).then( paramValues => {
                     taskMessage["code"]         = parseInt(paramValues[0]);
                     taskMessage["workpiece"]    = null;
 
-                    Logger.info("Sending StartProcessing task " + taskID + " to MPO");
+                    Logger.info("Sending StartSorting task " + taskID + " to SLD");
 
                     Logger.info(JSON.stringify(taskMessage))
 
-                    this.mqttClient.publish(MPOClient.TOPIC_MPO_DO, JSON.stringify(taskMessage));
+                    this.mqttClient.publish(SLDClient.TOPIC_SLD_DO, JSON.stringify(taskMessage));
 
                 }).catch( error => {
                     Logger.error(error.stack);
@@ -121,5 +123,6 @@ class MPOClient{
     }
 }
 
-var client = new MPOClient();
-client.connect()
+var sldClient = new SLDClient();
+sldClient.connect()
+

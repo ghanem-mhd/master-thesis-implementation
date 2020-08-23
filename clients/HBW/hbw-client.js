@@ -4,74 +4,73 @@ const mqtt = require("mqtt");
 var Web3 = require("web3");
 
 var ProvidersManager = require("../../utilities/providers-manager");
-var KeyManager = require("../../utilities/keys-manager");
 var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
+var Helper = require("../../utilities/helper");
 
-const helper = require('../../utilities/helper')
+class HBWClient{
 
-TOPIC_HBW_STATE = "f/i/state/hbw"
-TOPIC_HBW_ACK   = "fl/hbw/ack"
-TOPIC_HBW_DO    = "fl/hbw/do"
+    static TOPIC_HBW_STATE = "f/i/state/hbw"
+    static TOPIC_HBW_ACK   = "fl/hbw/ack"
+    static TOPIC_HBW_DO    = "fl/hbw/do"
 
-TOPIC_NFC = "f/i/nfc/ds"
-
-mqttClient = mqtt.connect(process.env.MQTT_FT);
-
-var HBWContract = null;
-
-var provider    = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);
-ContractManager.getTruffleContract(provider, 'HBW').then(
-    (instance) => {
-    HBWContract = instance;
-});
-
-mqttClient.on("error", (err) => {
-    Logger.error(err);
-    mqttClient.end();
-});
-
-mqttClient.on("connect", () => {
-    Logger.info("HBW MQTT client connected");
-    mqttClient.subscribe(TOPIC_HBW_ACK, {qos: 0});
-    //mqttClient.subscribe(TOPIC_HBW_STATE, {qos: 0});
-    mqttClient.subscribe(TOPIC_NFC, {qos: 0});
-});
-
-mqttClient.on("close", () => {
-    Logger.info("HBW MQTT client disconnected");
-});
-
-mqttClient.on("message", function (topic, messageBuffer) {
-
-    if (topic == TOPIC_NFC){
-        var message = JSON.parse(messageBuffer.toString());
-        Logger.info("NFC: " + messageBuffer.toString());
+    constructor(){
+        this.provider = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);
     }
 
-    if (topic == TOPIC_HBW_STATE){
-        var message = JSON.parse(messageBuffer.toString());
-        Logger.info("HBW status: " + messageBuffer.toString());
+    connect(){
+        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
+        this.mqttClient.on("error", () => this.onMQTTError());
+        this.mqttClient.on("connect", () => this.onMQTTConnect());
+        this.mqttClient.on("close", () => this.onMQTTClose());
+        this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
     }
 
-    if (topic == TOPIC_HBW_ACK){
-        Logger.info("Received TOPIC_HBW_ACK message");
+    onMQTTError(error) {
+        Logger.error(error.stack);
+        this.mqttClient.end();
+    }
 
-        var message = JSON.parse(messageBuffer.toString());
+    onMQTTConnect(){
+        Logger.info("HBW MQTT client connected");
+        this.mqttClient.subscribe(HBWClient.TOPIC_HBW_ACK, {qos: 0});
+        this.mqttClient.subscribe(HBWClient.TOPIC_HBW_STATE, {qos: 0});
 
-        console.log(message);
-
-        var taskID = message["taskID"];
-
-        HBWContract.finishTask(taskID, {from:process.env.HBW}).then( receipt => {
-            Logger.info("Task " + taskID + " is finished");
+        ContractManager.getWeb3Contract(process.env.NETWORK, "HBW").then( HBWContract => {
+            this.HBWContract = HBWContract;
+            Logger.info("HBWClient started listening for tasks...");
+            this.HBWContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
         });
     }
-});
 
-ContractManager.getWeb3Contract(process.env.NETWORK, "HBW").then( HBWContract => {
-    Logger.info("HBW starting listening for tasks...");
-    HBWContract.events.NewTask({ fromBlock: 0}, async function(error, event){
+    onMQTTClose(){
+        Logger.info("HBW MQTT client disconnected");
+    }
+
+    onMQTTMessage(topic, messageBuffer){
+        if (topic == HBWClient.TOPIC_HBW_STATE){
+            var message = JSON.parse(messageBuffer.toString());
+            Logger.info("HBW status: " + messageBuffer.toString());
+        }
+
+        if (topic == HBWClient.TOPIC_HBW_ACK){
+            Logger.info("Received TOPIC_HBW_ACK message");
+
+            var message = JSON.parse(messageBuffer.toString());
+
+            console.log(message);
+
+            var taskID = message["taskID"];
+
+            this.HBWContract.methods.finishTask(taskID).send({from:process.env.HBW, gas: 6721975, gasPrice: '30000000'}).then( receipt => {
+                Logger.info("Task " + taskID + " is finished");
+            }).catch(error => {
+                Logger.error(error.stack);
+            });
+        }
+    }
+
+    async onNewTask(error, event){
         if (error){
             Logger.error(error);
         }else{
@@ -79,7 +78,7 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "HBW").then( HBWContract =>
             var taskName    = event.returnValues["taskName"];
             Logger.info("Start processing TaskID " + taskID + " " + taskName);
 
-            var isTaskFinished = await HBWContract.methods.isTaskFinished(taskID).call({});
+            var isTaskFinished = await this.HBWContract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
                 Logger.info("Task " + taskID + " is already finished");
@@ -96,103 +95,100 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "HBW").then( HBWContract =>
 
             if (taskName == "FetchContainer"){
                 var ParamsRequests = [
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({}),
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("id")).call({}),
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("color")).call({})
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("id")).call({}),
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
                 ];
-        
+
                 Promise.all(ParamsRequests).then( paramValues => {
                     taskMessage["code"]         = parseInt(paramValues[0]);
                     workpiece["id"]             = paramValues[1];
                     workpiece["type"]           = paramValues[2];
                     taskMessage["workpiece"]    = workpiece;
-    
+
                     Logger.info("Sending FetchContainer task " + taskID + " to HBW");
 
                     Logger.info(JSON.stringify(taskMessage))
 
-                    mqttClient.publish(TOPIC_HBW_DO, JSON.stringify(taskMessage));
-    
+                    this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+
                 }).catch( error => {
-                    Logger.error(error);
+                    Logger.error(error.stack);
                 });
             }
 
             if (taskName == "FetchWB"){
                 var ParamsRequests = [
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({}),
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("color")).call({})
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
                 ];
-        
+
                 Promise.all(ParamsRequests).then( paramValues => {
                     taskMessage["code"]         = parseInt(paramValues[0]);
                     workpiece["id"]             = '';
                     workpiece["type"]           = paramValues[1];
                     taskMessage["workpiece"]    = workpiece;
-    
+
                     Logger.info("Sending FetchWB task " + taskID + " to HBW");
 
                     Logger.info(JSON.stringify(taskMessage))
-    
-                    mqttClient.publish(TOPIC_HBW_DO, JSON.stringify(taskMessage));
-    
+
+                    this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+
                 }).catch( error => {
-                    Logger.error(error);
+                    Logger.error(error.stack);
                 });
             }
 
             if (taskName == "StoreContainer"){
                 var ParamsRequests = [
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({})
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({})
                 ];
-    
+
                 Promise.all(ParamsRequests).then( paramValues => {
                     taskMessage["code"]         = parseInt(paramValues[0]);
                     workpiece["id"]             = '';
                     workpiece["type"]           = '';
                     taskMessage["workpiece"]    = workpiece;
-    
+
                     Logger.info("Sending StoreContainer task " + taskID + " to HBW");
 
                     Logger.info(JSON.stringify(taskMessage))
-    
-                    mqttClient.publish(TOPIC_HBW_DO, JSON.stringify(taskMessage));
-    
+
+                    this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+
                 }).catch( error => {
-                    Logger.error(error);
+                    Logger.error(error.stack);
                 });
             }
 
 
             if (taskName == "StoreWB"){
                 var ParamsRequests = [
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({}),
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("id")).call({}),
-                    HBWContract.methods.getTaskParameter(taskID, helper.toHex("color")).call({})
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("id")).call({}),
+                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
                 ];
-        
+
                 Promise.all(ParamsRequests).then( paramValues => {
                     taskMessage["code"]         = parseInt(paramValues[0]);
                     workpiece["id"]             = paramValues[1];
                     workpiece["type"]           = paramValues[2];
                     taskMessage["workpiece"]    = workpiece;
-    
+
                     Logger.info("Sending StoreWB task " + taskID + " to HBW");
 
                     Logger.info(JSON.stringify(taskMessage))
-    
-                    mqttClient.publish(TOPIC_HBW_DO, JSON.stringify(taskMessage));
-    
+
+                    this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+
                 }).catch( error => {
-                    Logger.error(error);
+                    Logger.error(error.stack);
                 });
             }
         }
-    });
-}).catch(error => {
-    Logger.error(error);
-});
+    }
+}
 
-
-
-
+var client = new HBWClient();
+client.connect()

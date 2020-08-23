@@ -1,70 +1,77 @@
 require("dotenv").config()
 
 const mqtt = require("mqtt");
-var Web3 = require("web3");
 
 var ProvidersManager = require("../../utilities/providers-manager");
-var KeyManager = require("../../utilities/keys-manager");
 var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
+var Helper = require("../../utilities/helper");
 
-const helper = require('../../utilities/helper')
+class VGRClient{
 
-TOPIC_VGR_STATE = "f/i/state/vgr"
-TOPIC_VGR_ACK   = "fl/vgr/ack"
-TOPIC_VGR_DO    = "fl/vgr/do2"
+    static TOPIC_VGR_STATE = "f/i/state/vgr"
+    static TOPIC_VGR_ACK   = "fl/vgr/ack"
+    static TOPIC_VGR_DO    = "fl/vgr/do2"
 
-mqttClient = mqtt.connect(process.env.MQTT_FT);
-
-var VGRContract = null;
-
-var provider    = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);
-ContractManager.getTruffleContract(provider, "VGR").then(
-    (instance) => {
-    VGRContract = instance;
-});
-
-mqttClient.on("error", (err) => {
-    Logger.error(err);
-    mqttClient.end();
-});
-
-mqttClient.on("connect", () => {
-    Logger.info("VGR MQTT client connected");
-    mqttClient.subscribe(TOPIC_VGR_ACK, {qos: 0});
-    //mqttClient.subscribe(TOPIC_VGR_STATE, {qos: 0});
-});
-
-mqttClient.on("close", () => {
-    Logger.info("VGR MQTT client disconnected");
-});
-
-mqttClient.on("message", function (topic, messageBuffer) {
-
-    if (topic == TOPIC_VGR_STATE){
-        var message = JSON.parse(messageBuffer.toString());
-        Logger.info("VGR status: " + messageBuffer.toString());
+    constructor(){
+        this.provider = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);
     }
 
-    if (topic == TOPIC_VGR_ACK){
-        Logger.info("Received TOPIC_VGR_ACK message");
+    connect(){
+        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
+        this.mqttClient.on("error", () => this.onMQTTError());
+        this.mqttClient.on("connect", () => this.onMQTTConnect());
+        this.mqttClient.on("close", () => this.onMQTTClose());
+        this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
+    }
 
-        var message = JSON.parse(messageBuffer.toString());
+    onMQTTError(err) {
+        Logger.error(err);
+        this.mqttClient.end();
+    }
 
-        console.log(message)
+    onMQTTConnect(){
+        Logger.info("VGR MQTT client connected");
 
-        var taskID = message["taskID"];
-        var code = message["code"];
+        this.mqttClient.subscribe(VGRClient.TOPIC_VGR_ACK, {qos: 0});
+        this.mqttClient.subscribe(VGRClient.TOPIC_VGR_STATE, {qos: 0});
 
-        VGRContract.finishTask(taskID, {from:process.env.VGR}).then( receipt => {
-            Logger.info("Task " + taskID + " is finished");
+        ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract => {
+            this.VGRContract = VGRContract;
+            Logger.info("VGRClient started listening for tasks...");
+            VGRContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
         });
     }
-});
 
-ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract => {
-    Logger.info("VGR starting listening for tasks...");
-    VGRContract.events.NewTask({ fromBlock: 0}, async function(error, event){
+    onMQTTClose(){
+        Logger.info("VGR MQTT client disconnected");
+    }
+
+    onMQTTMessage(topic, messageBuffer){
+        if (topic == VGRClient.TOPIC_VGR_STATE){
+            var message = JSON.parse(messageBuffer.toString());
+            Logger.info("VGR status: " + messageBuffer.toString());
+        }
+
+        if (topic == VGRClient.TOPIC_VGR_ACK){
+            Logger.info("Received TOPIC_VGR_ACK message");
+
+            var message = JSON.parse(messageBuffer.toString());
+
+            console.log(message)
+
+            var taskID = message["taskID"];
+            var code = message["code"];
+
+            this.VGRContract.methods.finishTask(taskID).send({from:process.env.VGR}).then( receipt => {
+                Logger.info("Task " + taskID + " is finished");
+            }).catch(error => {
+                Logger.error(error.stack);
+            });
+        }
+    }
+
+    async onNewTask(error, event){
         if (error){
             Logger.error(error);
         }else{
@@ -72,7 +79,7 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract =>
             var taskName    = event.returnValues["taskName"];
             Logger.info("Start processing TaskID " + taskID + " " + taskName);
 
-            var isTaskFinished = await VGRContract.methods.isTaskFinished(taskID).call({});
+            var isTaskFinished = await this.VGRContract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
                 Logger.info("Task " + taskID + " is already finished");
@@ -89,7 +96,7 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract =>
 
             if (taskName == "GetInfo"){
                 var ParamsRequests = [
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({})
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({})
                 ];
 
                 Promise.all(ParamsRequests).then( paramValues => {
@@ -100,18 +107,18 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract =>
 
                     Logger.info(JSON.stringify(taskMessage))
 
-                    mqttClient.publish(TOPIC_VGR_DO, JSON.stringify(taskMessage));
+                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
 
                 }).catch( error => {
-                    console.log(error);
+                    Logger.error(error.stack);
                 });
             }
 
             if (taskName == "HBWDrop"){
                 var ParamsRequests = [
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({}),
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("id")).call({}),
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("color")).call({})
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("id")).call({}),
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
                 ];
 
                 Promise.all(ParamsRequests).then( paramValues => {
@@ -124,17 +131,17 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract =>
 
                     Logger.info(JSON.stringify(taskMessage))
 
-                    mqttClient.publish(TOPIC_VGR_DO, JSON.stringify(taskMessage));
+                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
 
                 }).catch( error => {
-                    console.log(error);
+                    Logger.error(error.stack);
                 });
             }
 
             if (taskName == "Order"){
                 var ParamsRequests = [
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({}),
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("color")).call({})
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
                 ];
 
                 Promise.all(ParamsRequests).then( paramValues => {
@@ -146,17 +153,17 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract =>
 
                     Logger.info(JSON.stringify(taskMessage))
 
-                    mqttClient.publish(TOPIC_VGR_DO, JSON.stringify(taskMessage));
+                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
 
                 }).catch( error => {
-                    console.log(error);
+                    Logger.error(error.stack);
                 });
             }
 
             if (taskName == "PickSorted"){
                 var ParamsRequests = [
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("code")).call({}),
-                    VGRContract.methods.getTaskParameter(taskID, helper.toHex("color")).call({})
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
+                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
                 ];
 
                 Promise.all(ParamsRequests).then( paramValues => {
@@ -168,17 +175,19 @@ ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract =>
 
                     Logger.info(JSON.stringify(taskMessage))
 
-                    mqttClient.publish(TOPIC_VGR_DO, JSON.stringify(taskMessage));
+                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
 
                 }).catch( error => {
-                    console.log(error);
+                    Logger.error(error.stack);
                 });
             }
         }
-    });
-}).catch(error => {
-    console.log(error);
-});
+    }
+}
+
+
+var vgrClient = new VGRClient();
+vgrClient.connect()
 
 
 
