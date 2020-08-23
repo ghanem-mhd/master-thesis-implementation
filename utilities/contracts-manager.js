@@ -24,6 +24,6 @@ module.exports = {
         var contract = TruffleContract(artifact)
         contract.setProvider(provider)
         var deployedInstance = await contract.deployed()
-        return deployedInstance;  
+        return deployedInstance;
     }
 }
