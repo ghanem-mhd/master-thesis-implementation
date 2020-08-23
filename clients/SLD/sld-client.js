@@ -69,8 +69,8 @@ class SLDClient{
 
                 var color = message["type"];
 
-                this.SLDContract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: 6721975, gasPrice: '30000000'}).then( receipt => {
-                    Logger.info("Task " + taskID + " is finished");
+                this.SLDContract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                    Logger.info("SLD Task " + taskID + " is finished");
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -89,10 +89,10 @@ class SLDClient{
             var isTaskFinished = await this.SLDContract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
-                Logger.info("Task " + taskID + " is already finished");
+                Logger.info("SLD Task " + taskID + " is already finished");
                 return;
             }else{
-                Logger.info("Task " + taskID + " is not finished");
+                Logger.info("SLD Task " + taskID + " is not finished");
             }
 
             var taskMessage = {}
@@ -123,6 +123,4 @@ class SLDClient{
     }
 }
 
-var sldClient = new SLDClient();
-sldClient.connect()
-
+module.exports = SLDClient

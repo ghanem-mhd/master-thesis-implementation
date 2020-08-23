@@ -39,7 +39,7 @@ class MPOClient{
         ContractManager.getWeb3Contract(process.env.NETWORK, "MPO").then( MPOContract => {
             this.MPOContract = MPOContract;
             Logger.info("MPOClient started listening for tasks...");
-            this.MPOContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
+            this.MPOContract.events.NewTask({ fromBlock: "latest" }, (error, event) => this.onNewTask(error, event));
         });
     }
 
@@ -67,8 +67,8 @@ class MPOClient{
                 Logger.info("MPO start processing");
             }else{
                 Logger.info("MPO finished processing");
-                this.MPOContract.methods.finishTask(taskID).send({from:process.env.MPO, gas: 6721975, gasPrice: '30000000'}).then( receipt => {
-                    Logger.info("Task " + taskID + " is finished");
+                this.MPOContract.methods.finishTask(taskID).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                    Logger.info("MPO Task " + taskID + " is finished");
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -87,10 +87,10 @@ class MPOClient{
             var isTaskFinished = await this.MPOContract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
-                Logger.info("Task " + taskID + " is already finished");
+                Logger.info("MPO Task " + taskID + " is already finished");
                 return;
             }else{
-                Logger.info("Task " + taskID + " is not finished");
+                Logger.info("MPO Task " + taskID + " is not finished");
             }
 
             var taskMessage = {}
@@ -121,5 +121,4 @@ class MPOClient{
     }
 }
 
-var client = new MPOClient();
-client.connect()
+module.exports = MPOClient

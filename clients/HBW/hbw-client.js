@@ -39,7 +39,7 @@ class HBWClient{
         ContractManager.getWeb3Contract(process.env.NETWORK, "HBW").then( HBWContract => {
             this.HBWContract = HBWContract;
             Logger.info("HBWClient started listening for tasks...");
-            this.HBWContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
+            this.HBWContract.events.NewTask({ fromBlock: "latest" }, (error, event) => this.onNewTask(error, event));
         });
     }
 
@@ -62,8 +62,8 @@ class HBWClient{
 
             var taskID = message["taskID"];
 
-            this.HBWContract.methods.finishTask(taskID).send({from:process.env.HBW, gas: 6721975, gasPrice: '30000000'}).then( receipt => {
-                Logger.info("Task " + taskID + " is finished");
+            this.HBWContract.methods.finishTask(taskID).send({from:process.env.HBW, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.info("HBW Task " + taskID + " is finished");
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -81,10 +81,10 @@ class HBWClient{
             var isTaskFinished = await this.HBWContract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
-                Logger.info("Task " + taskID + " is already finished");
+                Logger.info("HBW Task " + taskID + " is already finished");
                 return;
             }else{
-                Logger.info("Task " + taskID + " is not finished");
+                Logger.info("HBW Task " + taskID + " is not finished");
             }
 
             var taskMessage = {}
@@ -190,5 +190,4 @@ class HBWClient{
     }
 }
 
-var client = new HBWClient();
-client.connect()
+module.exports = HBWClient

@@ -39,7 +39,7 @@ class VGRClient{
         ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract => {
             this.VGRContract = VGRContract;
             Logger.info("VGRClient started listening for tasks...");
-            VGRContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
+            VGRContract.events.NewTask({ fromBlock: "latest" }, (error, event) => this.onNewTask(error, event));
         });
     }
 
@@ -64,7 +64,7 @@ class VGRClient{
             var code = message["code"];
 
             this.VGRContract.methods.finishTask(taskID).send({from:process.env.VGR}).then( receipt => {
-                Logger.info("Task " + taskID + " is finished");
+                Logger.info("VGR Task " + taskID + " is finished");
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -185,9 +185,5 @@ class VGRClient{
     }
 }
 
-
-var vgrClient = new VGRClient();
-vgrClient.connect()
-
-
+module.exports = VGRClient
 

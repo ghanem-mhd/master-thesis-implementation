@@ -17,7 +17,9 @@ Promise.all(contractsAsyncGets).then( contracts => {
 
     var seedSupplyLineCommands = [
         supplyLineContract.methods.setVGRContractAddress(VGRContract._address).send({from:process.env.ADMIN}),
-        supplyLineContract.methods.setHBWContractAddress(HBWContract._address).send({from:process.env.ADMIN})
+        supplyLineContract.methods.setHBWContractAddress(HBWContract._address).send({from:process.env.ADMIN}),
+        VGRContract.methods.authorizeManufacturer(supplyLineContract._address).send({from:process.env.ADMIN}),
+        HBWContract.methods.authorizeManufacturer(supplyLineContract._address).send({from:process.env.ADMIN})
     ];
 
     Promise.all(seedSupplyLineCommands).then( receipt => {
