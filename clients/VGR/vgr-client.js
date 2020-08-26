@@ -6,6 +6,8 @@ var ProvidersManager = require("../../utilities/providers-manager");
 var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
 var Helper = require("../../utilities/helper");
+var ClientUtils = require("../client-utilities");
+
 
 class VGRClient{
 
@@ -13,9 +15,7 @@ class VGRClient{
     static TOPIC_VGR_ACK   = "fl/vgr/ack"
     static TOPIC_VGR_DO    = "fl/vgr/do2"
 
-    constructor(){
-        this.provider = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);
-    }
+    constructor(){}
 
     connect(){
         this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
@@ -36,10 +36,10 @@ class VGRClient{
         this.mqttClient.subscribe(VGRClient.TOPIC_VGR_ACK, {qos: 0});
         this.mqttClient.subscribe(VGRClient.TOPIC_VGR_STATE, {qos: 0});
 
-        ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( VGRContract => {
-            this.VGRContract = VGRContract;
+        ContractManager.getWeb3Contract(process.env.NETWORK, "VGR").then( Contract => {
+            this.Contract = Contract;
             Logger.info("VGRClient started listening for tasks...");
-            VGRContract.events.NewTask({ fromBlock: "latest" }, (error, event) => this.onNewTask(error, event));
+            Contract.events.NewTask({ fromBlock: "latest" }, (error, event) => this.onNewTask(error, event));
         });
     }
 
@@ -54,20 +54,31 @@ class VGRClient{
         }
 
         if (topic == VGRClient.TOPIC_VGR_ACK){
-            Logger.info("Received TOPIC_VGR_ACK message");
-
             var message = JSON.parse(messageBuffer.toString());
 
-            console.log(message)
+            Logger.info("Received TOPIC_VGR_ACK message " + JSON.stringify(message));
 
-            var taskID = message["taskID"];
-            var code = message["code"];
+            var taskID      = message["taskID"];
+            var code        = message["code"];
 
-            this.VGRContract.methods.finishTask(taskID).send({from:process.env.VGR}).then( receipt => {
-                Logger.info("VGR Task " + taskID + " is finished");
-            }).catch(error => {
-                Logger.error(error.stack);
-            });
+            if (code == 1){
+                var workpiece   = message["workpiece"];
+                if (workpiece){
+                    var color = workpiece["type"];
+                    var id = workpiece["id"];
+                    this.Contract.methods.finishGetInfo(taskID, id, color).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                        Logger.info("VGR Task " + taskID + " is finished");
+                    }).catch(error => {
+                        Logger.error(error.stack);
+                    });
+                }
+            }else{
+                this.Contract.methods.finishTask(taskID).send({from:process.env.VGR}).then( receipt => {
+                    Logger.info("VGR Task " + taskID + " is finished");
+                }).catch(error => {
+                    Logger.error(error.stack);
+                });
+            }
         }
     }
 
@@ -75,11 +86,11 @@ class VGRClient{
         if (error){
             Logger.error(error);
         }else{
-            var taskID      = event.returnValues["taskID"];
-            var taskName    = event.returnValues["taskName"];
-            Logger.info("Start processing TaskID " + taskID + " " + taskName);
+            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
 
-            var isTaskFinished = await this.VGRContract.methods.isTaskFinished(taskID).call({});
+            Logger.info("Start processing " + taskName + " " + taskID + " for product " + productID);
+
+            var isTaskFinished = await this.Contract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
                 Logger.info("Task " + taskID + " is already finished");
@@ -88,102 +99,90 @@ class VGRClient{
                 Logger.info("Task " + taskID + " is not finished");
             }
 
-            var taskMessage = {}
-
-            taskMessage["taskID"]       = parseInt(taskID);
-            taskMessage["ts"]           = new Date().toISOString();
-            var workpiece = {state: "RAW"}
-
             if (taskName == "GetInfo"){
-                var ParamsRequests = [
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({})
-                ];
-
-                Promise.all(ParamsRequests).then( paramValues => {
-                    taskMessage["code"]         = parseInt(paramValues[0]);
-                    taskMessage["workpiece"]    = null;
-
-                    Logger.info("Sending GetInfo task " + taskID + " to VGR");
-
-                    Logger.info(JSON.stringify(taskMessage))
-
-                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
-
-                }).catch( error => {
-                    Logger.error(error.stack);
-                });
+                this.handleGetInfoTask(taskID, productID);
             }
 
-            if (taskName == "HBWDrop"){
-                var ParamsRequests = [
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("id")).call({}),
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
-                ];
+            if (taskName == "DropToHBW"){
+                this.handleDropToHBWTask(taskID, productID);
+            }
 
-                Promise.all(ParamsRequests).then( paramValues => {
-                    taskMessage["code"]         = parseInt(paramValues[0]);
-                    workpiece["id"]             = paramValues[1];
-                    workpiece["type"]           = paramValues[2];
-                    taskMessage["workpiece"]    = workpiece;
-
-                    Logger.info("Sending HBWDrop task " + taskID + " to VGR");
-
-                    Logger.info(JSON.stringify(taskMessage))
-
-                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
-
-                }).catch( error => {
-                    Logger.error(error.stack);
-                });
+            if (taskName == "PickFromHBW"){
+                this.handlePickFromHBWTask(taskID, productID);
             }
 
             if (taskName == "Order"){
-                var ParamsRequests = [
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
-                ];
-
-                Promise.all(ParamsRequests).then( paramValues => {
-                    taskMessage["code"]         = parseInt(paramValues[0]);
-                    taskMessage["type"]         = paramValues[1];
-                    taskMessage["workpiece"]    = null;
-
-                    Logger.info("Sending Order task " + taskID + " to VGR");
-
-                    Logger.info(JSON.stringify(taskMessage))
-
-                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
-
-                }).catch( error => {
-                    Logger.error(error.stack);
-                });
+                this.handleOrderTask(taskID, productID);
             }
 
             if (taskName == "PickSorted"){
-                var ParamsRequests = [
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
-                    this.VGRContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
-                ];
-
-                Promise.all(ParamsRequests).then( paramValues => {
-                    taskMessage["code"]         = parseInt(paramValues[0]);
-                    taskMessage["type"]         = paramValues[1];
-                    taskMessage["workpiece"]    = null;
-
-                    Logger.info("Sending PickSorted task " + taskID + " to VGR");
-
-                    Logger.info(JSON.stringify(taskMessage))
-
-                    this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
-
-                }).catch( error => {
-                    Logger.error(error.stack);
-                });
+                this.handlePickSortedTask(taskID, productID);
             }
         }
+    }
+
+    async handleGetInfoTask(taskID, productID){
+        var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
+        Promise.all([ClientUtils.getTaskInputRequest(this.Contract, taskID, "code")]).then( inputValues => {
+            taskMessage["code"] = parseInt(inputValues[0]);
+            Logger.info("Sending GetInfo task " + taskID + " to VGR " + JSON.stringify(taskMessage));
+            this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
+    }
+
+    async handleDropToHBWTask(taskID, productID){
+        var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
+        Promise.all([ClientUtils.getTaskInputRequest(this.Contract, taskID, "code")]).then( inputValues => {
+            taskMessage["code"] = parseInt(inputValues[0]);
+            Logger.info("Sending DropToHBW task " + taskID + " to VGR " + JSON.stringify(taskMessage));
+            this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
+    }
+
+    async handlePickFromHBWTask(taskID, productID){
+        var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
+        Promise.all([ClientUtils.getTaskInputRequest(this.Contract, taskID, "code")]).then( inputValues => {
+            taskMessage["code"] = parseInt(inputValues[0]);
+            Logger.info("Sending PickFromHBW task " + taskID + " to VGR " + JSON.stringify(taskMessage));
+            this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
+    }
+
+    async handleOrderTask(taskID, productID){
+        var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
+        Promise.all([
+                ClientUtils.getTaskInputRequest(this.Contract, taskID, "code"),
+                ClientUtils.getTaskInputRequest(this.Contract, taskID, "color"),
+            ]).then( inputValues => {
+                taskMessage["code"] = parseInt(inputValues[0]);
+                taskMessage["type"] = inputValues[1];
+                Logger.info("Sending Order task " + taskID + " to VGR " + JSON.stringify(taskMessage));
+                this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
+    }
+
+    async handlePickSortedTask(taskID, productID){
+        var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
+        Promise.all([
+                ClientUtils.getTaskInputRequest(this.Contract, taskID, "code"),
+                ClientUtils.getTaskInputRequest(this.Contract, taskID, "color"),
+            ]).then( inputValues => {
+                taskMessage["code"] = parseInt(inputValues[0]);
+                taskMessage["type"] = inputValues[1];
+                Logger.info("Sending Order task " + taskID + " to VGR " + JSON.stringify(taskMessage));
+                this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
     }
 }
 
 module.exports = VGRClient
-

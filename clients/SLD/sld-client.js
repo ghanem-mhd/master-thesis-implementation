@@ -6,6 +6,8 @@ var ProvidersManager = require("../../utilities/providers-manager");
 var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
 var Helper = require("../../utilities/helper");
+var ClientUtils = require("../client-utilities");
+
 
 class SLDClient{
 
@@ -35,10 +37,10 @@ class SLDClient{
         this.mqttClient.subscribe(SLDClient.TOPIC_SLD_ACK, {qos: 0});
         this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
 
-        ContractManager.getWeb3Contract(process.env.NETWORK, "SLD").then( SLDContract => {
-            this.SLDContract = SLDContract;
+        ContractManager.getWeb3Contract(process.env.NETWORK, "SLD").then( Contract => {
+            this.Contract = Contract;
             Logger.info("SLDClient started listening for tasks...");
-            this.SLDContract.events.NewTask({ fromBlock: 0}, (error, event) => this.onNewTask(error, event));
+            this.Contract.events.NewTask({ fromBlock: "latest"}, (error, event) => this.onNewTask(error, event));
         });
     }
 
@@ -53,14 +55,11 @@ class SLDClient{
         }
 
         if (topic == SLDClient.TOPIC_SLD_ACK){
-            Logger.info("Received TOPIC_SLD_ACK message");
-
             var message = JSON.parse(messageBuffer.toString());
+            Logger.info("Received TOPIC_SLD_ACK message " + JSON.stringify(message));
 
             var taskID = message["taskID"];
             var code = message["code"];
-
-            console.log(message);
 
             if (code == 1){
                 Logger.info("SLD start sorting");
@@ -69,7 +68,7 @@ class SLDClient{
 
                 var color = message["type"];
 
-                this.SLDContract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
                     Logger.info("SLD Task " + taskID + " is finished");
                 }).catch(error => {
                     Logger.error(error.stack);
@@ -82,11 +81,10 @@ class SLDClient{
         if (error){
             Logger.error(error);
         }else{
-            var taskID      = event.returnValues["taskID"];
-            var taskName    = event.returnValues["taskName"];
-            Logger.info("Start processing TaskID " + taskID + " " + taskName);
+            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
+            Logger.info("Start processing " + taskName + " " + taskID + " for product " + productID);
 
-            var isTaskFinished = await this.SLDContract.methods.isTaskFinished(taskID).call({});
+            var isTaskFinished = await this.Contract.methods.isTaskFinished(taskID).call({});
 
             if (isTaskFinished){
                 Logger.info("SLD Task " + taskID + " is already finished");
@@ -95,31 +93,21 @@ class SLDClient{
                 Logger.info("SLD Task " + taskID + " is not finished");
             }
 
-            var taskMessage = {}
-
-            taskMessage["taskID"]       = parseInt(taskID);
-            taskMessage["ts"]           = new Date().toISOString();
-
             if (taskName == "StartSorting"){
-                var ParamsRequests = [
-                    this.SLDContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({})
-                ];
-
-                Promise.all(ParamsRequests).then( paramValues => {
-                    taskMessage["code"]         = parseInt(paramValues[0]);
-                    taskMessage["workpiece"]    = null;
-
-                    Logger.info("Sending StartSorting task " + taskID + " to SLD");
-
-                    Logger.info(JSON.stringify(taskMessage))
-
-                    this.mqttClient.publish(SLDClient.TOPIC_SLD_DO, JSON.stringify(taskMessage));
-
-                }).catch( error => {
-                    Logger.error(error.stack);
-                });
+                this.handleStartSortingTask(taskID, productID);
             }
         }
+    }
+
+    async handleStartSortingTask(taskID, productID){
+        var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
+        Promise.all([ClientUtils.getTaskInputRequest(this.Contract, taskID, "code")]).then( inputValues => {
+            taskMessage["code"] = parseInt(inputValues[0]);
+            Logger.info("Sending StartSorting task " + taskID + " to SLD " + JSON.stringify(taskMessage));
+            this.mqttClient.publish(SLDClient.TOPIC_SLD_DO, JSON.stringify(taskMessage));
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
     }
 }
 

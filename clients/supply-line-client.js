@@ -1,23 +1,20 @@
 require("dotenv").config()
 
 const mqtt = require("mqtt");
-var Web3 = require("web3");
 
 var ProvidersManager = require("../utilities/providers-manager");
-var KeyManager = require("../utilities/keys-manager");
 var ContractManager = require("../utilities/contracts-manager");
 var Logger = require("../utilities/logger");
 var Helper = require('../utilities/helper');
-var HBWClient = require("./HBW/hbw-client")
-var VGRClient = require("./VGR/vgr-client")
+var HBWClient = require("./HBW/hbw-client");
+var VGRClient = require("./VGR/vgr-client");
+var ClientUtils = require("./client-utilities");
 
 class SupplyLineClient{
-
 
     static TOPIC_START = "fl/supplyLine/start"
 
     constructor(){
-        this.provider   = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);
         this.hbwClient  = new HBWClient();
         this.vgrClient  = new VGRClient();
     }
@@ -70,8 +67,13 @@ class SupplyLineClient{
 
     onMQTTMessage(topic, messageBuffer){
 
+        var message = JSON.parse(messageBuffer.toString());
+
         if (topic == SupplyLineClient.TOPIC_START){
-            this.supplyLineContract.methods.getInfo().send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+
+            var productID = message["productID"];
+
+            this.supplyLineContract.methods.getInfo(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.info("SupplyLine started");
             }).catch(error => {
                 Logger.error(error.stack);
@@ -83,19 +85,18 @@ class SupplyLineClient{
         if (error){
             Logger.error(error);
         }else{
-            var taskID      = event.returnValues["taskID"];
-            var taskName    = event.returnValues["taskName"];
+            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
 
             if (taskName == "GetInfo"){
-                this.supplyLineContract.methods.getInfoFinished(taskID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyLineContract.methods.getInfoFinished(taskID, productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
 
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
             }
 
-            if (taskName == "HBWDrop"){
-                this.supplyLineContract.methods.hbwDropFinished().send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            if (taskName == "DropToHBW"){
+                this.supplyLineContract.methods.dropToHBWFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -108,11 +109,10 @@ class SupplyLineClient{
         if (error){
             Logger.error(error);
         }else{
-            var taskID      = event.returnValues["taskID"];
-            var taskName    = event.returnValues["taskName"];
+            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
 
             if (taskName == "FetchContainer"){
-                this.supplyLineContract.methods.fetchContainerFinished(taskID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyLineContract.methods.fetchContainerFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
 
                 }).catch(error => {
                     Logger.error(error.stack);
