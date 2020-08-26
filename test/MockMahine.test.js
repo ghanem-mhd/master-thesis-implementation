@@ -1,7 +1,7 @@
 const { accounts, contract } = require('@openzeppelin/test-environment');
-const { BN, constants ,expectEvent, expectRevert } = require('@openzeppelin/test-Helpers');
+const { BN, constants ,expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
-const Helper = require('../utilities/Helper')
+const Helper = require('../utilities/helper')
 
 const MockMachineArtifact = contract.fromArtifact('MockMachine');
 

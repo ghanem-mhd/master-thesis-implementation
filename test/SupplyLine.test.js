@@ -2,7 +2,6 @@ const { accounts, contract } = require("@openzeppelin/test-environment");
 const { BN, constants ,expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { expect } = require("chai");
 const web3 = require("web3");
-const Helper = require("../utilities/helper");
 const helper = require("../utilities/helper");
 
 const VGRArtifact = contract.fromArtifact("VGR");
