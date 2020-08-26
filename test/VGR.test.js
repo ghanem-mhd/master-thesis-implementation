@@ -31,7 +31,7 @@ describe('VGR', function () {
 
     it('should start HBWDrop task with correct input', async function () {
         NewTaskEvent = await this.VGRContract.dropToHBW(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "HBWDrop", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "DropToHBW", productID:product});
         StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
         expect(StoredInputValue, "2");
     });

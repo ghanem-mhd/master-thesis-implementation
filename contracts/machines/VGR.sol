@@ -5,14 +5,14 @@ import "./Machine.sol";
 
 contract VGR is Machine {
 
-    enum TasksNames { GetInfo, HBWDrop, PickFromHBW, Order, PickSorted }
+    enum TasksNames { GetInfo, DropToHBW, PickFromHBW, Order, PickSorted }
 
     constructor(address _machineOwner, address _machineID) Machine(_machineOwner, _machineID) public {}
 
     function getTaskName(TasksNames taskName) internal pure returns (string memory) {
         require(uint8(taskName) <= 5);
         if (TasksNames.GetInfo == taskName) return "GetInfo";
-        if (TasksNames.HBWDrop == taskName) return "HBWDrop";
+        if (TasksNames.DropToHBW == taskName) return "DropToHBW";
         if (TasksNames.PickFromHBW == taskName) return "PickFromHBW";
         if (TasksNames.Order == taskName) return "Order";
         if (TasksNames.PickSorted == taskName) return "PickSorted";
@@ -31,7 +31,7 @@ contract VGR is Machine {
     }
 
     function dropToHBW(address productID) public{
-        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.HBWDrop));
+        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.DropToHBW));
         super.saveInput(newTaskID, "code", "2");
         super.startTask(newTaskID);
     }
