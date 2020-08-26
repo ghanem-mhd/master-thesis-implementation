@@ -6,6 +6,7 @@ const HBW = artifacts.require("HBW");
 const VGR = artifacts.require("VGR");
 const MPO = artifacts.require("MPO");
 const SLD = artifacts.require("SLD");
+const MockMachine = artifacts.require("MockMachine");
 
 module.exports = function(deployer) {
   deployer.then(async () => {
@@ -14,5 +15,6 @@ module.exports = function(deployer) {
     await deployer.deploy(HBW, process.env.ADMIN, process.env.HBW);
     await deployer.deploy(MPO, process.env.ADMIN, process.env.MPO);
     await deployer.deploy(SLD, process.env.ADMIN, process.env.SLD);
+    await deployer.deploy(MockMachine, process.env.ADMIN, process.env.MockMachine);
   });
 };

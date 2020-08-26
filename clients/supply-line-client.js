@@ -95,7 +95,7 @@ class SupplyLineClient{
             }
 
             if (taskName == "HBWDrop"){
-                this.supplyLineContract.methods.finishHbwDrop().send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyLineContract.methods.hbwDropFinished().send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });

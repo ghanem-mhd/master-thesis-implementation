@@ -14,9 +14,9 @@ contract MPO is Machine {
         if (TasksNames.StartProcessing == taskName) return "StartProcessing";
     }
 
-    function startProcessing() public {
-        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.StartProcessing));
-        super.addParam(newTaskID, "code", "7");
+    function startProcessing(address productID) public {
+        uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.StartProcessing));
+        super.saveInput(newTaskID, "code", "7");
         super.startTask(newTaskID);
     }
 

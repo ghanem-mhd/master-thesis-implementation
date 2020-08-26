@@ -1,70 +1,65 @@
 const { accounts, contract } = require('@openzeppelin/test-environment');
 const { BN, constants ,expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
-const web3 = require('web3');
-const helper = require('../utilities/helper')
+const Helper = require('../utilities/helper')
 
-const Product = contract.fromArtifact('Product');
 const VGRArtifact = contract.fromArtifact('VGR');
 
 describe('VGR', function () {
-    const [ VGROwner, machineID, product, anyone, Manufacturer ] = accounts;
+    const [ VGROwner, MachineID, product, anyone, Manufacturer ] = accounts;
 
     beforeEach(async function () {
-        this.VGRContract = await VGRArtifact.new(VGROwner, machineID, {from: VGROwner});
+        this.VGRContract = await VGRArtifact.new(VGROwner, MachineID, {from: VGROwner});
         await this.VGRContract.authorizeManufacturer(Manufacturer, {from:VGROwner});
     });
 
-    it('should let the owner set the machine ID', async function () {
-        storedMachineID = await this.VGRContract.getMachineID();
-        expect(storedMachineID).to.equal(machineID);
+    it('should start GetInfo task with correct input', async function () {
+        NewTaskEvent = await this.VGRContract.getInfo(product, {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "GetInfo", productID:product});
+        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
+        expect(StoredInputValue, "1");
     });
 
-    it('should let the owner add some info', async function () {
-        await this.VGRContract.addInfo(helper.toHex("serialNumber"), helper.toHex("12345"), {from:VGROwner});
-        infoNames = await this.VGRContract.getMachineInfoNames()
-        expect(infoNames).to.deep.equal([helper.toHex("serialNumber")]);
-        storedSerialNumber = await this.VGRContract.getMachineInfo(helper.toHex("serialNumber"))
-        expect(helper.toString(storedSerialNumber)).to.equal("12345");
+    it('should save output of the GetInfo task', async function () {
+        await this.VGRContract.getInfo(product, {from:Manufacturer});
+        await this.VGRContract.finishGetInfo(1, "123", "white", {from: MachineID});
+        StoredOutputValue1 = await this.VGRContract.getTaskOutput(1, Helper.toHex("id"));
+        StoredOutputValue2 = await this.VGRContract.getTaskOutput(1, Helper.toHex("color"));
+        expect(StoredOutputValue1, "123");
+        expect(StoredOutputValue2, "white");
     });
 
-    it('should create a new GetInfo task', async function () {
-        receipt = await this.VGRContract.getInfo({from:VGROwner});
-        expectEvent(receipt, 'NewTask', { taskID: "1" });
-        receipt = await this.VGRContract.getTask(1);
-        expect(receipt[1]).to.equal("GetInfo");
-        receipt = await this.VGRContract.getTasksCount();
-        expect(receipt.toString()).to.equal("1");
+    it('should start HBWDrop task with correct input', async function () {
+        NewTaskEvent = await this.VGRContract.dropToHBW(product, {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "HBWDrop", productID:product});
+        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
+        expect(StoredInputValue, "2");
     });
 
-    it('should let only the machine to finish a task', async function () {
-        receipt = await this.VGRContract.getInfo({from:Manufacturer});
-        receipt = this.VGRContract.finishTask(1, {from:anyone});
-        expectRevert(receipt, "Only machine can call this function.");
-        receipt = await this.VGRContract.finishTask(1, {from:machineID});
-        receipt = await this.VGRContract.isTaskFinished(1);
-        expect(receipt).to.equal(true);
+
+    it('should start PickFromHBW task with correct input', async function () {
+        NewTaskEvent = await this.VGRContract.pickFromHBW(product, {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "PickFromHBW", productID:product});
+        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
+        expect(StoredInputValue, "2");
     });
 
-    it('should emit event getNewReading', async function () {
-        receipt = await this.VGRContract.getNewReading(0, {from:VGROwner});
-        expectEvent(receipt, 'NewReading', { readingType: "0" });
+    it('should start Order task with correct input', async function () {
+        NewTaskEvent = await this.VGRContract.order(product, "orange", {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Order", productID:product});
+        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
+        expect(StoredInputValue, "2");
+        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("color"));
+        expect(StoredInputValue, "orange");
     });
 
-    it('should store new reading', async function () {
-        receipt = await this.VGRContract.storeVGRReading(0, 20, {from:machineID});
-        receipt = await this.VGRContract.getReading(1);
-        expect(receipt[2].toString()).to.equal("20");
+    it('should start PickSorted task with correct input', async function () {
+        NewTaskEvent = await this.VGRContract.pickSorted(product, "orange", {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "PickSorted", productID:product});
+        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
+        expect(StoredInputValue, "2");
+        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("color"));
+        expect(StoredInputValue, "orange");
     });
 
-    it('should generate new issue if reading condition has been violated', async function () {
-        receipt = await this.VGRContract.storeVGRReading(0, 26, {from:machineID});
-        expectEvent(receipt, 'NewIssue', { issueID: "1" });
-    });
-
-    it('should deauthorize manufacturer', async function () {
-        await this.VGRContract.deauthorizeManufacturer(Manufacturer, {from:VGROwner});
-        receipt = this.VGRContract.getInfo({from:Manufacturer});
-        expectRevert(receipt, "Only authorized manufactures can call this function.");
-    });
 })

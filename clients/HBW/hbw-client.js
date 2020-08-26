@@ -96,8 +96,6 @@ class HBWClient{
             if (taskName == "FetchContainer"){
                 var ParamsRequests = [
                     this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("code")).call({}),
-                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("id")).call({}),
-                    this.HBWContract.methods.getTaskParameter(taskID, Helper.toHex("color")).call({})
                 ];
 
                 Promise.all(ParamsRequests).then( paramValues => {

@@ -17,32 +17,30 @@ contract HBW is Machine {
         if (TasksNames.FetchWB == taskName) return "FetchWB";
     }
 
-    function fetchContainer(string memory id, string memory color) public {
-        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.FetchContainer));
-        super.addParam(newTaskID, "id", id);
-        super.addParam(newTaskID, "code", "1");
-        super.addParam(newTaskID, "color", color);
+    function fetchContainer(address productID) public {
+        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.FetchContainer));
+        super.saveInput(newTaskID, "code", "1");
         super.startTask(newTaskID);
     }
 
-    function storeContainer() public {
-        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.StoreContainer));
-        super.addParam(newTaskID, "code", "4");
+    function storeWB(address productID, string memory id, string memory color) public {
+        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.StoreWB));
+        super.saveInput(newTaskID, "id", id);
+        super.saveInput(newTaskID, "code", "2");
+        super.saveInput(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
 
-    function fetchWB(string memory color) public {
-        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.FetchWB));
-        super.addParam(newTaskID, "code", "3");
-        super.addParam(newTaskID, "color", color);
+    function fetchWB(address productID, string memory color) public {
+        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.FetchWB));
+        super.saveInput(newTaskID, "code", "3");
+        super.saveInput(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
 
-    function storeWB(string memory id, string memory color) public {
-        uint newTaskID = super.createTask(address(0), getTaskName(TasksNames.StoreWB));
-        super.addParam(newTaskID, "id", id);
-        super.addParam(newTaskID, "code", "2");
-        super.addParam(newTaskID, "color", color);
+    function storeContainer(address productID) public {
+        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.StoreContainer));
+        super.saveInput(newTaskID, "code", "4");
         super.startTask(newTaskID);
     }
 }
