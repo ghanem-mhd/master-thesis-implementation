@@ -5,7 +5,7 @@ import "./Machine.sol";
 
 contract VGR is Machine {
 
-    enum TasksNames { GetInfo, DropToHBW, PickFromHBW, Order, PickSorted }
+    enum TasksNames { GetInfo, DropToHBW, MoveHBW2MPO, PickSorted }
 
     constructor(address _machineOwner, address _machineID) Machine(_machineOwner, _machineID) public {}
 
@@ -13,9 +13,8 @@ contract VGR is Machine {
         require(uint8(taskName) <= 5);
         if (TasksNames.GetInfo == taskName) return "GetInfo";
         if (TasksNames.DropToHBW == taskName) return "DropToHBW";
-        if (TasksNames.PickFromHBW == taskName) return "PickFromHBW";
-        if (TasksNames.Order == taskName) return "Order";
         if (TasksNames.PickSorted == taskName) return "PickSorted";
+        if (TasksNames.MoveHBW2MPO == taskName) return "MoveHBW2MPO";
     }
 
     function getInfo(address productID) public {
@@ -36,15 +35,8 @@ contract VGR is Machine {
         super.startTask(newTaskID);
     }
 
-    function pickFromHBW(address productID) public{
-        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.PickFromHBW));
-        super.saveInput(newTaskID, "code", "2");
-        super.startTask(newTaskID);
-    }
-
-    function order(address productID, string memory color) public{
-        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.Order));
-        super.saveInput(newTaskID, "color", color);
+    function moveHBW2MPO(address productID) public{
+        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.MoveHBW2MPO));
         super.saveInput(newTaskID, "code", "5");
         super.startTask(newTaskID);
     }

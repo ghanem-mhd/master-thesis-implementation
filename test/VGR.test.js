@@ -37,20 +37,11 @@ describe('VGR', function () {
     });
 
 
-    it('should start PickFromHBW task with correct input', async function () {
-        NewTaskEvent = await this.VGRContract.pickFromHBW(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "PickFromHBW", productID:product});
+    it('should start MoveHBW2MPO task with correct input', async function () {
+        NewTaskEvent = await this.VGRContract.moveHBW2MPO(product, {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "MoveHBW2MPO", productID:product});
         StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "2");
-    });
-
-    it('should start Order task with correct input', async function () {
-        NewTaskEvent = await this.VGRContract.order(product, "orange", {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Order", productID:product});
-        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "2");
-        StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("color"));
-        expect(StoredInputValue, "orange");
+        expect(StoredInputValue, "5");
     });
 
     it('should start PickSorted task with correct input', async function () {
