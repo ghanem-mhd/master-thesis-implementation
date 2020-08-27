@@ -84,35 +84,34 @@ class HBWClient{
             }
 
             if (taskName == "FetchContainer"){
-                this.handleFetchContainerTask(taskID, productID);
+                this.handleFetchContainerTask(taskID, taskName, productID);
             }
 
             if (taskName == "FetchWB"){
-                this.handleFetchWBTask(taskID, productID);
+                this.handleFetchWBTask(taskID, taskName, productID);
             }
 
             if (taskName == "StoreContainer"){
-                this.handleStoreContainerTask(taskID, productID);
+                this.handleStoreContainerTask(taskID, taskName, productID);
             }
 
             if (taskName == "StoreWB"){
-                this.handleStoreWBTask(taskID, productID);
+                this.handleStoreWBTask(taskID, taskName, productID);
             }
         }
     }
 
-    async handleFetchContainerTask(taskID, productID){
+    async handleFetchContainerTask(taskID, taskName, productID){
         var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
         Promise.all([ClientUtils.getTaskInputRequest(this.Contract, taskID, "code")]).then( inputValues => {
             taskMessage["code"] = parseInt(inputValues[0]);
-            Logger.info("Sending FetchContainer task " + taskID + " to HBW " + JSON.stringify(taskMessage));
-            this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+            this.sendTask(taskName, taskID,taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
         });
     }
 
-    async handleFetchWBTask(taskID, productID){
+    async handleFetchWBTask(taskID, taskName, productID){
         var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
         Promise.all([
                 ClientUtils.getTaskInputRequest(this.Contract, taskID, "code"),
@@ -120,27 +119,25 @@ class HBWClient{
             ]).then( inputValues => {
                 taskMessage["code"] = parseInt(inputValues[0]);
                 taskMessage["workpiece"] = { id:"", type:inputValues[1], status:"RAW" }
-                Logger.info("Sending FetchContainer task " + taskID + " to HBW " + JSON.stringify(taskMessage));
-                this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+                this.sendTask(taskName, taskID,taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
         });
     }
 
-    async handleStoreContainerTask(taskID, productID){
+    async handleStoreContainerTask(taskID, taskName, productID){
         var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
         Promise.all([
                 ClientUtils.getTaskInputRequest(this.Contract, taskID, "code")
             ]).then( inputValues => {
                 taskMessage["code"] = parseInt(inputValues[0]);
-                Logger.info("Sending StoreContainer task " + taskID + " to HBW " + JSON.stringify(taskMessage));
-                this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+                this.sendTask(taskName, taskID,taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
         });
     }
 
-    async handleStoreWBTask(taskID, productID){
+    async handleStoreWBTask(taskID, taskName, productID){
         var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
         Promise.all([
                 ClientUtils.getTaskInputRequest(this.Contract, taskID, "code"),
@@ -149,11 +146,15 @@ class HBWClient{
             ]).then( inputValues => {
                 taskMessage["code"] = parseInt(inputValues[0]);
                 taskMessage["workpiece"] = { type:inputValues[1], id:inputValues[2], status:"RAW" }
-                Logger.info("Sending StoreWB task " + taskID + " to HBW " + JSON.stringify(taskMessage));
-                this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+                this.sendTask(taskName, taskID,taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
         });
+    }
+
+    sendTask(taskName, taskID, taskMessage,){
+        Logger.info("Sending " + taskName + " " + taskID + " to HBW " + JSON.stringify(taskMessage));
+        this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
     }
 }
 
