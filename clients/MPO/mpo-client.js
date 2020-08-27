@@ -60,15 +60,15 @@ class MPOClient{
             var taskID = message["taskID"];
             var code = message["code"];
 
-            if (code == 1){
-                Logger.info("MPO start processing");
-            }else{
+            if (code == 2){
                 Logger.info("MPO finished processing");
                 this.Contract.methods.finishTask(taskID).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
                     Logger.info("MPO Task " + taskID + " is finished");
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
+            }else{
+                Logger.info("MPO start processing");
             }
         }
     }
@@ -90,21 +90,25 @@ class MPOClient{
             }
 
             if (taskName == "StartProcessing"){
-                this.handleStartProcessingTask(taskID, productID);
+                this.handleStartProcessingTask(taskID, taskName, productID);
             }
         }
     }
 
 
-    async handleStartProcessingTask(taskID, productID){
+    async handleStartProcessingTask(taskID, taskName, productID){
         var taskMessage = ClientUtils.getTaskMessageObject(taskID, productID);
         Promise.all([ClientUtils.getTaskInputRequest(this.Contract, taskID, "code")]).then( inputValues => {
             taskMessage["code"] = parseInt(inputValues[0]);
-            Logger.info("Sending StartProcessing task " + taskID + " to MPO " + JSON.stringify(taskMessage));
-            this.mqttClient.publish(MPOClient.TOPIC_MPO_DO, JSON.stringify(taskMessage));
+            this.sendTask(taskID, taskName, taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
         });
+    }
+
+    sendTask(taskName, taskID, taskMessage,){
+        Logger.info("Sending " + taskName + " " + taskID + " to MPO " + JSON.stringify(taskMessage));
+        this.mqttClient.publish(MPOClient.TOPIC_MPO_DO, JSON.stringify(taskMessage));
     }
 }
 
