@@ -17,7 +17,7 @@ class HBWClient{
     constructor(){}
 
     connect(){
-        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
+        this.mqttClient  = mqtt.connect(process.env.MQTT_FT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
@@ -32,7 +32,7 @@ class HBWClient{
     onMQTTConnect(){
         Logger.info("HBW MQTT client connected");
         this.mqttClient.subscribe(HBWClient.TOPIC_HBW_ACK, {qos: 0});
-        this.mqttClient.subscribe(HBWClient.TOPIC_HBW_STATE, {qos: 0});
+        //this.mqttClient.subscribe(HBWClient.TOPIC_HBW_STATE, {qos: 0});
 
         ContractManager.getWeb3Contract(process.env.NETWORK, "HBW").then( Contract => {
             this.Contract = Contract;

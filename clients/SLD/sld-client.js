@@ -20,7 +20,7 @@ class SLDClient{
     }
 
     connect(){
-        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
+        this.mqttClient  = mqtt.connect(process.env.MQTT_FT);
         this.mqttClient.on("error", () => this.onMQTTError());
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
@@ -35,7 +35,7 @@ class SLDClient{
     onMQTTConnect(){
         Logger.info("SLD MQTT client connected");
         this.mqttClient.subscribe(SLDClient.TOPIC_SLD_ACK, {qos: 0});
-        this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
+        //this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
 
         ContractManager.getWeb3Contract(process.env.NETWORK, "SLD").then( Contract => {
             this.Contract = Contract;
