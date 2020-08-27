@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
-import "../contracts/machines/VGR.sol";
-import "../contracts/machines/HBW.sol";
-import "../contracts/machines/SLD.sol";
-import "../contracts/machines/MPO.sol";
-import "../contracts/setTypes/AddressSet.sol";
+import "../../contracts/machines/VGR.sol";
+import "../../contracts/machines/HBW.sol";
+import "../../contracts/machines/SLD.sol";
+import "../../contracts/machines/MPO.sol";
+import "../../contracts/setTypes/AddressSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
