@@ -2,6 +2,7 @@
 require('dotenv').config()
 
 const SupplyLine = artifacts.require("SupplyLine");
+const ProductionLine = artifacts.require("ProductionLine");
 const HBW = artifacts.require("HBW");
 const VGR = artifacts.require("VGR");
 const MPO = artifacts.require("MPO");
@@ -11,6 +12,7 @@ const MockMachine = artifacts.require("MockMachine");
 module.exports = function(deployer) {
   deployer.then(async () => {
     await deployer.deploy(SupplyLine);
+    await deployer.deploy(ProductionLine);
     await deployer.deploy(VGR, process.env.ADMIN, process.env.VGR);
     await deployer.deploy(HBW, process.env.ADMIN, process.env.HBW);
     await deployer.deploy(MPO, process.env.ADMIN, process.env.MPO);
