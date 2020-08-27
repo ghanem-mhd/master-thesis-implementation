@@ -20,8 +20,8 @@ class SupplyLineClient{
     }
 
     connect(){
-        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
-        this.mqttClient.on("error", () => this.onMQTTError());
+        this.mqttClient  = mqtt.connect(process.env.LOCAL_MQTT);
+        this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
