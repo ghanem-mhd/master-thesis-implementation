@@ -27,6 +27,10 @@ describe('VGR', function () {
         StoredOutputValue2 = await this.VGRContract.getTaskOutput(1, Helper.toHex("color"));
         expect(StoredOutputValue1, "123");
         expect(StoredOutputValue2, "white");
+        StoredProductValue1 = await this.VGRContract.getProductInfo(product, Helper.toHex("id"));
+        StoredProductValue2 = await this.VGRContract.getProductInfo(product, Helper.toHex("color"));
+        expect(StoredProductValue1, "123");
+        expect(StoredProductValue2, "white");
     });
 
     it('should start HBWDrop task with correct input', async function () {
