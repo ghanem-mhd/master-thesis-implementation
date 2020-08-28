@@ -33,7 +33,7 @@ class SupplyLineClient{
     }
 
     onMQTTConnect(){
-        Logger.info("SupplyLine MQTT client connected");
+        Logger.info("SLPClient - MQTT client connected");
 
         this.mqttClient.subscribe(SupplyLineClient.TOPIC_START, {qos: 0});
 
@@ -47,7 +47,7 @@ class SupplyLineClient{
         ];
 
         Promise.all(contractsAsyncGets).then( contracts => {
-            Logger.info("SupplyLine start listening for tasks finish events...");
+            Logger.info("SLPClient - start listening for tasks finish events...");
 
             var VGRContract = contracts[0];
             var HBWContract = contracts[1];
@@ -62,19 +62,15 @@ class SupplyLineClient{
     }
 
     onMQTTClose(){
-        Logger.info("HBW MQTT client disconnected");
+        Logger.info("SLPClient - MQTT client disconnected");
     }
 
     onMQTTMessage(topic, messageBuffer){
-
         var message = JSON.parse(messageBuffer.toString());
-
         if (topic == SupplyLineClient.TOPIC_START){
-
             var productID = message["productID"];
-
             this.supplyLineContract.methods.getInfo(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("SupplyLine started");
+                Logger.info("SLPClient - triggered...");
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -88,7 +84,7 @@ class SupplyLineClient{
             var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
 
             if (taskName == "GetInfo"){
-                this.supplyLineContract.methods.getInfoFinished(taskID, productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyLineContract.methods.getInfoFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
 
                 }).catch(error => {
                     Logger.error(error.stack);
@@ -101,7 +97,6 @@ class SupplyLineClient{
                     Logger.error(error.stack);
                 });
             }
-            Logger.info("Supply line - VGR finished a task");
         }
     }
 
@@ -118,8 +113,6 @@ class SupplyLineClient{
                     Logger.error(error.stack);
                 });
             }
-
-            Logger.info("Supply line - HBW finished a task");
         }
     }
 }

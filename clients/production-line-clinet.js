@@ -36,7 +36,7 @@ class ProductionLineClient{
     }
 
     onMQTTConnect(){
-        Logger.info("ProductionLineClient MQTT client connected");
+        Logger.info("PLPClient - MQTT client connected");
 
         this.mqttClient.subscribe(ProductionLineClient.TOPIC_ORDER, {qos: 0});
 
@@ -54,7 +54,7 @@ class ProductionLineClient{
         ];
 
         Promise.all(contractsAsyncGets).then( contracts => {
-            Logger.info("ProductionLineClient start listening for tasks finish events...");
+            Logger.info("PLPClient - start listening for tasks finish events...");
 
             var VGRContract = contracts[0];
             var HBWContract = contracts[1];
@@ -73,7 +73,7 @@ class ProductionLineClient{
     }
 
     onMQTTClose(){
-        Logger.info("HBW MQTT client disconnected");
+        Logger.info("PLPClient - MQTT client disconnected");
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -82,7 +82,7 @@ class ProductionLineClient{
             var productID = message["productID"];
             var color = message["color"];
             this.productionLineContract.methods.order(productID, color).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("ProductionLine started");
+                Logger.info("PLPClient - triggered...");
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -100,7 +100,6 @@ class ProductionLineClient{
                     Logger.error(error.stack);
                 });
             }
-            Logger.info("ProductionLine - VGR finished a task " + taskName);
         }
     }
 
@@ -115,7 +114,6 @@ class ProductionLineClient{
                     Logger.error(error.stack);
                 });
             }
-            Logger.info("ProductionLine - HBW finished a task " + taskName);
         }
     }
 
@@ -130,7 +128,6 @@ class ProductionLineClient{
                     Logger.error(error.stack);
                 });
             }
-            Logger.info("ProductionLine - MPO finished a task " + taskName);
         }
     }
 
@@ -141,12 +138,11 @@ class ProductionLineClient{
         }else{
             var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
             if (taskName == "StartSorting"){
-                this.productionLineContract.methods.onSortingFinished(taskID, productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.productionLineContract.methods.onSortingFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
             }
-            Logger.info("ProductionLine - SLD finished a task " + taskName);
         }
     }
 }
