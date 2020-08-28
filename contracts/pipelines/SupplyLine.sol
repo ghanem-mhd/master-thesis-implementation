@@ -1,96 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
+import "./Pipeline.sol";
 import "../../contracts/machines/VGR.sol";
 import "../../contracts/machines/HBW.sol";
 import "../../contracts/setTypes/AddressSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SupplyLine is Ownable {
+contract SupplyLine is Pipeline {
 
-    using Counters for Counters.Counter;
-    using AddressSet for AddressSet.Set;
+    enum Machines { VGR, HBW }
 
-
-    address private _VGRContractAddress = address(0);
-    address private _HBWContractAddress = address(0);
-
-
-    struct Product {
-        uint createTime;
-        mapping (bytes32 => string) info;
-        bytes32[] infoNames;
-    }
-    AddressSet.Set private productsIDs;
-    mapping (address => Product) products;
-
-
-    modifier contractsReady(){
-        require(
-            _VGRContractAddress != address(0),
-            "VGR contract address not assigned."
-        );
-        require(
-            _HBWContractAddress != address(0),
-            "HBW contract address not assigned."
-        );
-        _;
+    function setVGRContractAddress(address VGRContractAddress) public {
+        super.setMachineContractAddress(uint(Machines.VGR), VGRContractAddress);
     }
 
-    function setVGRContractAddress(address VGRContractAddress) public onlyOwner {
-        _VGRContractAddress = VGRContractAddress;
+    function setHBWContractAddress(address HBWContractAddress) public {
+        super.setMachineContractAddress(uint(Machines.HBW), HBWContractAddress);
     }
 
-    function setHBWContractAddress(address HBWContractAddress) public onlyOwner {
-        _HBWContractAddress = HBWContractAddress;
+    function getInfo(address productID) public {
+        VGR(getAddress(Machines.VGR)).getInfo(productID);
     }
 
-    function getInfo(address productID) public contractsReady {
-        saveProduct(productID);
-        VGR(_VGRContractAddress).getInfo(productID);
+    function getInfoFinished(address productID) public {
+        HBW(getAddress(Machines.HBW)).fetchContainer(productID);
     }
 
-    function getInfoFinished(uint taskID, address productID) public contractsReady {
-        string memory id    = VGR(_VGRContractAddress).getTaskOutput(taskID, "id");
-        string memory color = VGR(_VGRContractAddress).getTaskOutput(taskID, "color");
-        saveProductInfo(productID, "id", id);
-        saveProductInfo(productID, "color", color);
-        HBW(_HBWContractAddress).fetchContainer(productID);
+    function fetchContainerFinished(address productID) public {
+        VGR(getAddress(Machines.VGR)).dropToHBW(productID);
     }
 
-    function fetchContainerFinished(address productID) public contractsReady {
-        VGR(_VGRContractAddress).dropToHBW(productID);
+    function dropToHBWFinished(address productID) public {
+        string memory id    = VGR(getAddress(Machines.VGR)).getProductInfo(productID, "id");
+        string memory color = VGR(getAddress(Machines.VGR)).getProductInfo(productID, "color");
+        HBW(getAddress(Machines.HBW)).storeWB(productID, id, color);
     }
 
-    function dropToHBWFinished(address productID) public contractsReady {
-        string memory id    = getProductInfo(productID, "id");
-        string memory color = getProductInfo(productID, "color");
-        HBW(_HBWContractAddress).storeWB(productID, id, color);
-    }
-
-    function saveProduct(address productID) internal {
-        require(!productsIDs.exists(productID), "Product already exists.");
-        productsIDs.insert(productID);
-        Product storage product = products[productID];
-        product.createTime = now;
-    }
-
-    function saveProductInfo(address productID, bytes32 infoName, string memory infoValue) internal {
-        require(productsIDs.exists(productID), "Product doesn't exist.");
-        products[productID].info[infoName] = infoValue;
-        products[productID].infoNames.push(infoName);
-    }
-
-    function getProductInfo(address productID, bytes32 infoName) public view returns (string memory){
-        require(productsIDs.exists(productID), "Product doesn't exist.");
-        return (products[productID].info[infoName]);
-    }
-
-    function getProduct(address productID) public view returns(uint, bytes32 [] memory) {
-        require(productsIDs.exists(productID), "Product doesn't exist.");
-        return (products[productID].createTime,
-            products[productID].infoNames
-        );
+    function getAddress(Machines machine) private view returns (address) {
+        return super.getMachineContractAddress(uint(machine));
     }
 }

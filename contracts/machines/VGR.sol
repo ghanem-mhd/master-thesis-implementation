@@ -26,6 +26,8 @@ contract VGR is Machine {
     function finishGetInfo(uint taskID, string memory id, string memory color) public {
         super.saveOutput(taskID, "id", id);
         super.saveOutput(taskID, "color", color);
+        super.saveProductInfo(taskID, "id", id);
+        super.saveProductInfo(taskID, "color", color);
         super.finishTask(taskID);
     }
 

@@ -10,8 +10,4 @@ contract MockPipeline is Pipeline {
     function setMachineContractAddressMock(uint machineID, address machineContractAddress) public {
         super.setMachineContractAddress(machineID, machineContractAddress);
     }
-
-    function newMockInstance() public {
-        super.newInstance();
-    }
 }
