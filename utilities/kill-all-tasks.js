@@ -3,10 +3,9 @@ require("dotenv").config()
 const mqtt = require("mqtt");
 var Web3 = require("web3");
 
-var ProvidersManager = require("../utilities/providers-manager");
-var KeyManager = require("../utilities/keys-manager");
-var ContractManager = require("../utilities/contracts-manager");
-var Logger = require("../utilities/logger");
+var ProvidersManager = require("./providers-manager");
+var ContractManager = require("./contracts-manager");
+var Logger = require("./logger");
 
 
 var provider    = ProvidersManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_MNEMONIC);

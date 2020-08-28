@@ -1,9 +1,9 @@
 require("dotenv").config();
 
-var HBWClient = require("./HBW/hbw-client");
-var VGRClient = require("./VGR/vgr-client");
-var SLDClient = require("./SLD/sld-client");
-var MPOClient = require("./MPO/mpo-client");
+var HBWClient = require("../clients/HBW/hbw-client");
+var VGRClient = require("../clients/VGR/vgr-client");
+var SLDClient = require("../clients/SLD/sld-client");
+var MPOClient = require("../clients/MPO/mpo-client");
 
 for (var i=0; i<process.argv.length;i++) {
     switch (process.argv[i]) {
