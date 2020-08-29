@@ -85,7 +85,6 @@ abstract contract Machine is Ownable {
     mapping (address => uint[]) private productsTasks;
     // map the taskID to the task struct
     mapping (uint => Task) private tasks;
-    uint private currentTaskID = 0;
 
     // Task Eevents
     event NewTask(uint indexed taskID, string taskName, address productID);     // to notifiy the machine to perfome a task
@@ -119,8 +118,6 @@ abstract contract Machine is Ownable {
 
         tasks[taskID].startTimestamp = now;
 
-        currentTaskID = taskID;
-
         emit NewTask(taskID, getTaskName(taskID), tasks[taskID].productID);
     }
 
@@ -129,8 +126,6 @@ abstract contract Machine is Ownable {
         require(tasks[taskID].finishTimestamp == 0, "Task already finished.");
 
         tasks[taskID].finishTimestamp = now;
-
-        currentTaskID = 0;
 
         emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productID);
     }
@@ -271,7 +266,7 @@ abstract contract Machine is Ownable {
         emit NewReading(readingType);
     }
 
-    function newReading(ReadingType readingType, int readingValue) internal onlyMachine returns(uint)  {
+    function saveReading(uint taskID, ReadingType readingType, int readingValue) internal onlyMachine returns(uint)  {
         readingIDCounter.increment();
         uint newReadingID = readingIDCounter.current();
 
@@ -281,9 +276,7 @@ abstract contract Machine is Ownable {
         reading.time = now;
         reading.readingType = readingType;
         reading.readingValue = readingValue;
-        if(currentTaskID != 0){
-            reading.taskID = currentTaskID;
-        }
+        reading.taskID = taskID;
 
         return newReadingID;
     }
@@ -361,9 +354,6 @@ abstract contract Machine is Ownable {
         Status storage status = statuses[newStatusID];
         status.time = now;
         status.encodedStatus = encodedStatus;
-        if(currentTaskID != 0){
-            status.taskID = currentTaskID;
-        }
 
         return newStatusID;
     }
