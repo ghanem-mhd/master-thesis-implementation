@@ -29,11 +29,11 @@ class SLDClient{
     }
 
     onMQTTClose(){
-        Logger.info("SLD MQTT client disconnected");
+        Logger.info("SLDClient - MQTT client disconnected");
     }
 
     onMQTTConnect(){
-        Logger.info("SLD MQTT client connected");
+        Logger.info("SLDClient - MQTT client connected");
         this.mqttClient.subscribe(SLDClient.TOPIC_SLD_ACK, {qos: 0});
         if(process.env.MACHINE_CLIENTS_STATE){
             this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
@@ -57,12 +57,12 @@ class SLDClient{
             if (code == 2){
                 var color = message["type"];
                 this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                    Logger.info("SLDClient Task " + taskID + " is finished");
+                    Logger.info("SLDClient - Task " + taskID + " is finished");
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
             }else{
-                Logger.info("SLDClient start sorting");
+                Logger.info("SLDClient - start sorting");
             }
         }
     }

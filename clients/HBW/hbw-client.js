@@ -27,7 +27,7 @@ class HBWClient{
     }
 
     onMQTTClose(){
-        Logger.info("HBW MQTT client disconnected");
+        Logger.info("HBWClient - MQTT client disconnected");
     }
 
     onMQTTConnect(){

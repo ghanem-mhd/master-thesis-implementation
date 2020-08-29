@@ -27,11 +27,11 @@ class MPOClient {
     }
 
     onMQTTClose(){
-        Logger.info("MPO MQTT client disconnected");
+        Logger.info("MPOClient - MQTT client disconnected");
     }
 
     onMQTTConnect(){
-        Logger.info("MPO MQTT client connected");
+        Logger.info("MPOClient - MQTT client connected");
         this.mqttClient.subscribe(MPOClient.TOPIC_MPO_ACK, {qos: 0});
         if(process.env.MACHINE_CLIENTS_STATE){
             this.mqttClient.subscribe(MPOClient.TOPIC_MPO_STATE, {qos: 0});
@@ -44,7 +44,7 @@ class MPOClient {
     onMQTTMessage(topic, messageBuffer){
         if (topic == MPOClient.TOPIC_MPO_STATE){
             var message = JSON.parse(messageBuffer.toString());
-            Logger.info("MPOClient status: " + messageBuffer.toString());
+            Logger.info("MPOClient - status: " + messageBuffer.toString());
         }
 
         if (topic == MPOClient.TOPIC_MPO_ACK){
@@ -57,7 +57,7 @@ class MPOClient {
             if (code == 2){
                 Logger.info("MPOClient - finished processing");
                 this.Contract.methods.finishTask(taskID).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                    Logger.info("MPO Task " + taskID + " is finished");
+                    Logger.info("MPOClient - Task " + taskID + " is finished");
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
