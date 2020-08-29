@@ -5,7 +5,7 @@ const Helper = require('../utilities/helper')
 
 const MockMachineArtifact = contract.fromArtifact('MockMachine');
 
-describe('MockMachine', function () {
+describe('Machine', function () {
     const [ MachineOwner, machineID, product, anyone, Manufacturer ] = accounts;
 
     beforeEach(async function () {
@@ -143,5 +143,21 @@ describe('MockMachine', function () {
         taskFinishedEvent = await this.MockMachineContract.killTask(1, {from:MachineOwner});
         isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
         expect(isTaskFinished).to.equal(true);
+    });
+
+    it('calling getNewReading should emit NewReading event', async function () {
+        newReadingEvent = await this.MockMachineContract.getNewReading(0, { from : MachineOwner });
+        expectEvent(newReadingEvent, 'NewReading', { readingType: "0"});
+    });
+
+    it('should save/get a reading', async function () {
+        var currentTaskID = 1;
+        var readingType = 0;
+        var readingValue = 25;
+        await this.MockMachineContract.saveMockReading(currentTaskID, readingType, readingValue,  { from : machineID });
+        var savedReading = await this.MockMachineContract.getReading(1);
+        expect(savedReading[1].toString()).to.equal(readingType.toString());
+        expect(savedReading[2].toString()).to.equal(readingValue.toString());
+        expect(savedReading[3].toString()).to.equal(currentTaskID.toString());
     });
 })
