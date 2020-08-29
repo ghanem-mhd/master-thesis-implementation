@@ -2,13 +2,11 @@ require("dotenv").config()
 
 const mqtt = require("mqtt");
 
-var ProvidersManager = require("../utilities/providers-manager");
-var ContractManager = require("../utilities/contracts-manager");
-var Logger = require("../utilities/logger");
-var Helper = require('../utilities/helper');
-var HBWClient = require("./HBW/hbw-client");
-var VGRClient = require("./VGR/vgr-client");
-var ClientUtils = require("./client-utilities");
+var ContractManager = require("../../utilities/contracts-manager");
+var Logger = require("../../utilities/logger");
+var HBWClient = require("../HBW/hbw-client");
+var VGRClient = require("../VGR/vgr-client");
+var ClientUtils = require("../client-utilities");
 
 class SupplyLineClient{
 
