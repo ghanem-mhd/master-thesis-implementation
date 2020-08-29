@@ -49,6 +49,10 @@ abstract contract Machine is Ownable {
         return machineID;
     }
 
+    function getMachineOwner() public view returns(address) {
+        return machineOwner;
+    }
+
     function saveMachineInfo(bytes32 infoName, bytes32 infoValue) public onlyMachineOwner {
         infoNames.insert(infoName);
         info[infoName] = infoValue;
