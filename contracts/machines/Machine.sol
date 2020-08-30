@@ -243,7 +243,7 @@ abstract contract Machine is Ownable {
     }
 
     // Reading Structure
-    enum ReadingType { Temperature, Humidity, AirPressure, AirQuality }
+    enum ReadingType { Temperature, Humidity, AirPressure, GasResistance, Brightness }
     struct Reading{
         uint time;
         ReadingType readingType;
