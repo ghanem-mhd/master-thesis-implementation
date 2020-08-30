@@ -155,6 +155,8 @@ describe('Machine', function () {
         var readingType = 0;
         var readingValue = 25;
         await this.MockMachineContract.saveMockReading(currentTaskID, readingType, readingValue,  { from : machineID });
+        var readingsCount = await this.MockMachineContract.getReadingsCount();
+        expect(readingsCount.toString()).to.equal("1");
         var savedReading = await this.MockMachineContract.getReading(1);
         expect(savedReading[1].toString()).to.equal(readingType.toString());
         expect(savedReading[2].toString()).to.equal(readingValue.toString());

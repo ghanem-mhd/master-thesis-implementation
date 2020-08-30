@@ -290,6 +290,10 @@ abstract contract Machine is Ownable {
         );
     }
 
+    function getReadingsCount() public view returns (uint) {
+        return readingsIds.count();
+    }
+
     // Issues Structure
     struct Issue{
         uint time;
