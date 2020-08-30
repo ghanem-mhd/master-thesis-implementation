@@ -309,11 +309,11 @@ abstract contract Machine is Ownable {
 
     // Issue Events
     // to notifiy someone about the new issue
-    event NewIssue(uint indexed issueID);
+    event NewIssue(uint indexed issueID, string reason);
 
     // Issue Methods
 
-    function newIssue(uint readingID, string memory reason) internal onlyMachine {
+    function saveIssue(uint readingID, string memory reason) internal onlyMachine {
         issueIDCounter.increment();
         uint newIssueID = issueIDCounter.current();
 
@@ -324,7 +324,15 @@ abstract contract Machine is Ownable {
         issue.readingID = readingID;
         issue.reason = reason;
 
-        emit NewIssue(newIssueID);
+        emit NewIssue(newIssueID, reason);
+    }
+
+    function getIssue(uint issueID) public view returns (uint, uint, string memory) {
+        require(issuesIds.exists(issueID), "Issue doesn't exist.");
+        return (issues[issueID].time,
+            issues[issueID].readingID,
+            issues[issueID].reason
+        );
     }
 
     // Status Structure

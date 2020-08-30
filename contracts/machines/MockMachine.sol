@@ -27,6 +27,10 @@ contract MockMachine is Machine {
     }
 
     function saveMockReading(uint taskID, ReadingType readingType, int readingValue) public {
-        super.saveReading(taskID, readingType, readingValue);
+        uint readingID = super.saveReading(taskID, readingType, readingValue);
+
+        if (readingType == ReadingType.Temperature && readingValue > 40) {
+            super.saveIssue(readingID, "critical temperature threshold exceeded");
+        }
     }
 }
