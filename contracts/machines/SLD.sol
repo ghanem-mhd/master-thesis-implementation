@@ -25,4 +25,8 @@ contract SLD is Machine {
         super.saveProductInfo(taskID, "color", color);
         super.finishTask(taskID);
     }
+
+    function saveReadingSLD(uint taskID, ReadingType readingType, int readingValue) public {
+        super.saveReading(taskID, readingType, readingValue);
+    }
 }
