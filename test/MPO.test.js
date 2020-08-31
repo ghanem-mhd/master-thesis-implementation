@@ -13,9 +13,9 @@ describe('MPO', function () {
         await this.MPOContract.authorizeManufacturer(Manufacturer, {from:MPOOwner});
     });
 
-    it('should start StartProcessing task with correct input', async function () {
-        NewTaskEvent = await this.MPOContract.startProcessing(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StartProcessing", productID:product});
+    it('should start Process task with correct input', async function () {
+        NewTaskEvent = await this.MPOContract.process(product, {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Process", productID:product});
         StoredInputValue = await this.MPOContract.getTaskInput(1, Helper.toHex("code"));
         expect(StoredInputValue, "7");
     });

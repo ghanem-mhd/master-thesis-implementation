@@ -40,7 +40,7 @@ contract ProductionLine is Pipeline {
 
     function onMoveHBW2MPOFinished(address productID) public {
         HBW(getAddress(Machines.HBW)).storeContainer(productID);
-        MPO(getAddress(Machines.MPO)).startProcessing(productID);
+        MPO(getAddress(Machines.MPO)).process(productID);
     }
 
     function onProcessingFinished(address productID) public {

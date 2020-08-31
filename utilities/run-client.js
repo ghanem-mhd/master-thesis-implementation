@@ -22,8 +22,9 @@ for (var i=0; i<process.argv.length;i++) {
                 break;
                 case 'MPO':
                     client = new MPOClient();
+                break;
                 case 'R':
-                        client = new ReadingClient();
+                    client = new ReadingClient();
                 break;
             }
             client.connect();

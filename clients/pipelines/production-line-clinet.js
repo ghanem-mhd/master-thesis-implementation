@@ -122,7 +122,7 @@ class ProductionLineClient{
             Logger.error(error);
         }else{
             var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
-            if (taskName == "StartProcessing"){
+            if (taskName == "Process"){
                 this.productionLineContract.methods.onProcessingFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);

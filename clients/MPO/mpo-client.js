@@ -75,14 +75,14 @@ class MPOClient {
                 if (task.isFinished){
                     return;
                 }
-                if (task.taskName == "StartProcessing"){
-                    this.handleStartProcessingTask(task);
+                if (task.taskName == "Process"){
+                    this.handleProcessTask(task);
                 }
             });
         }
     }
 
-    async handleStartProcessingTask(task){
+    async handleProcessTask(task){
         ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
             var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
             taskMessage["code"] = parseInt(inputValues[0]);

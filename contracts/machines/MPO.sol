@@ -5,17 +5,17 @@ import "./Machine.sol";
 
 contract MPO is Machine {
 
-    enum TasksNames { StartProcessing }
+    enum TasksNames { Process }
 
     constructor(address _machineOwner, address _machineID) Machine(_machineOwner, _machineID) public {}
 
     function getTaskName(TasksNames taskName) internal pure returns (string memory) {
         require(uint8(taskName) <= 1);
-        if (TasksNames.StartProcessing == taskName) return "StartProcessing";
+        if (TasksNames.Process == taskName) return "Process";
     }
 
-    function startProcessing(address productID) public {
-        uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.StartProcessing));
+    function process(address productID) public {
+        uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.Process));
         super.saveInput(newTaskID, "code", "7");
         super.startTask(newTaskID);
     }
