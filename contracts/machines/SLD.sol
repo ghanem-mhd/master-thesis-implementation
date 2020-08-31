@@ -27,6 +27,10 @@ contract SLD is Machine {
     }
 
     function saveReadingSLD(uint taskID, ReadingType readingType, int readingValue) public {
-        super.saveReading(taskID, readingType, readingValue);
+        uint readingID = super.saveReading(taskID, readingType, readingValue);
+
+        if (readingType == ReadingType.Brightness && readingValue < 70) {
+            super.saveIssue(readingID, "brightness is too low");
+        }
     }
 }

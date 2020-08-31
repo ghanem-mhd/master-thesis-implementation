@@ -28,4 +28,10 @@ describe('SLD', function () {
         expect(StoredOutputValue, "pink");
         expect(StoredProductInfo, "pink");
     });
+
+    it('should create an issue if brightness below 70 ', async function () {
+        var receipt = await this.SLDContract.saveReadingSLD(0, 4, 66, {from: MachineID});
+        expectEvent(receipt, 'NewIssue', { issueID: "1", reason: "brightness is too low"});
+
+    });
 })
