@@ -11,6 +11,12 @@ module.exports = {
     var productID = event.returnValues["productID"];
     return { taskID, taskName, productID };
   },
+  getReadingType: function (event) {
+    var ReadingTypeMapping = ["t", "h", "p", "gr", "br"];
+    var readingTypeIndex = event.returnValues["readingType"];
+    var readingType = ReadingTypeMapping[readingTypeIndex];
+    return {readingTypeIndex, readingType};
+  },
   getTaskInputRequest: function (machineContract, taskID, inputName) {
     return machineContract.methods.getTaskInput(taskID, Helper.toHex(inputName)).call({})
   },
@@ -36,13 +42,20 @@ module.exports = {
     }).catch(error => {
       Logger.error(clientName + " - Can't connect to the blockchain");
     });
+  }, registerCallbackForNewReadingRequest: function (clientName, contractName, readingRequestCallback) {
+    ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
+      Contract.events.NewReading({ fromBlock: "latest" }, readingRequestCallback);
+      Logger.info(clientName + " - Started listening for reading requests...");
+    }).catch(error => {
+      Logger.error(clientName + " - Can't connect to the blockchain");
+    });
   }, getTask(clientName, event, contract) {
     return new Promise(function (resolve, reject) {
       var { taskID, taskName, productID } = module.exports.getTaskInfo(event);
       var task = {
-        "taskID" : taskID,
-        "taskName" : taskName,
-        "productID" : productID
+        "taskID": taskID,
+        "taskName": taskName,
+        "productID": productID
       }
       contract.methods.isTaskFinished(taskID).call({}).then(isFinished => {
         if (isFinished) {

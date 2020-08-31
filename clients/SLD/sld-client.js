@@ -6,7 +6,7 @@ var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
 var Helper = require("../../utilities/helper");
 var ClientUtils = require("../client-utilities");
-
+var ReadingsClient = require("../readings-client")
 class SLDClient{
 
     static TOPIC_SLD_STATE = "f/i/state/sld"
@@ -21,6 +21,9 @@ class SLDClient{
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
+        this.readingsClient = new ReadingsClient();
+        this.readingsClient.connect();
+        this.currentTaskID = 0;
     }
 
     onMQTTError(error) {
@@ -41,6 +44,7 @@ class SLDClient{
         ClientUtils.registerCallbackForNewTasks("SLDClient", "SLD", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
         });
+        ClientUtils.registerCallbackForNewReadingRequest("SLDClient", "SLD", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -58,6 +62,7 @@ class SLDClient{
                 var color = message["type"];
                 this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
                     Logger.info("SLDClient - Task " + taskID + " is finished");
+                    this.currentTaskID = 0;
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -75,9 +80,24 @@ class SLDClient{
                 if (task.isFinished){
                     return;
                 }
+                this.currentTaskID = task.taskID;
                 if (task.taskName == "StartSorting"){
                     this.handleStartSortingTask(task);
                 }
+            });
+        }
+    }
+
+    async onNewReadingRequest(error, event) {
+        if (error){
+            Logger.error(error);
+        }else{
+            var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
+            var readingValue = this.readingsClient.getRecentReading(readingType);
+            this.Contract.methods.saveReadingSLD(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.info("SLDClient - new reading has been saved");
+            }).catch(error => {
+                Logger.error(error.stack);
             });
         }
     }

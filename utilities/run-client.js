@@ -4,6 +4,7 @@ var HBWClient = require("../clients/HBW/hbw-client");
 var VGRClient = require("../clients/VGR/vgr-client");
 var SLDClient = require("../clients/SLD/sld-client");
 var MPOClient = require("../clients/MPO/mpo-client");
+var ReadingClient = require("../clients/readings-client");
 
 for (var i=0; i<process.argv.length;i++) {
     switch (process.argv[i]) {
@@ -21,6 +22,8 @@ for (var i=0; i<process.argv.length;i++) {
                 break;
                 case 'MPO':
                     client = new MPOClient();
+                case 'R':
+                        client = new ReadingClient();
                 break;
             }
             client.connect();
