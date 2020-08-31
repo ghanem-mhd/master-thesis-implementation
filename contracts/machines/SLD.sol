@@ -5,17 +5,17 @@ import "./Machine.sol";
 
 contract SLD is Machine {
 
-    enum TasksNames { StartSorting }
+    enum TasksNames { Sort }
 
     constructor(address _machineOwner, address _machineID) Machine(_machineOwner, _machineID) public {}
 
     function getTaskName(TasksNames taskName) internal pure returns (string memory) {
         require(uint8(taskName) <= 1);
-        if (TasksNames.StartSorting == taskName) return "StartSorting";
+        if (TasksNames.Sort == taskName) return "Sort";
     }
 
-    function startSorting(address productID) public {
-        uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.StartSorting));
+    function sort(address productID) public {
+        uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.Sort));
         super.saveInput(newTaskID, "code", "8");
         super.startTask(newTaskID);
     }

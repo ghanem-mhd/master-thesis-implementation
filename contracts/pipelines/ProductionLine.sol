@@ -44,7 +44,7 @@ contract ProductionLine is Pipeline {
     }
 
     function onProcessingFinished(address productID) public {
-        SLD(getAddress(Machines.SLD)).startSorting(productID);
+        SLD(getAddress(Machines.SLD)).sort(productID);
     }
 
     function onSortingFinished(address productID) public {

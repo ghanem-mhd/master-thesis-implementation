@@ -13,15 +13,15 @@ describe('SLD', function () {
         await this.SLDContract.authorizeManufacturer(Manufacturer, {from:SLDOwner});
     });
 
-    it('should start StartSorting task with correct input', async function () {
-        NewTaskEvent = await this.SLDContract.startSorting(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StartSorting", productID:product});
+    it('should start Sort task with correct input', async function () {
+        NewTaskEvent = await this.SLDContract.sort(product, {from:Manufacturer});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Sort", productID:product});
         StoredInputValue = await this.SLDContract.getTaskInput(1, Helper.toHex("code"));
         expect(StoredInputValue, "8");
     });
 
-    it('should save the output of the StartSorting task', async function () {
-        await this.SLDContract.startSorting(product, {from:Manufacturer});
+    it('should save the output of the Sort task', async function () {
+        await this.SLDContract.sort(product, {from:Manufacturer});
         await this.SLDContract.finishSorting(1, "pink", {from: MachineID});
         StoredOutputValue = await this.SLDContract.getTaskOutput(1, Helper.toHex("color"));
         StoredProductInfo = await this.SLDContract.getProductInfo(product, Helper.toHex("color"));

@@ -81,8 +81,8 @@ class SLDClient{
                     return;
                 }
                 this.currentTaskID = task.taskID;
-                if (task.taskName == "StartSorting"){
-                    this.handleStartSortingTask(task);
+                if (task.taskName == "Sort"){
+                    this.handleSortTask(task);
                 }
             });
         }
@@ -102,7 +102,7 @@ class SLDClient{
         }
     }
 
-    async handleStartSortingTask(task){
+    async handleSortTask(task){
         ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
             var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
             taskMessage["code"] = parseInt(inputValues[0]);
