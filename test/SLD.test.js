@@ -16,8 +16,6 @@ describe('SLD', function () {
     it('should start Sort task with correct input', async function () {
         NewTaskEvent = await this.SLDContract.sort(product, {from:Manufacturer});
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Sort", productID:product});
-        StoredInputValue = await this.SLDContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "8");
     });
 
     it('should save the output of the Sort task', async function () {

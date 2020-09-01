@@ -91,9 +91,14 @@ class HBWClient{
     }
 
     async handleFetchContainerTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
+        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 1);
+        this.sendTask(task.taskID, task.taskName, taskMessage);
+    }
+
+    async handleStoreWBTask(task){
+        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["color","id"]).then( inputValues => {
+            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 2);
+            taskMessage["workpiece"] = { type:inputValues[0], id:inputValues[1], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
@@ -101,10 +106,9 @@ class HBWClient{
     }
 
     async handleFetchWBTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code", "color"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            taskMessage["workpiece"] = { id:"", type:inputValues[1], status:"RAW" }
+        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["color"]).then( inputValues => {
+            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 3);
+            taskMessage["workpiece"] = { id:"", type:inputValues[0], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
@@ -112,24 +116,8 @@ class HBWClient{
     }
 
     async handleStoreContainerTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            this.sendTask(task.taskID, task.taskName, taskMessage);
-        }).catch( error => {
-            Logger.error(error.stack);
-        });
-    }
-
-    async handleStoreWBTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code","color","id"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            taskMessage["workpiece"] = { type:inputValues[1], id:inputValues[2], status:"RAW" }
-            this.sendTask(task.taskID, task.taskName, taskMessage);
-        }).catch( error => {
-            Logger.error(error.stack);
-        });
+        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 4);
+        this.sendTask(task.taskID, task.taskName, taskMessage);
     }
 
     sendTask(taskID, taskName, taskMessage,){

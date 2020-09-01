@@ -83,13 +83,8 @@ class MPOClient {
     }
 
     async handleProcessTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            this.sendTask(task.taskID, task.taskName, taskMessage);
-        }).catch( error => {
-            Logger.error(error.stack);
-        });
+        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 7);
+        this.sendTask(task.taskID, task.taskName, taskMessage);
     }
 
     sendTask(taskID, taskName, taskMessage,){

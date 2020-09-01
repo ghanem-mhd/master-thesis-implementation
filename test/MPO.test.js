@@ -16,7 +16,5 @@ describe('MPO', function () {
     it('should start Process task with correct input', async function () {
         NewTaskEvent = await this.MPOContract.process(product, {from:Manufacturer});
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Process", productID:product});
-        StoredInputValue = await this.MPOContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "7");
     });
 })

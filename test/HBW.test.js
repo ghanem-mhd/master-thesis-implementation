@@ -16,15 +16,11 @@ describe('HBW', function () {
     it('should start FetchContainer task with correct input', async function () {
         NewTaskEvent = await this.HBWContract.fetchContainer(product, {from:Manufacturer});
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "FetchContainer", productID:product});
-        StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "1");
     });
 
     it('should start StoreContainer task with correct input', async function () {
         NewTaskEvent = await this.HBWContract.storeContainer(product, {from:Manufacturer});
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StoreContainer", productID:product});
-        StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "4");
     });
 
     it('should start StoreWB task with correct input', async function () {
@@ -32,8 +28,6 @@ describe('HBW', function () {
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StoreWB", productID:product});
         StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("id"));
         expect(StoredInputValue, "123");
-        StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "2");
         StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("color"));
         expect(StoredInputValue, "orange");
     });
@@ -41,8 +35,6 @@ describe('HBW', function () {
     it('should start FetchWB task with correct input', async function () {
         NewTaskEvent = await this.HBWContract.fetchWB(product, "orange", {from:Manufacturer});
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "FetchWB", productID:product});
-        StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("code"));
-        expect(StoredInputValue, "3");
         StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("color"));
         expect(StoredInputValue, "orange");
     });

@@ -19,28 +19,24 @@ contract HBW is Machine {
 
     function fetchContainer(address productID) public {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.FetchContainer));
-        super.saveInput(newTaskID, "code", "1");
         super.startTask(newTaskID);
     }
 
     function storeWB(address productID, string memory id, string memory color) public {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.StoreWB));
         super.saveInput(newTaskID, "id", id);
-        super.saveInput(newTaskID, "code", "2");
         super.saveInput(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
 
     function fetchWB(address productID, string memory color) public {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.FetchWB));
-        super.saveInput(newTaskID, "code", "3");
         super.saveInput(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
 
     function storeContainer(address productID) public {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.StoreContainer));
-        super.saveInput(newTaskID, "code", "4");
         super.startTask(newTaskID);
     }
 }

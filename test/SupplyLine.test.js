@@ -40,7 +40,7 @@ describe("SupplyLine", function () {
         await this.SupplyLineContract.dropToHBWFinished(product , {from:Admin});
         receipt = await this.HBWContract.getTask(2);
         expect(receipt[1]).to.equal("StoreWB");
-        expect(receipt[4]).to.deep.equal([helper.toHex("id"), helper.toHex("code"), helper.toHex("color")]);
+        expect(receipt[4]).to.deep.equal([helper.toHex("id"), helper.toHex("color")]);
         receipt = await this.HBWContract.getTaskInput(2, helper.toHex("id"));
         expect(receipt).to.equal("1234");
         receipt = await this.HBWContract.getTaskInput(2, helper.toHex("color"));

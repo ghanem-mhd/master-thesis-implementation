@@ -20,11 +20,12 @@ module.exports = {
   getTaskInputRequest: function (machineContract, taskID, inputName) {
     return machineContract.methods.getTaskInput(taskID, Helper.toHex(inputName)).call({})
   },
-  getTaskMessageObject: function (taskID, productID) {
+  getTaskMessageObject: function (taskID, productID, code) {
     var taskMessage = {}
     taskMessage["productID"] = String(productID);
     taskMessage["taskID"] = parseInt(taskID);
     taskMessage["ts"] = new Date().toISOString();
+    taskMessage["code"] = code;
     return taskMessage;
   },
   getTaskInputs: function (machineContract, taskID, inputsNames) {

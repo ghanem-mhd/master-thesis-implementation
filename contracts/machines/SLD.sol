@@ -16,7 +16,6 @@ contract SLD is Machine {
 
     function sort(address productID) public {
         uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.Sort));
-        super.saveInput(newTaskID, "code", "8");
         super.startTask(newTaskID);
     }
 

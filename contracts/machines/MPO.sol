@@ -16,7 +16,6 @@ contract MPO is Machine {
 
     function process(address productID) public {
         uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.Process));
-        super.saveInput(newTaskID, "code", "7");
         super.startTask(newTaskID);
     }
 

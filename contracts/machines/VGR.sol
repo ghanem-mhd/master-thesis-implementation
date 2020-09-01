@@ -19,7 +19,6 @@ contract VGR is Machine {
 
     function getInfo(address productID) public {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.GetInfo));
-        super.saveInput(newTaskID, "code", "1");
         super.startTask(newTaskID);
     }
 
@@ -31,20 +30,17 @@ contract VGR is Machine {
 
     function dropToHBW(address productID) public{
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.DropToHBW));
-        super.saveInput(newTaskID, "code", "2");
         super.startTask(newTaskID);
     }
 
     function moveHBW2MPO(address productID) public{
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.MoveHBW2MPO));
-        super.saveInput(newTaskID, "code", "5");
         super.startTask(newTaskID);
     }
 
     function pickSorted(address productID, string memory color) public{
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.PickSorted));
         super.saveInput(newTaskID, "color", color);
-        super.saveInput(newTaskID, "code", "4");
         super.startTask(newTaskID);
     }
 }

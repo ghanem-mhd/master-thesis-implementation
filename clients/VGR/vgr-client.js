@@ -108,40 +108,24 @@ class VGRClient{
     }
 
     async handleGetInfoTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            this.sendTask(task.taskID, task.taskName, taskMessage);
-        }).catch( error => {
-            Logger.error(error.stack);
-        });
+        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 1);
+        this.sendTask(task.taskID, task.taskName, taskMessage);
     }
 
     async handleDropToHBWTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            this.sendTask(task.taskID, task.taskName, taskMessage);
-        }).catch( error => {
-            Logger.error(error.stack);
-        });
+        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 2);
+        this.sendTask(task.taskID, task.taskName, taskMessage);
     }
 
     async handleMoveHBW2MPOTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            this.sendTask(task.taskID, task.taskName, taskMessage);
-        }).catch( error => {
-            Logger.error(error.stack);
-        });
+        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 5);
+        this.sendTask(task.taskID, task.taskName, taskMessage);
     }
 
     async handlePickSortedTask(task){
-        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["code","color"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID);
-            taskMessage["code"] = parseInt(inputValues[0]);
-            taskMessage["type"] = inputValues[1];
+        ClientUtils.getTaskInputs(this.Contract, task.taskID, ["color"]).then( inputValues => {
+            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 4);
+            taskMessage["type"] = inputValues[0];
             this.sendTask(task.taskID, task.taskName, taskMessage);
         }).catch( error => {
             Logger.error(error.stack);
