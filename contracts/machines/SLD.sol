@@ -21,7 +21,6 @@ contract SLD is Machine {
     }
 
     function finishSorting(uint taskID, string memory color) public {
-        super.saveOutput(taskID, "color", color);
         super.saveProductInfo(taskID, "color", color);
         super.finishTask(taskID);
     }

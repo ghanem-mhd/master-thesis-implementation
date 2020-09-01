@@ -74,8 +74,6 @@ abstract contract Machine is Ownable {
         uint finishTimestamp;
         mapping (bytes32 => string) inputs;
         bytes32[] inputsNames;
-        mapping (bytes32 => string) outputs;
-        bytes32[] outputsNames;
     }
     // counter to generate new task id
     Counters.Counter private taskIDCounter;
@@ -143,12 +141,6 @@ abstract contract Machine is Ownable {
         tasks[taskID].inputsNames.push(inputName);
     }
 
-    function saveOutput(uint taskID, bytes32 outputName, string memory outputValue) public onlyMachine {
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
-        tasks[taskID].outputs[outputName] = outputValue;
-        tasks[taskID].outputsNames.push(outputName);
-    }
-
     function isTaskFinished(uint taskID) public view returns(bool){
         require(tasksIds.exists(taskID), "Task doesn't exist.");
         if (tasks[taskID].finishTimestamp != 0 || tasks[taskID].finishTimestamp == 1){
@@ -168,19 +160,13 @@ abstract contract Machine is Ownable {
         return (tasks[taskID].inputs[inputName]);
     }
 
-    function getTaskOutput(uint taskID, bytes32 outputName) public view returns (string memory){
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
-        return (tasks[taskID].outputs[outputName]);
-    }
-
-    function getTask(uint taskID) public view returns(address, string memory, uint, uint, bytes32 [] memory, bytes32 [] memory){
+    function getTask(uint taskID) public view returns(address, string memory, uint, uint, bytes32 [] memory){
         require(tasksIds.exists(taskID), "Task doesn't exist.");
         return (tasks[taskID].productID,
             tasks[taskID].taskName,
             tasks[taskID].startTimestamp,
             tasks[taskID].finishTimestamp,
-            tasks[taskID].inputsNames,
-            tasks[taskID].outputsNames
+            tasks[taskID].inputsNames
         );
     }
 

@@ -73,14 +73,12 @@ describe('Machine', function () {
         expect(savedTask[0]).to.equal(constants.ZERO_ADDRESS);
         expect(savedTask[1]).to.equal("task1");
         expect(savedTask[4]).to.deep.equal([ Helper.toHex("taskInput")]);
-        expect(savedTask[5]).to.deep.equal([]);
 
         receipt = await this.MockMachineContract.createTaskWithProduct(product, "task2", {from:Manufacturer});
         savedTask = await this.MockMachineContract.getTask(2);
         expect(savedTask[0]).to.equal(product);
         expect(savedTask[1]).to.equal("task2");
         expect(savedTask[4]).to.deep.equal([]);
-        expect(savedTask[5]).to.deep.equal([]);
     });
 
     it('should save task input', async function () {
@@ -90,12 +88,6 @@ describe('Machine', function () {
         expect(saveInput).to.equal("inputValue");
     });
 
-    it('should save task output', async function () {
-        await this.MockMachineContract.createTaskWithoutProduct("task1", { from : Manufacturer });
-        await this.MockMachineContract.saveOutput(1, Helper.toHex("outputName"), "outputValue",  { from : machineID });
-        saveOutput = await this.MockMachineContract.getTaskOutput(1, Helper.toHex("outputName"));
-        expect(saveOutput).to.equal("outputValue");
-    });
 
     it('should get task name', async function () {
         await this.MockMachineContract.createTaskWithoutProduct("task1", { from : Manufacturer });
@@ -113,18 +105,6 @@ describe('Machine', function () {
         await this.MockMachineContract.createTaskWithoutProduct("task1", { from : Manufacturer });
         receipt = this.MockMachineContract.finishTask(1, {from:anyone});
         await expectRevert(receipt, "Only machine can call this function.");
-    });
-
-    it('should save task output while finishing the task', async function () {
-        await this.MockMachineContract.createTaskWithoutProduct("taskWithOutput", { from : Manufacturer });
-        await this.MockMachineContract.finishTheTask(1, "outputValue", { from : machineID });
-        savedTask = await this.MockMachineContract.getTask(1);
-        expect(savedTask[0]).to.equal(constants.ZERO_ADDRESS);
-        expect(savedTask[1]).to.equal("taskWithOutput");
-        expect(savedTask[4]).to.deep.equal([ Helper.toHex("taskInput")]);
-        expect(savedTask[5]).to.deep.equal([ Helper.toHex("taskOutput")]);
-        savedOutput = await this.MockMachineContract.getTaskOutput(1, Helper.toHex("taskOutput"), { from : machineID });
-        expect(savedOutput).to.equal("outputValue");
     });
 
     it('should give task status', async function () {

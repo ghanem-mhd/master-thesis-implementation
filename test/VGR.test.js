@@ -23,16 +23,11 @@ describe('VGR', function () {
     it('should save output of the GetInfo task', async function () {
         await this.VGRContract.getInfo(product, {from:Manufacturer});
         await this.VGRContract.finishGetInfo(1, "123", "white", {from: MachineID});
-        StoredOutputValue1 = await this.VGRContract.getTaskOutput(1, Helper.toHex("id"));
-        StoredOutputValue2 = await this.VGRContract.getTaskOutput(1, Helper.toHex("color"));
-        expect(StoredOutputValue1, "123");
-        expect(StoredOutputValue2, "white");
         StoredProductValue1 = await this.VGRContract.getProductInfo(product, Helper.toHex("id"));
         StoredProductValue2 = await this.VGRContract.getProductInfo(product, Helper.toHex("color"));
         expect(StoredProductValue1, "123");
         expect(StoredProductValue2, "white");
     });
-
     it('should start HBWDrop task with correct input', async function () {
         NewTaskEvent = await this.VGRContract.dropToHBW(product, {from:Manufacturer});
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "DropToHBW", productID:product});
