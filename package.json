@@ -7,7 +7,10 @@
   },
   "scripts": {
     "test": "oz compile && mocha --exit --recursive test",
-    "test-mini": "oz compile && mocha -g 'VGR' --exit --recursive test"
+    "test-mini": "oz compile && mocha -g 'VGR' --exit --recursive test",
+    "pro": "node ./clients/pipelines/production-line-client.js",
+    "sub": "node ./clients/pipelines/supply-line-client.js",
+    "machine": "node ./utilities/run-client.js machine"
   },
   "author": "Mohammad Ghanem",
   "license": "ISC",
