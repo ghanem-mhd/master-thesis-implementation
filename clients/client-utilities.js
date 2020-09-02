@@ -72,5 +72,12 @@ module.exports = {
         reject(error);
       });
     });
-  }
+  },
+  getOrderStateMessage: function (state, type) {
+    var message = {}
+    message["type"] = String(type);
+    message["state"] = String(state);
+    message["ts"] = new Date().toISOString();
+    return message;
+  },
 }

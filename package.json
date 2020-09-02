@@ -19,6 +19,7 @@
     "@truffle/hdwallet-provider": "^1.0.38",
     "did-jwt": "^4.3.4",
     "dotenv": "^8.2.0",
+    "ethereumjs-wallet": "^1.0.0",
     "ethers": "^4.0.47",
     "ethr-did-resolver": "^2.2.0",
     "keythereum": "^1.0.4",

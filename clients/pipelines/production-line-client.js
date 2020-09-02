@@ -10,10 +10,17 @@ var VGRClient = require("../VGR/vgr-client");
 var SLDClient = require("../SLD/sld-client");
 var MPOClient = require("../MPO/mpo-client");
 var ClientUtils = require("../client-utilities");
+var Wallet      = require("ethereumjs-wallet");
 
 class ProductionLineClient{
 
-    static TOPIC_ORDER = "fl/production/order"
+    //ORDERED
+    //IN_PROCESS
+    //SHIPPED
+    //WAITING_FOR_ORDER
+
+    static TOPIC_ORDER = "f/o/order"
+    static TOPIC_ORDER_STATUS = "f/i/order"
 
     constructor(){
         this.hbwClient  = new HBWClient();
@@ -23,11 +30,13 @@ class ProductionLineClient{
     }
 
     connect(){
-        this.mqttClient  = mqtt.connect(process.env.LOCAL_MQTT);
+        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
+
+        this.publishOrderState("WAITING_FOR_ORDER", "");
     }
 
     onMQTTError(error) {
@@ -79,8 +88,13 @@ class ProductionLineClient{
     onMQTTMessage(topic, messageBuffer){
         var message = JSON.parse(messageBuffer.toString());
         if (topic == ProductionLineClient.TOPIC_ORDER){
-            var productID = message["productID"];
-            var color = message["color"];
+
+            this.orderColor  = message["type"];
+            var productID   = Wallet.default.generate().getAddressString();
+            var color       = message["type"];
+
+            this.publishOrderState("ORDERED", this.orderColor);
+
             this.productionLineContract.methods.order(productID, color).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.info("PLPClient - triggered...");
             }).catch(error => {
@@ -95,10 +109,16 @@ class ProductionLineClient{
         }else{
             var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
             if (taskName == "MoveHBW2MPO"){
+                this.publishOrderState("IN_PROCESS", this.orderColor);
                 this.productionLineContract.methods.onMoveHBW2MPOFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
+            }
+
+            if (taskName == "PickSorted"){
+                this.publishOrderState("SHIPPED", this.orderColor);
+                setTimeout(() => this.publishOrderState("WAITING_FOR_ORDER",""), 5000);
             }
         }
     }
@@ -144,6 +164,11 @@ class ProductionLineClient{
                 });
             }
         }
+    }
+
+    async publishOrderState(state, color){
+        var message = ClientUtils.getOrderStateMessage(state, color);
+        this.mqttClient.publish(ProductionLineClient.TOPIC_ORDER_STATUS, JSON.stringify(message));
     }
 }
 
