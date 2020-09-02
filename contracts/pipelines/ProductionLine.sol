@@ -48,7 +48,7 @@ contract ProductionLine is Pipeline {
     }
 
     function onSortingFinished(address productID) public {
-        string memory color = SLD(getAddress(Machines.SLD)).getProductInfo(productID, "color");
+        string memory color = SLD(getAddress(Machines.SLD)).getProductOperationValue(productID, "ColorDetection");
         VGR(getAddress(Machines.VGR)).pickSorted(productID, color);
     }
 

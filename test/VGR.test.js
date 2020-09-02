@@ -21,8 +21,10 @@ describe('VGR', function () {
     it('should save output of the GetInfo task', async function () {
         await this.VGRContract.getInfo(product, {from:Manufacturer});
         await this.VGRContract.finishGetInfo(1, "123", "white", {from: MachineID});
-        StoredProductValue1 = await this.VGRContract.getProductInfo(product, Helper.toHex("id"));
-        StoredProductValue2 = await this.VGRContract.getProductInfo(product, Helper.toHex("color"));
+        StoredProductOperations = await this.VGRContract.getProductOperations(product);
+        expect(StoredProductOperations).to.deep.equal([ Helper.toHex("NFCTagReading"),Helper.toHex("ColorDetection")]);
+        StoredProductValue1 = await this.VGRContract.getProductOperationValue(product, Helper.toHex("NFCTagReading"));
+        StoredProductValue2 = await this.VGRContract.getProductOperationValue(product, Helper.toHex("ColorDetection"));
         expect(StoredProductValue1, "123");
         expect(StoredProductValue2, "white");
     });

@@ -22,9 +22,10 @@ contract VGR is Machine {
         super.startTask(newTaskID);
     }
 
-    function finishGetInfo(uint taskID, string memory id, string memory color) public {
-        super.saveProductInfo(taskID, "id", id);
-        super.saveProductInfo(taskID, "color", color);
+    function finishGetInfo(uint taskID, string memory nfcTag, string memory color) public {
+        address productID = super.getProductID(taskID);
+        super.saveProductOperation(productID, "NFCTagReading", nfcTag);
+        super.saveProductOperation(productID, "ColorDetection", color);
         super.finishTask(taskID);
     }
 

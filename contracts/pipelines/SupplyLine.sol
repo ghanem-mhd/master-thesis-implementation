@@ -33,8 +33,8 @@ contract SupplyLine is Pipeline {
     }
 
     function dropToHBWFinished(address productID) public {
-        string memory id    = VGR(getAddress(Machines.VGR)).getProductInfo(productID, "id");
-        string memory color = VGR(getAddress(Machines.VGR)).getProductInfo(productID, "color");
+        string memory id    = VGR(getAddress(Machines.VGR)).getProductOperationValue(productID, "NFCTagReading");
+        string memory color = VGR(getAddress(Machines.VGR)).getProductOperationValue(productID, "ColorDetection");
         HBW(getAddress(Machines.HBW)).storeWB(productID, id, color);
     }
 

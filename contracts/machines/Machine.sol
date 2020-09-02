@@ -178,49 +178,30 @@ abstract contract Machine is Ownable {
         return productsTasks[productID];
     }
 
-    // Product Structure
-    enum ProductStatus {Pending, Done}
-    struct Product {
-        ProductStatus status;
-        mapping (bytes32 => string) info;
-        bytes32[] infoNames;
-    }
+    // Product Operations Structure
     AddressSet.Set private productsIDs;
-    mapping (address => Product) products;
+    mapping (address => mapping (bytes32 => string)) productsOperations;
+    mapping (address => bytes32[]) operationsNames;
 
     // Product Methods
     function saveProduct(address productID) internal {
         require(!productsIDs.exists(productID), "Product already exists.");
         productsIDs.insert(productID);
-        Product storage product = products[productID];
-        product.status = ProductStatus.Pending;
     }
 
-    function saveProductInfo(uint taskID, bytes32 infoName, string memory infoValue) internal {
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
-        address productID = tasks[taskID].productID;
+    function saveProductOperation(address productID, bytes32 operationName, string memory operationValue) internal {
         require(productsIDs.exists(productID), "Product doesn't exist.");
-        products[productID].info[infoName] = infoValue;
-        products[productID].infoNames.push(infoName);
+        productsOperations[productID][operationName] = operationValue;
+        operationsNames[productID].push(operationName);
     }
 
-    function getProductInfo(address productID, bytes32 infoName) public view returns (string memory){
+    function getProductOperationValue(address productID, bytes32 operationName) public view returns (string memory){
         require(productsIDs.exists(productID), "Product doesn't exist.");
-        return (products[productID].info[infoName]);
+        return (productsOperations[productID][operationName]);
     }
 
-    function getProductInfo(uint taskID, bytes32 infoName) public view returns (string memory){
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
-        address productID = tasks[taskID].productID;
-        require(productsIDs.exists(productID), "Product doesn't exist.");
-        return (products[productID].info[infoName]);
-    }
-
-    function getProduct(address productID) public view returns(ProductStatus, bytes32 [] memory) {
-        require(productsIDs.exists(productID), "Product doesn't exist.");
-        return (products[productID].status,
-            products[productID].infoNames
-        );
+    function getProductOperations(address productID) public view returns(bytes32 [] memory) {
+        return (operationsNames[productID]);
     }
 
     function getProductID(uint taskID) public view returns (address){

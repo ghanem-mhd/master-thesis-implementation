@@ -45,12 +45,6 @@ describe('Machine', function () {
         expect(tasksCount.toString()).to.equal("1");
     });
 
-    it('create a task should save an empty product', async function () {
-        await this.MockMachineContract.createTaskWithProduct(product, "someTaskName", {from:Manufacturer});
-        savedProduct = await this.MockMachineContract.getProduct(product);
-        expect(savedProduct[1]).to.deep.equal([]);
-    });
-
     it('create a task should not save product twice', async function () {
         await this.MockMachineContract.createTaskWithProduct(product, "someTaskName", {from:Manufacturer});
         await this.MockMachineContract.createTaskWithProduct(product, "someTaskName", {from:Manufacturer});

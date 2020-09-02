@@ -18,16 +18,18 @@ describe('SLD', function () {
         expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Sort", productID:product});
     });
 
-    it('should save the output of the Sort task', async function () {
+    it('should save the operation of the Sort task', async function () {
         await this.SLDContract.sort(product, {from:Manufacturer});
         await this.SLDContract.finishSorting(1, "pink", {from: MachineID});
-        StoredProductInfo = await this.SLDContract.getProductInfo(product, Helper.toHex("color"));
-        expect(StoredProductInfo, "pink");
+        StoredProductOperations = await this.SLDContract.getProductOperations(product);
+        expect(StoredProductOperations).to.deep.equal([ Helper.toHex("ColorDetection")]);
+        StoredProductOperation = await this.SLDContract.getProductOperationValue(product, Helper.toHex("ColorDetection"));
+        expect(StoredProductOperation, "pink");
+
     });
 
     it('should create an issue if brightness below 70 ', async function () {
         var receipt = await this.SLDContract.saveReadingSLD(0, 4, 66, {from: MachineID});
         expectEvent(receipt, 'NewIssue', { issueID: "1", reason: "brightness is too low"});
-
     });
 })
