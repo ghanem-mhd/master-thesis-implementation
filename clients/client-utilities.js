@@ -50,6 +50,13 @@ module.exports = {
     }).catch(error => {
       Logger.error(clientName + " - Can't connect to the blockchain");
     });
+  }, registerCallbackForNewIssue: function (clientName, contractName, readingRequestCallback) {
+    ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
+      Contract.events.NewIssue({ fromBlock: "latest" }, readingRequestCallback);
+      Logger.info(clientName + " - Started listening for new issues...");
+    }).catch(error => {
+      Logger.error(clientName + " - Can't connect to the blockchain");
+    });
   }, getTask(clientName, event, contract) {
     return new Promise(function (resolve, reject) {
       var { taskID, taskName, productID } = module.exports.getTaskInfo(event);
@@ -80,4 +87,10 @@ module.exports = {
     message["ts"] = new Date().toISOString();
     return message;
   },
+  getSoundMessage: function (code) {
+    var message = {}
+    message["code"] = code
+    message["ts"] = new Date().toISOString();
+    return message;
+  }
 }

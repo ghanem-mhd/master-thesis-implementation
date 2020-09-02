@@ -12,6 +12,7 @@ class SLDClient{
     static TOPIC_SLD_STATE = "f/i/state/sld"
     static TOPIC_SLD_ACK   = "fl/sld/ack"
     static TOPIC_SLD_DO    = "fl/sld/do"
+    static TOPIC_SLD_S     = "fl/sld/sound"
 
     constructor(){}
 
@@ -45,6 +46,7 @@ class SLDClient{
             this.Contract = Contract;
         });
         ClientUtils.registerCallbackForNewReadingRequest("SLDClient", "SLD", (error, event) => this.onNewReadingRequest(error, event));
+        ClientUtils.registerCallbackForNewIssue("SLDClient", "SLD", (error, event) => this.onNewIssue(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -99,6 +101,16 @@ class SLDClient{
             }).catch(error => {
                 Logger.error(error.stack);
             });
+        }
+    }
+
+    async onNewIssue(error, event) {
+        if (error){
+            Logger.error(error);
+        }else{
+            Logger.info("SLDClient - new issue " + event["reason"]);
+            var taskMessage = ClientUtils.getSoundMessage(2);
+            this.mqttClient.publish(SLDClient.TOPIC_SLD_S, JSON.stringify(taskMessage));
         }
     }
 
