@@ -189,7 +189,7 @@ abstract contract Machine is Ownable {
         productsIDs.insert(productID);
     }
 
-    function saveProductOperation(address productID, bytes32 operationName, string memory operationValue) internal {
+    function saveProductOperation(address productID, bytes32 operationName, string memory operationValue) public {
         require(productsIDs.exists(productID), "Product doesn't exist.");
         productsOperations[productID][operationName] = operationValue;
         operationsNames[productID].push(operationName);
