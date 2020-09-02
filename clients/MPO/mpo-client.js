@@ -11,7 +11,7 @@ class MPOClient {
     static TOPIC_MPO_STATE      = "f/i/state/mpo"
     static TOPIC_MPO_ACK        = "fl/mpo/ack"
     static TOPIC_MPO_DO         = "fl/mpo/do"
-    static TOPIC_MPO_OPERATIONS = "fl/mpo/operations"
+    static TOPIC_MPO_OPERATIONS = "fl/mpo/operation"
 
     constructor(){}
 
@@ -36,7 +36,7 @@ class MPOClient {
         Logger.info("MPOClient - MQTT client connected");
         this.mqttClient.subscribe(MPOClient.TOPIC_MPO_ACK, {qos: 0});
         this.mqttClient.subscribe(MPOClient.TOPIC_MPO_OPERATIONS, {qos: 0});
-        if(process.env.MACHINE_CLIENTS_STATE){
+        if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(MPOClient.TOPIC_MPO_STATE, {qos: 0});
         }
         ClientUtils.registerCallbackForNewTasks("MPOClient", "MPO", (error, event) => this.onNewTask(error, event), (Contract) => {
@@ -73,8 +73,8 @@ class MPOClient {
             Logger.info("MPOClient - Received TOPIC_MPO_OPERATIONS message " + JSON.stringify(message));
             var productID       = message["productID"];
             var operationName   = message["operationName"];
-            var operationValue  = message["operationValue"];
-            this.Contract.methods.saveProductOperation(productID, Helper.toHex(operationName), operationValue).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            var operationResult  = message["operationResult"];
+            this.Contract.methods.saveProductOperation(productID, Helper.toHex(operationName), operationResult).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.info("MPOClient - saved product operation");
             }).catch(error => {
                 Logger.error(error.stack);

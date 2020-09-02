@@ -33,7 +33,7 @@ class HBWClient{
     onMQTTConnect(){
         Logger.info("HBWClient - MQTT client connected");
         this.mqttClient.subscribe(HBWClient.TOPIC_HBW_ACK, {qos: 0});
-        if(process.env.MACHINE_CLIENTS_STATE){
+        if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(HBWClient.TOPIC_HBW_STATE, {qos: 0});
         }
         ClientUtils.registerCallbackForNewTasks("HBWClient", "HBW", (error, event) => this.onNewTask(error, event), (Contract) => {

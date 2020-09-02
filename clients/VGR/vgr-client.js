@@ -33,7 +33,7 @@ class VGRClient{
     onMQTTConnect(){
         Logger.info("VGRClient - MQTT client connected");
         this.mqttClient.subscribe(VGRClient.TOPIC_VGR_ACK, {qos: 0});
-        if(process.env.MACHINE_CLIENTS_STATE){
+        if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(VGRClient.TOPIC_VGR_STATE, {qos: 0});
         }
         ClientUtils.registerCallbackForNewTasks("VGRClient", "VGR", (error, event) => this.onNewTask(error, event), (Contract) => {

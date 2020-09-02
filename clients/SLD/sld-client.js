@@ -38,7 +38,7 @@ class SLDClient{
     onMQTTConnect(){
         Logger.info("SLDClient - MQTT client connected");
         this.mqttClient.subscribe(SLDClient.TOPIC_SLD_ACK, {qos: 0});
-        if(process.env.MACHINE_CLIENTS_STATE){
+        if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
         }
         ClientUtils.registerCallbackForNewTasks("SLDClient", "SLD", (error, event) => this.onNewTask(error, event), (Contract) => {
