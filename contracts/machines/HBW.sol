@@ -39,4 +39,8 @@ contract HBW is Machine {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.StoreContainer));
         super.startTask(newTaskID);
     }
+
+    function saveReadingHBW(uint taskID, ReadingType readingType, int readingValue) public {
+        super.saveReading(taskID, readingType, readingValue);
+    }
 }

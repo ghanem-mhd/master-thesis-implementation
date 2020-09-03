@@ -44,4 +44,8 @@ contract VGR is Machine {
         super.saveInput(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
+
+    function saveReadingVGR(uint taskID, ReadingType readingType, int readingValue) public {
+        super.saveReading(taskID, readingType, readingValue);
+    }
 }
