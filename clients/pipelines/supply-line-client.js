@@ -7,6 +7,7 @@ var Logger = require("../../utilities/logger");
 var HBWClient = require("../HBW/hbw-client");
 var VGRClient = require("../VGR/vgr-client");
 var ClientUtils = require("../client-utilities");
+var Wallet      = require("ethereumjs-wallet");
 
 class SupplyLineClient{
 
@@ -64,9 +65,8 @@ class SupplyLineClient{
     }
 
     onMQTTMessage(topic, messageBuffer){
-        var message = JSON.parse(messageBuffer.toString());
         if (topic == SupplyLineClient.TOPIC_START){
-            var productID = message["productID"];
+            var productID = Wallet.default.generate().getAddressString();
             this.supplyLineContract.methods.getInfo(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.info("SLPClient - triggered...");
             }).catch(error => {
