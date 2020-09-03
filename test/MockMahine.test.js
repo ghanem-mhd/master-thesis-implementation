@@ -142,9 +142,10 @@ describe('Machine', function () {
         var readingType = 0;
         var readingValue = 50;
         var receipt = await this.MockMachineContract.saveMockReading(currentTaskID, readingType, readingValue,  { from : machineID });
-        expectEvent(receipt, 'NewIssue', { issueID: "1", reason: "critical temperature threshold exceeded"});
+        expectEvent(receipt, 'NewIssue', { issueID: "1", reason: "critical temperature threshold exceeded", issueType: "Critical"});
         var savedIssue = await this.MockMachineContract.getIssue(1);
         expect(savedIssue[1].toString()).to.equal("1");
         expect(savedIssue[2].toString()).to.equal("critical temperature threshold exceeded");
+        expect(savedIssue[3].toString()).to.equal("Critical");
     });
 })

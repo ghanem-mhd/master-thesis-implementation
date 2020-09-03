@@ -26,7 +26,7 @@ contract MockMachine is Machine {
         uint readingID = super.saveReading(taskID, readingType, readingValue);
 
         if (readingType == ReadingType.Temperature && readingValue > 40) {
-            super.saveIssue(readingID, "critical temperature threshold exceeded");
+            super.saveIssue(readingID, "critical temperature threshold exceeded", IssueType.Critical);
         }
     }
 }

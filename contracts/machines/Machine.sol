@@ -261,11 +261,21 @@ abstract contract Machine is Ownable {
         return readingsIds.count();
     }
 
+    enum IssueType {Minor, Major, Urgent, Critical}
+
+    function getIssueType(IssueType issueType) internal pure returns (string memory) {
+        require(uint8(issueType) <= 4);
+        if (IssueType.Minor == issueType) return "Minor";
+        if (IssueType.Major == issueType) return "Major";
+        if (IssueType.Urgent == issueType) return "Urgent";
+        if (IssueType.Critical == issueType) return "Critical";
+    }
     // Issues Structure
     struct Issue{
         uint time;
         uint readingID;
         string reason;
+        string issueType;
     }
     // counter to generate new issue id
     Counters.Counter private issueIDCounter;
@@ -276,11 +286,11 @@ abstract contract Machine is Ownable {
 
     // Issue Events
     // to notifiy someone about the new issue
-    event NewIssue(uint indexed issueID, string reason);
+    event NewIssue(uint indexed issueID, string reason, string issueType);
 
     // Issue Methods
 
-    function saveIssue(uint readingID, string memory reason) internal onlyMachine {
+    function saveIssue(uint readingID, string memory reason, IssueType issueType) internal onlyMachine {
         issueIDCounter.increment();
         uint newIssueID = issueIDCounter.current();
 
@@ -291,14 +301,18 @@ abstract contract Machine is Ownable {
         issue.readingID = readingID;
         issue.reason = reason;
 
-        emit NewIssue(newIssueID, reason);
+        string memory issueTypeName = getIssueType(issueType);
+        issue.issueType = issueTypeName;
+
+        emit NewIssue(newIssueID, reason, issueTypeName);
     }
 
-    function getIssue(uint issueID) public view returns (uint, uint, string memory) {
+    function getIssue(uint issueID) public view returns (uint, uint, string memory, string memory) {
         require(issuesIds.exists(issueID), "Issue doesn't exist.");
         return (issues[issueID].time,
             issues[issueID].readingID,
-            issues[issueID].reason
+            issues[issueID].reason,
+            issues[issueID].issueType
         );
     }
 
