@@ -71,14 +71,22 @@ class MPOClient {
 
         if (topic == MPOClient.TOPIC_MPO_OPERATIONS){
             Logger.info("MPOClient - Received TOPIC_MPO_OPERATIONS message " + JSON.stringify(message));
-            var productID       = message["productID"];
-            var operationName   = message["operationName"];
-            var operationResult  = message["operationResult"];
-            this.Contract.methods.saveProductOperation(productID, Helper.toHex(operationName), operationResult).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("MPOClient - saved product operation");
+            var productID           = message["productID"];
+            var operationName       = message["operationName"];
+            var operationResult     = message["operationResult"];
+
+            ClientUtils.createCredential(3, productID, operationName, operationResult).then( encodedCredential => {
+                ClientUtils.storeCredential("MPOClient", productID, encodedCredential, operationName, operationResult);
             }).catch(error => {
                 Logger.error(error.stack);
             });
+            try {
+                this.Contract.methods.saveProductOperation(productID, Helper.toHex(operationName), operationResult).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                    Logger.info("MPOClient - operation has been saved in smart contract");
+                });
+            } catch (error) {
+                Logger.error(error.stack);
+            }
         }
     }
 

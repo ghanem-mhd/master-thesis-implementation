@@ -59,9 +59,13 @@ class SLDClient{
             var message = JSON.parse(messageBuffer.toString());
             Logger.info("SLDClient - Received TOPIC_SLD_ACK message " + JSON.stringify(message));
             var taskID = message["taskID"];
+            var productID = message["productID"];
             var code = message["code"];
             if (code == 2){
                 var color = message["type"];
+
+                this.createCredential(productID, "ColorDetection", color);
+
                 this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
                     Logger.info("SLDClient - Task " + taskID + " is finished");
                     this.currentTaskID = 0;
@@ -122,6 +126,14 @@ class SLDClient{
     sendTask(taskID, taskName, taskMessage,){
         Logger.info("SLDClient - Sending " + taskName + taskID + " " + JSON.stringify(taskMessage));
         this.mqttClient.publish(SLDClient.TOPIC_SLD_DO, JSON.stringify(taskMessage));
+    }
+
+    async createCredential(productID, operationName, operationResult){
+        ClientUtils.createCredential(1, productID, operationName, operationResult).then( encodedCredential => {
+            ClientUtils.storeCredential("SLDClient", productID, encodedCredential, operationName, operationResult);
+        }).catch(error => {
+            Logger.error(error.stack);
+        });
     }
 }
 

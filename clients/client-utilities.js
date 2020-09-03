@@ -1,8 +1,16 @@
 require("dotenv").config();
 
 var ContractManager = require("../utilities/contracts-manager");
+var ProvidersManager = require("../utilities/providers-manager");
 var Helper = require("../utilities/helper");
 var Logger = require("../utilities/logger");
+var DB = require("../utilities/db");
+
+var JWT = require("did-jwt");
+var Web3 = require('web3');
+var ethers = require('ethers');
+
+
 
 module.exports = {
   getTaskInfo: function (event) {
@@ -15,7 +23,7 @@ module.exports = {
     var ReadingTypeMapping = ["t", "h", "p", "gr", "br"];
     var readingTypeIndex = event.returnValues["readingType"];
     var readingType = ReadingTypeMapping[readingTypeIndex];
-    return {readingTypeIndex, readingType};
+    return { readingTypeIndex, readingType };
   },
   getTaskInputRequest: function (machineContract, taskID, inputName) {
     return machineContract.methods.getTaskInput(taskID, Helper.toHex(inputName)).call({})
@@ -92,5 +100,37 @@ module.exports = {
     message["code"] = code
     message["ts"] = new Date().toISOString();
     return message;
+  },
+  createCredential(keyIndex, productID, operationName, operationResult) {
+    var key = ethers.Wallet.fromMnemonic(process.env.ADMIN_MNEMONIC, "m/44'/60'/0'/0/" + keyIndex);
+    var signer = JWT.SimpleSigner(key.privateKey);
+
+    var productDID = "did:ethr:" + productID;
+    var machineDID = "did:ethr:" + key.address;
+
+
+    var jwtPayload = { aud: productDID }
+    jwtPayload["operationName"] = operationName;
+    jwtPayload["operationResult"] = operationResult;
+
+    var jwtOptions = { alg: 'ES256K', issuer: machineDID, signer }
+
+    return JWT.createJWT(jwtPayload, jwtOptions);
+  },
+  storeCredential(clientName, productID, encodedCredential, operationName, operationResult) {
+    var doc = {}
+    doc["productID"] = "did:ethr:" + productID;
+    doc["encodedCredentials"] = encodedCredential;
+    
+    doc["operationName"] = operationName;
+    doc["operationResult"] = operationResult;
+
+    DB.instance.insert(doc,function (error, docs) {
+      if (error) {
+        Logger.error(error.stack);
+      } else {
+        Logger.info(clientName + " - operation has saved as verifiable credentials");
+      }
+    });
   }
 }

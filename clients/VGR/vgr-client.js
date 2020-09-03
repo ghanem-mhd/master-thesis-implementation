@@ -60,10 +60,15 @@ class VGRClient{
             }
 
             if (code == 1){
+                var productID  = message["productID"];
                 var workpiece   = message["workpiece"];
                 if (workpiece){
                     var color = workpiece["type"];
                     var id = workpiece["id"];
+
+                    this.createCredential(productID, "NFCTagReading", id);
+                    this.createCredential(productID, "ColorDetection", color);
+
                     this.Contract.methods.finishGetInfo(taskID, id, color).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
                         Logger.info("VGRClient - Task " + taskID + " is finished");
                     }).catch(error => {
@@ -135,6 +140,14 @@ class VGRClient{
     sendTask(taskID, taskName, taskMessage){
         Logger.info("VGRClient - Sending " + taskName + taskID + " " + JSON.stringify(taskMessage));
         this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
+    }
+
+    async createCredential(productID, operationName, operationResult){
+        ClientUtils.createCredential(1, productID, operationName, operationResult).then( encodedCredential => {
+            ClientUtils.storeCredential("VGRClient", productID, encodedCredential, operationName, operationResult);
+        }).catch(error => {
+            Logger.error(error.stack);
+        });
     }
 }
 
