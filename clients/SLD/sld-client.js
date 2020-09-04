@@ -6,7 +6,7 @@ var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
 var Helper = require("../../utilities/helper");
 var ClientUtils = require("../client-utilities");
-var ReadingsClient = require("../readings-client")
+var ReadingsClient = require("../readings-client");
 class SLDClient{
 
     static TOPIC_SLD_STATE = "f/i/state/sld"

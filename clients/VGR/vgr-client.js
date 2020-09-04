@@ -4,6 +4,7 @@ const mqtt = require("mqtt");
 
 var Logger = require("../../utilities/logger");
 var ClientUtils = require("../client-utilities");
+var ReadingsClient = require("../readings-client");
 
 class VGRClient{
 
@@ -19,6 +20,9 @@ class VGRClient{
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
+        this.readingsClient = new ReadingsClient();
+        this.readingsClient.connect();
+        this.currentTaskID = 0;
     }
 
     onMQTTError(err) {
@@ -39,6 +43,7 @@ class VGRClient{
         ClientUtils.registerCallbackForNewTasks("VGRClient", "VGR", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
         });
+        ClientUtils.registerCallbackForNewReadingRequest("VGRClient", "VGR", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -54,6 +59,8 @@ class VGRClient{
 
             var taskID      = message["taskID"];
             var code        = message["code"];
+
+            this.currentTaskID = 0;
 
             if (code == 3){
                 return;
@@ -93,6 +100,8 @@ class VGRClient{
                 if (task.isFinished){
                     return;
                 }
+                this.currentTaskID = task.taskID;
+
                 if (task.taskName == "GetInfo"){
                     this.handleGetInfoTask(task);
                 }
@@ -108,6 +117,21 @@ class VGRClient{
                 if (task.taskName == "PickSorted"){
                     this.handlePickSortedTask(task);
                 }
+            });
+        }
+    }
+
+    async onNewReadingRequest(error, event) {
+        if (error){
+            Logger.error(error);
+        }else{
+            var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
+            var readingValue = this.readingsClient.getRecentReading(readingType);
+
+            this.Contract.methods.saveReadingVGR(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.info("VGRClient - new reading has been saved");
+            }).catch(error => {
+                Logger.error(error.stack);
             });
         }
     }

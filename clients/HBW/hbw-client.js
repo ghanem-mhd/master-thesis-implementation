@@ -4,6 +4,7 @@ const mqtt = require("mqtt");
 
 var Logger = require("../../utilities/logger");
 var ClientUtils = require("../client-utilities");
+var ReadingsClient = require("../readings-client");
 
 class HBWClient{
 
@@ -19,6 +20,9 @@ class HBWClient{
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
+        this.readingsClient = new ReadingsClient();
+        this.readingsClient.connect();
+        this.currentTaskID = 0;
     }
 
     onMQTTError(error) {
@@ -39,6 +43,7 @@ class HBWClient{
         ClientUtils.registerCallbackForNewTasks("HBWClient", "HBW", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
         });
+        ClientUtils.registerCallbackForNewReadingRequest("HBWClient", "HBW", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -56,6 +61,7 @@ class HBWClient{
 
             this.Contract.methods.finishTask(taskID).send({from:process.env.HBW, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.info("HBWClient - Task " + taskID + " is finished");
+                this.currentTaskID = 0;
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -70,6 +76,8 @@ class HBWClient{
                 if (task.isFinished){
                     return;
                 }
+
+                this.currentTaskID = task.taskID;
 
                 if (task.taskName == "FetchContainer"){
                     this.handleFetchContainerTask(task);
@@ -86,6 +94,22 @@ class HBWClient{
                 if (task.taskName == "StoreWB"){
                     this.handleStoreWBTask(task);
                 }
+            });
+        }
+    }
+
+
+    async onNewReadingRequest(error, event) {
+        if (error){
+            Logger.error(error);
+        }else{
+            var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
+            var readingValue = this.readingsClient.getRecentReading(readingType);
+
+            this.Contract.methods.saveReadingHBW(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.HBW, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.info("HBWClient - new reading has been saved");
+            }).catch(error => {
+                Logger.error(error.stack);
             });
         }
     }
