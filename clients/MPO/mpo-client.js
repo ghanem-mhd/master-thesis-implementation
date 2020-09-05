@@ -81,6 +81,11 @@ class MPOClient {
             var operationName       = message["operationName"];
             var operationResult     = message["operationResult"];
 
+            if (operationName == "Melting"){
+                var temp = this.readingsClient.getRecentReading("t");
+                operationResult = `Melted at ${temp}°C`
+            }
+
             ClientUtils.createCredential(3, productID, operationName, operationResult).then( encodedCredential => {
                 ClientUtils.storeCredential("MPOClient", productID, encodedCredential, operationName, operationResult);
             }).catch(error => {
@@ -106,6 +111,16 @@ class MPOClient {
                 }
 
                 this.currentTaskID = task.taskID;
+
+                event = {}
+                event["returnValues"] = { "readingType": 0};
+                this.onNewReadingRequest(null, event);
+                event["returnValues"] = { "readingType": 1};
+                this.onNewReadingRequest(null, event);
+                event["returnValues"] = { "readingType": 2};
+                this.onNewReadingRequest(null, event);
+                event["returnValues"] = { "readingType": 3};
+                this.onNewReadingRequest(null, event);
 
                 if (task.taskName == "Process"){
                     this.handleProcessTask(task);

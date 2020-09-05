@@ -88,6 +88,9 @@ class SLDClient{
                 }
                 this.currentTaskID = task.taskID;
                 if (task.taskName == "Sort"){
+                    event = {}
+                    event["returnValues"] = { "readingType": 4};
+                    this.onNewReadingRequest(null, event);
                     this.handleSortTask(task);
                 }
             });
