@@ -17,3 +17,5 @@ truffle migrate --network $NETWORK # deploy EthereumDIDRegistry contract
 cd ..
 
 node scripts/seed.js # run seed script
+
+rm -f $DB_PATH
