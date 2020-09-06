@@ -79,7 +79,7 @@ module.exports = {
           task["isFinished"] = true
           resolve(task);
         } else {
-          Logger.info(clientName + " - New task " + taskName + taskID + " is not finished.");
+          Logger.info(clientName + " - New task " + taskName + " " + taskID + " is not finished.");
           task["isFinished"] = false
           resolve(task);
         }
@@ -125,11 +125,11 @@ module.exports = {
     doc["operationName"] = operationName;
     doc["operationResult"] = operationResult;
 
-    DB.instance.insert(doc,function (error, docs) {
+    DB.VC.insert(doc,function (error, docs) {
       if (error) {
         Logger.error(error.stack);
       } else {
-        Logger.info(clientName + " - operation has saved as verifiable credentials");
+        Logger.ClientLog(clientName, "Product operation has saved as verifiable credentials", doc);
       }
     });
   }

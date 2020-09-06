@@ -17,7 +17,8 @@ class SLDClient{
     constructor(){}
 
     connect(){
-        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
+        this.clientName = this.constructor.name; 
+        this.mqttClient = mqtt.connect(process.env.CURRENT_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
@@ -42,11 +43,11 @@ class SLDClient{
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks("SLDClient", "SLD", (error, event) => this.onNewTask(error, event), (Contract) => {
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "SLD", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
         });
-        ClientUtils.registerCallbackForNewReadingRequest("SLDClient", "SLD", (error, event) => this.onNewReadingRequest(error, event));
-        ClientUtils.registerCallbackForNewIssue("SLDClient", "SLD", (error, event) => this.onNewIssue(error, event));
+        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "SLD", (error, event) => this.onNewReadingRequest(error, event));
+        ClientUtils.registerCallbackForNewIssue(this.clientName, "SLD", (error, event) => this.onNewIssue(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -57,23 +58,21 @@ class SLDClient{
 
         if (topic == SLDClient.TOPIC_SLD_ACK){
             var message = JSON.parse(messageBuffer.toString());
-            Logger.info("SLDClient - Received TOPIC_SLD_ACK message " + JSON.stringify(message));
+            Logger.ClientLog(this.clientName, "Received Ack message from SLD", message);
             var taskID = message["taskID"];
             var productID = message["productID"];
             var code = message["code"];
             if (code == 2){
                 var color = message["type"];
-
                 this.createCredential(productID, "ColorDetection", color);
-
                 this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                    Logger.info("SLDClient - Task " + taskID + " is finished");
+                    Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
                     this.currentTaskID = 0;
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
             }else{
-                Logger.info("SLDClient - start sorting");
+                Logger.ClientLog(this.clientName, `Start task ${taskID}`, null);
             }
         }
     }
@@ -104,7 +103,7 @@ class SLDClient{
             var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
             var readingValue = this.readingsClient.getRecentReading(readingType);
             this.Contract.methods.saveReadingSLD(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("SLDClient - new reading has been saved");
+                Logger.ClientLog(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -115,7 +114,7 @@ class SLDClient{
         if (error){
             Logger.error(error);
         }else{
-            Logger.info("SLDClient - new issue " + event["reason"]);
+            Logger.ClientLog(this.clientName, `New issue has been saved: ${event.returnValues["reason"]}`, null);
             var taskMessage = ClientUtils.getSoundMessage(2);
             this.mqttClient.publish(SLDClient.TOPIC_SLD_S, JSON.stringify(taskMessage));
         }
@@ -127,7 +126,7 @@ class SLDClient{
     }
 
     sendTask(taskID, taskName, taskMessage,){
-        Logger.info("SLDClient - Sending " + taskName + taskID + " " + JSON.stringify(taskMessage));
+        Logger.ClientLog(this.clientName, `Sending  task ${taskName} ${taskID} to SLD`, taskMessage);
         this.mqttClient.publish(SLDClient.TOPIC_SLD_DO, JSON.stringify(taskMessage));
     }
 
