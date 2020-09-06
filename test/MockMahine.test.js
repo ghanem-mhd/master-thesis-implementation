@@ -6,11 +6,12 @@ const Helper = require('../utilities/helper')
 const MockMachineArtifact = contract.fromArtifact('MockMachine');
 
 describe('Machine', function () {
-    const [ MachineOwner, machineID, product, anyone, Manufacturer ] = accounts;
+    const [ MachineOwner, machineID, product, anyone, Manufacturer, Maintainer ] = accounts;
 
     beforeEach(async function () {
         this.MockMachineContract = await MockMachineArtifact.new(MachineOwner, machineID, {from: MachineOwner});
         await this.MockMachineContract.authorizeManufacturer(Manufacturer, {from:MachineOwner});
+        await this.MockMachineContract.authorizeMaintainer(Maintainer, {from:MachineOwner});
     });
 
     it('get the machine ID', async function () {
@@ -29,6 +30,12 @@ describe('Machine', function () {
     it('should only allow the owner to save machine info', async function () {
         var receipt = this.MockMachineContract.saveMachineInfo(Helper.toHex(""), Helper.toHex(""), { from:anyone });
         await expectRevert(receipt, "Only machine owner can call this function.");
+    });
+
+    it('should deauthorize maintainer', async function () {
+        await this.MockMachineContract.deauthorizeMaintainer(Maintainer, {from:MachineOwner});
+        var receipt = this.MockMachineContract.saveMaintenanceOperation("Maintenance description" ,{from:Maintainer});
+        await expectRevert(receipt, "Only authorized maintainers can call this function.");
     });
 
     it('should deauthorize manufacturer', async function () {
@@ -147,5 +154,17 @@ describe('Machine', function () {
         expect(savedIssue[1].toString()).to.equal("1");
         expect(savedIssue[2].toString()).to.equal("critical temperature threshold exceeded");
         expect(savedIssue[3].toString()).to.equal("Critical");
+    });
+
+    it('should create/get a new maintenance operation', async function () {
+        var receipt = await this.MockMachineContract.saveMaintenanceOperation("Maintenance description",  { from : Maintainer });
+        expectEvent(receipt, 'NewMaintenanceOperation', { 
+            maintenanceOperationID: "1", 
+            maintainer: Maintainer,
+            description: "Maintenance description"
+        });
+        var savedMaintenanceOperation = await this.MockMachineContract.getMaintenanceOperation(1);
+        expect(savedMaintenanceOperation[1]).to.equal(Maintainer);
+        expect(savedMaintenanceOperation[2]).to.equal("Maintenance description");
     });
 })

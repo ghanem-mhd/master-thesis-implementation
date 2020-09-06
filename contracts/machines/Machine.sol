@@ -37,6 +37,11 @@ abstract contract Machine is Ownable {
         _;
     }
 
+    modifier onlyMaintainer(){
+        require( maintainers.exists(_msgSender()) || (_msgSender() == machineOwner)  , "Only authorized maintainers can call this function.");
+        _;
+    }
+
     // Machine Info Structure
     address public machineOwner; // the DID of machine owner
     address public machineID;     // the DID of the machine
@@ -320,39 +325,45 @@ abstract contract Machine is Ownable {
         return issuesIds.count();
     }
 
-    // Status Structure
-    struct Status{
+    // Maintenance Structure
+    struct MaintenanceOperation {
         uint time;
-        string encodedStatus;
-        uint taskID;
+        address maintainer;
+        string description;
     }
-    // counter to generate new status id
-    Counters.Counter private statusIDCounter;
-    // to store all statuses ids
-    UintSet.Set private statusIds;
-    // map the statusID to the status struct
-    mapping (uint => Status) private statuses;
+    Counters.Counter private maintenanceOperationIDCounter;
+    UintSet.Set private maintenanceOperationsIds;
+    mapping (uint => MaintenanceOperation) private maintenanceOperations;
 
-    // Status Events
-    // to notify the machine to send the status encoded
-    event NewStatus();
+    // Maintenance events
+    event NewMaintenanceOperation(uint indexed maintenanceOperationID, address indexed maintainer, string description);
 
-    // Status Methods
-    function getNewStatus() public onlyOwner{
-        emit NewStatus();
+    function saveMaintenanceOperation(string memory description) public onlyMaintainer returns(uint)  {
+        maintenanceOperationIDCounter.increment();
+        uint newID = maintenanceOperationIDCounter.current();
+
+        maintenanceOperationsIds.insert(newID);
+
+        MaintenanceOperation storage maintenanceOperation = maintenanceOperations[newID];
+        maintenanceOperation.time = now;
+        maintenanceOperation.maintainer = _msgSender();
+        maintenanceOperation.description = description;
+
+        emit NewMaintenanceOperation(newID, _msgSender(), description);
+
+        return newID;
     }
 
-    function newStatus(string memory encodedStatus) public onlyMachine returns(uint)  {
-        statusIDCounter.increment();
-        uint newStatusID = statusIDCounter.current();
+    function getMaintenanceOperation(uint maintenanceOperationID) public view returns (uint, address, string memory) {
+        require(maintenanceOperationsIds.exists(maintenanceOperationID), "MaintenanceOperation doesn't exist.");
+        return (maintenanceOperations[maintenanceOperationID].time,
+            maintenanceOperations[maintenanceOperationID].maintainer,
+            maintenanceOperations[maintenanceOperationID].description
+        );
+    }
 
-        statusIds.insert(newStatusID);
-
-        Status storage status = statuses[newStatusID];
-        status.time = now;
-        status.encodedStatus = encodedStatus;
-
-        return newStatusID;
+    function getMaintenanceOperationsCount() public view returns (uint) {
+        return maintenanceOperationsIds.count();
     }
 
     // Manufacturers Methods
@@ -366,5 +377,18 @@ abstract contract Machine is Ownable {
     function deauthorizeManufacturer(address manufacturerAddress) public onlyMachineOwner {
         require(manufacturers.exists(manufacturerAddress), "Manufacturer doesn't exist.");
         manufacturers.remove(manufacturerAddress);
+    }
+
+    // Maintainers Methods
+    AddressSet.Set private maintainers; // set of allowed maintainers to maintain the machine
+
+    function authorizeMaintainer(address maintainerAddress) public onlyMachineOwner {
+        require(!maintainers.exists(maintainerAddress), "Maintainer already exist.");
+        maintainers.insert(maintainerAddress);
+    }
+
+    function deauthorizeMaintainer(address maintainerAddress) public onlyMachineOwner {
+        require(maintainers.exists(maintainerAddress), "Maintainer doesn't exist.");
+        maintainers.remove(maintainerAddress);
     }
 }
