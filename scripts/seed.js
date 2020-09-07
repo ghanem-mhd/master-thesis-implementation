@@ -39,7 +39,11 @@ Promise.all(contractsAsyncGets).then( async contracts => {
         VGRContract.methods.authorizeManufacturer(productionLineContract._address).send({from:process.env.ADMIN}),
         HBWContract.methods.authorizeManufacturer(productionLineContract._address).send({from:process.env.ADMIN}),
         MPOContract.methods.authorizeManufacturer(productionLineContract._address).send({from:process.env.ADMIN}),
-        SLDContract.methods.authorizeManufacturer(productionLineContract._address).send({from:process.env.ADMIN})
+        SLDContract.methods.authorizeManufacturer(productionLineContract._address).send({from:process.env.ADMIN}),
+        VGRContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
+        HBWContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
+        MPOContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
+        SLDContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN})
     ];
     await Promise.all(seedProductionLineCommands);
     Logger.info("ProductionLine seeding finished");
@@ -53,7 +57,8 @@ Promise.all(contractsAsyncGets).then( async contracts => {
 
     var SLDInfoCommands = [
         SLDContract.methods.saveMachineInfo(Helper.toHex("Serial No."), Helper.toHex("JXqAg7Mh")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-        SLDContract.methods.saveMachineInfo(Helper.toHex("Model No."),  Helper.toHex("GKHJXur2")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS})
+        SLDContract.methods.saveMachineInfo(Helper.toHex("Model No."),  Helper.toHex("GKHJXur2")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
+        SLDContract.methods.saveMaintenanceOperation("Replace part no. U6DmXrdC").send({from:process.env.MAINTAINER, gas: process.env.DEFAULT_GAS}),
     ];
     await Promise.all(SLDInfoCommands);
     Logger.info("SLD seeding finished");
@@ -68,7 +73,7 @@ Promise.all(contractsAsyncGets).then( async contracts => {
 
     var HBWInfoCommands = [
         HBWContract.methods.saveMachineInfo(Helper.toHex("Serial No."), Helper.toHex("2SDsjAEE")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-        HBWContract.methods.saveMachineInfo(Helper.toHex("Model No."),  Helper.toHex("Zr4e8wFb")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS})
+        HBWContract.methods.saveMachineInfo(Helper.toHex("Model No."),  Helper.toHex("Zr4e8wFb")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
     ];
     await Promise.all(HBWInfoCommands);
     Logger.info("HBW seeding finished");
