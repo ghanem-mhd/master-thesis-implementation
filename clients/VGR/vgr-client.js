@@ -15,6 +15,7 @@ class VGRClient{
     constructor(){}
 
     connect(){
+        this.clientName = this.constructor.name;
         this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
@@ -40,22 +41,20 @@ class VGRClient{
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(VGRClient.TOPIC_VGR_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks("VGRClient", "VGR", (error, event) => this.onNewTask(error, event), (Contract) => {
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "VGR", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
         });
-        ClientUtils.registerCallbackForNewReadingRequest("VGRClient", "VGR", (error, event) => this.onNewReadingRequest(error, event));
+        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "VGR", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
+        var message = JSON.parse(messageBuffer.toString());
         if (topic == VGRClient.TOPIC_VGR_STATE){
-            var message = JSON.parse(messageBuffer.toString());
             Logger.info("VGRClient status: " + messageBuffer.toString());
         }
 
         if (topic == VGRClient.TOPIC_VGR_ACK){
-            var message = JSON.parse(messageBuffer.toString());
-
-            Logger.info("VGRClient - Received TOPIC_VGR_ACK message " + JSON.stringify(message));
+            Logger.ClientLog(this.clientName, "Received Ack message from VGR", message);
 
             var taskID      = message["taskID"];
             var code        = message["code"];
@@ -77,14 +76,14 @@ class VGRClient{
                     this.createCredential(productID, "ColorDetection", color);
 
                     this.Contract.methods.finishGetInfo(taskID, id, color).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                        Logger.info("VGRClient - Task " + taskID + " is finished");
+                        Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
                     }).catch(error => {
                         Logger.error(error.stack);
                     });
                 }
             }else{
                 this.Contract.methods.finishTask(taskID).send({from:process.env.VGR}).then( receipt => {
-                    Logger.info("VGRClient - Task " + taskID + " is finished");
+                    Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -96,7 +95,7 @@ class VGRClient{
         if (error){
             Logger.error(error);
         }else{
-            ClientUtils.getTask("VGRClient", event, this.Contract).then((task) => {
+            ClientUtils.getTask(this.clientName, event, this.Contract).then((task) => {
                 if (task.isFinished){
                     return;
                 }
@@ -162,13 +161,13 @@ class VGRClient{
     }
 
     sendTask(taskID, taskName, taskMessage){
-        Logger.info("VGRClient - Sending " + taskName + taskID + " " + JSON.stringify(taskMessage));
+        Logger.ClientLog(this.clientName, `Sending  task ${taskName} ${taskID} to VGR`, taskMessage);
         this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
     }
 
     async createCredential(productID, operationName, operationResult){
         ClientUtils.createCredential(1, productID, operationName, operationResult).then( encodedCredential => {
-            ClientUtils.storeCredential("VGRClient", productID, encodedCredential, operationName, operationResult);
+            ClientUtils.storeCredential(this.clientName, productID, encodedCredential, operationName, operationResult);
         }).catch(error => {
             Logger.error(error.stack);
         });

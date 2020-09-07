@@ -15,6 +15,7 @@ class HBWClient{
     constructor(){}
 
     connect(){
+        this.clientName = this.constructor.name;
         this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
@@ -40,27 +41,26 @@ class HBWClient{
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(HBWClient.TOPIC_HBW_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks("HBWClient", "HBW", (error, event) => this.onNewTask(error, event), (Contract) => {
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "HBW", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
         });
-        ClientUtils.registerCallbackForNewReadingRequest("HBWClient", "HBW", (error, event) => this.onNewReadingRequest(error, event));
+        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "HBW", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
+        var message = JSON.parse(messageBuffer.toString());
+
         if (topic == HBWClient.TOPIC_HBW_STATE){
-            var message = JSON.parse(messageBuffer.toString());
             Logger.info("HBWClient status: " + messageBuffer.toString());
         }
 
         if (topic == HBWClient.TOPIC_HBW_ACK){
-            var message = JSON.parse(messageBuffer.toString());
-
-            Logger.info("HBWClient - Received TOPIC_HBW_ACK message " + JSON.stringify(message));
+            Logger.ClientLog(this.clientName, "Received Ack message from HBW", message);
 
             var taskID = message["taskID"];
 
             this.Contract.methods.finishTask(taskID).send({from:process.env.HBW, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("HBWClient - Task " + taskID + " is finished");
+                Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
                 this.currentTaskID = 0;
             }).catch(error => {
                 Logger.error(error.stack);
@@ -72,7 +72,7 @@ class HBWClient{
         if (error){
             Logger.error(error);
         }else{
-            ClientUtils.getTask("HBWClient", event, this.Contract).then((task) => {
+            ClientUtils.getTask(this.clientName, event, this.Contract).then((task) => {
                 if (task.isFinished){
                     return;
                 }
@@ -145,7 +145,7 @@ class HBWClient{
     }
 
     sendTask(taskID, taskName, taskMessage,){
-        Logger.info("HBWClient - Sending " + taskName + taskID + " " + JSON.stringify(taskMessage));
+        Logger.ClientLog(this.clientName, `Sending  task ${taskName} ${taskID} to HBW`, taskMessage);
         this.mqttClient.publish(HBWClient.TOPIC_HBW_DO, JSON.stringify(taskMessage));
     }
 }

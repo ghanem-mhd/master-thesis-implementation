@@ -17,6 +17,7 @@ class MPOClient {
     constructor(){}
 
     connect(){
+        this.clientName = this.constructor.name;
         this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
@@ -43,10 +44,10 @@ class MPOClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(MPOClient.TOPIC_MPO_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks("MPOClient", "MPO", (error, event) => this.onNewTask(error, event), (Contract) => {
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "MPO", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
         });
-        ClientUtils.registerCallbackForNewReadingRequest("MPOClient", "MPO", (error, event) => this.onNewReadingRequest(error, event));
+        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "MPO", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -57,7 +58,7 @@ class MPOClient {
         }
 
         if (topic == MPOClient.TOPIC_MPO_ACK){
-            Logger.info("MPOClient - Received TOPIC_MPO_ACK message " + JSON.stringify(message));
+            Logger.ClientLog(this.clientName, "Received Ack message from MPO", message);
 
             var taskID = message["taskID"];
             var code = message["code"];
@@ -65,13 +66,13 @@ class MPOClient {
             if (code == 2){
                 Logger.info("MPOClient - finished processing");
                 this.Contract.methods.finishTask(taskID).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                    Logger.info("MPOClient - Task " + taskID + " is finished");
+                    Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
                     this.currentTaskID = 0;
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
             }else{
-                Logger.info("MPOClient - start processing");
+                Logger.ClientLog(this.clientName, `Start task ${taskID}`, null);
             }
         }
 
@@ -87,7 +88,7 @@ class MPOClient {
             }
 
             ClientUtils.createCredential(3, productID, operationName, operationResult).then( encodedCredential => {
-                ClientUtils.storeCredential("MPOClient", productID, encodedCredential, operationName, operationResult);
+                ClientUtils.storeCredential(this.clientName, productID, encodedCredential, operationName, operationResult);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -105,7 +106,7 @@ class MPOClient {
         if (error){
             Logger.error(error);
         }else{
-            ClientUtils.getTask("MPOClient", event, this.Contract).then((task) => {
+            ClientUtils.getTask(this.clientName, event, this.Contract).then((task) => {
                 if (task.isFinished){
                     return;
                 }
@@ -137,7 +138,7 @@ class MPOClient {
             var readingValue = this.readingsClient.getRecentReading(readingType);
 
             this.Contract.methods.saveReadingMPO(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("MPOClient - new reading has been saved");
+                Logger.ClientLog(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -150,7 +151,7 @@ class MPOClient {
     }
 
     sendTask(taskID, taskName, taskMessage,){
-        Logger.info("MPOClient - Sending " + taskName + taskID + " " + JSON.stringify(taskMessage));
+        Logger.ClientLog(this.clientName, `Sending  task ${taskName} ${taskID} to MPO`, taskMessage);
         this.mqttClient.publish(MPOClient.TOPIC_MPO_DO, JSON.stringify(taskMessage));
     }
 }
