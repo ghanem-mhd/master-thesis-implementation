@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import VGR from "../contracts/VGR";
+import VGR from "./contracts/VGR";
 
 const options = {
   web3: {
