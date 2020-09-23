@@ -8222,10 +8222,288 @@
       "links": {},
       "address": "0xb2e9fB987A30b1c9EBA1eac4497A6FCBF4123545",
       "transactionHash": "0x38233ac0dcc0d2dc6b8d83e73248244a0eeb493e5a8834b14b5a13271557078f"
+    },
+    "1600720521053": {
+      "events": {
+        "0xea339dba066d4ae107ac1086ab3f47edf89b09c93e74ba4d191808b880e657d4": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "issueID",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "reason",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "issueType",
+              "type": "string"
+            }
+          ],
+          "name": "NewIssue",
+          "type": "event"
+        },
+        "0xdf898f82123c1d886ac510dab0606c18eb18e75ec238c4930cb278508fc2a445": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "maintenanceOperationID",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "maintainer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            }
+          ],
+          "name": "NewMaintenanceOperation",
+          "type": "event"
+        },
+        "0xc456bf1769220afbee617f618ca674e78fd1cf51d5b5e89f10c81b8a517aae5f": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "enum Machine.ReadingType",
+              "name": "readingType",
+              "type": "uint8"
+            }
+          ],
+          "name": "NewReading",
+          "type": "event"
+        },
+        "0xe243e4caa36ce8a33d3c02e5880146358bdb0c26b5a2f6b273cc205e7223f9f0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "taskID",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "taskName",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "productID",
+              "type": "address"
+            }
+          ],
+          "name": "NewTask",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x2f73bc32a98ca6a02a0c153c827a9e28ce6bd37f9be254bab7bc582117511b1a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "taskID",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "taskName",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "productID",
+              "type": "address"
+            }
+          ],
+          "name": "TaskFinished",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xb2e9fB987A30b1c9EBA1eac4497A6FCBF4123545",
+      "transactionHash": "0x38233ac0dcc0d2dc6b8d83e73248244a0eeb493e5a8834b14b5a13271557078f"
+    },
+    "1600768031849": {
+      "events": {
+        "0xea339dba066d4ae107ac1086ab3f47edf89b09c93e74ba4d191808b880e657d4": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "issueID",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "reason",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "issueType",
+              "type": "string"
+            }
+          ],
+          "name": "NewIssue",
+          "type": "event"
+        },
+        "0xdf898f82123c1d886ac510dab0606c18eb18e75ec238c4930cb278508fc2a445": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "maintenanceOperationID",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "maintainer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            }
+          ],
+          "name": "NewMaintenanceOperation",
+          "type": "event"
+        },
+        "0xc456bf1769220afbee617f618ca674e78fd1cf51d5b5e89f10c81b8a517aae5f": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "enum Machine.ReadingType",
+              "name": "readingType",
+              "type": "uint8"
+            }
+          ],
+          "name": "NewReading",
+          "type": "event"
+        },
+        "0xe243e4caa36ce8a33d3c02e5880146358bdb0c26b5a2f6b273cc205e7223f9f0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "taskID",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "taskName",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "productID",
+              "type": "address"
+            }
+          ],
+          "name": "NewTask",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x2f73bc32a98ca6a02a0c153c827a9e28ce6bd37f9be254bab7bc582117511b1a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "taskID",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "taskName",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "productID",
+              "type": "address"
+            }
+          ],
+          "name": "TaskFinished",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xb2e9fB987A30b1c9EBA1eac4497A6FCBF4123545",
+      "transactionHash": "0x38233ac0dcc0d2dc6b8d83e73248244a0eeb493e5a8834b14b5a13271557078f"
     }
   },
   "schemaVersion": "3.2.3",
-  "updatedAt": "2020-09-20T13:29:24.600Z",
+  "updatedAt": "2020-09-22T09:47:18.021Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

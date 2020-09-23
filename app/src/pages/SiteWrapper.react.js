@@ -49,10 +49,14 @@ const navBarItems: Array<navItem> = [
     useExact: true,
   },
   {
-    value: "Test",
-    to: "/test",
+    value: "Machines",
     icon: "image",
-    LinkComponent: withRouter(NavLink),
+    subItems: [
+      { value: "VGR", to: "/VGR", LinkComponent: NavLink },
+      { value: "HBW", to: "/HBW", LinkComponent: NavLink },
+      { value: "MPO", to: "/MPO", LinkComponent: NavLink },
+      { value: "SLD", to: "/SLD", LinkComponent: NavLink },
+    ]
   }
 ];
 

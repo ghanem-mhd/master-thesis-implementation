@@ -3,7 +3,7 @@ import * as React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import HomePage from "./pages/Home";
-import Test from "./pages/Test"
+import Machine from "./pages/Machine"
 
 import "tabler-react/dist/Tabler.css";
 
@@ -14,6 +14,7 @@ import drizzleOptions from "./drizzleOptions";
 
 const drizzle = new Drizzle(drizzleOptions);
 
+type Props = {||};
 
 function App(props: Props): React.Node {
   return (
@@ -28,7 +29,7 @@ function App(props: Props): React.Node {
               <Router>
                 <Switch>
                   <Route exact path="/"><HomePage/></Route>
-                  <Route exact path="/test"><Test drizzle={drizzle} drizzleState={drizzleState}/></Route>
+                  <Route exact path="/:machine"><Machine drizzle={drizzle} drizzleState={drizzleState}/></Route>
                 </Switch>
               </Router>
           )

@@ -18,4 +18,5 @@ cd ..
 
 node scripts/seed.js # run seed script
 
-rm -f $DB_PATH
+rm -f $VC_DB_PATH
+rm -f $LOG_DB_PATH
