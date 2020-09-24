@@ -158,8 +158,8 @@ describe('Machine', function () {
 
     it('should create/get a new maintenance operation', async function () {
         var receipt = await this.MockMachineContract.saveMaintenanceOperation("Maintenance description",  { from : Maintainer });
-        expectEvent(receipt, 'NewMaintenanceOperation', { 
-            maintenanceOperationID: "1", 
+        expectEvent(receipt, 'NewMaintenanceOperation', {
+            maintenanceOperationID: "1",
             maintainer: Maintainer,
             description: "Maintenance description"
         });
@@ -167,4 +167,15 @@ describe('Machine', function () {
         expect(savedMaintenanceOperation[1]).to.equal(Maintainer);
         expect(savedMaintenanceOperation[2]).to.equal("Maintenance description");
     });
+
+    it('should getAuthorizedManufacturers', async function () {
+        var receipt = await this.MockMachineContract.getAuthorizedManufacturers();
+        expect(receipt[0]).to.equal(Manufacturer);
+    });
+
+    it('should getAuthorizedMaintainers', async function () {
+        var receipt = await this.MockMachineContract.getAuthorizedMaintainers();
+        expect(receipt[0]).to.equal(Maintainer);
+    });
+
 })

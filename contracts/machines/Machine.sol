@@ -379,6 +379,10 @@ abstract contract Machine is Ownable {
         manufacturers.remove(manufacturerAddress);
     }
 
+    function getAuthorizedManufacturers() public view returns (address [] memory) {
+        return manufacturers.keyList;
+    }
+
     // Maintainers Methods
     AddressSet.Set private maintainers; // set of allowed maintainers to maintain the machine
 
@@ -390,5 +394,9 @@ abstract contract Machine is Ownable {
     function deauthorizeMaintainer(address maintainerAddress) public onlyMachineOwner {
         require(maintainers.exists(maintainerAddress), "Maintainer doesn't exist.");
         maintainers.remove(maintainerAddress);
+    }
+
+    function getAuthorizedMaintainers() public view returns (address [] memory) {
+        return maintainers.keyList;
     }
 }
