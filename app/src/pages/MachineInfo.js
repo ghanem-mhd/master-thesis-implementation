@@ -15,16 +15,24 @@ class MachineInfo extends React.PureComponent {
     constructor(props){
         super(props);
     }
-    componentDidUpdate(){
-        var machine = this.props.machine
-        let dataKey4 = this.props.drizzle.contracts[machine].methods["getMachineInfoNames"].cacheCall();
-        this.setState({dataKey4:dataKey4});
+
+    getData(props){
+        props.drizzle.contracts[props.machine].methods["getMachineInfoNames"].call().call().then( infoNames => {
+            this.setState({infoNames:infoNames})
+
+        });
+    }
+
+    componentDidMount(){
+        this.getData(this.props)
+    }
+
+    UNSAFE_componentWillReceiveProps(nextProps){
+        this.getData(nextProps)
     }
 
     render() {
-        var machine = this.props.machine
-        const contract  = this.props.drizzleState.contracts[machine];
-        const infoNames = contract.getMachineInfoNames[this.state.dataKey4];
+        var infoNames =  this.state.infoNames;
         return (
             <Grid.Row>
                 <Grid.Col md={12} xl={12}>
@@ -33,7 +41,7 @@ class MachineInfo extends React.PureComponent {
                     isCollapsible
                     isClosable
                     body={
-                        <Table>
+                        infoNames && <Table>
                             <Table.Header>
                                 <Table.Row>
                                     <Table.ColHeader>Info Name</Table.ColHeader>
@@ -44,10 +52,10 @@ class MachineInfo extends React.PureComponent {
                             <Table.Row>
                                 <Table.Col>Machine ID</Table.Col>
                                 <Table.Col>
-                                        <ContractData
+                                        did:ethr:<ContractData
                                             drizzle={this.props.drizzle}
                                             drizzleState={this.props.drizzleState}
-                                            contract={machine}
+                                            contract={this.props.machine}
                                             method="machineID"
                                             methodArgs={[]}
                                         />
@@ -56,27 +64,32 @@ class MachineInfo extends React.PureComponent {
                             <Table.Row>
                                 <Table.Col>Machine Owner</Table.Col>
                                 <Table.Col>
-                                        <ContractData
+                                        did:ethr:<ContractData
                                             drizzle={this.props.drizzle}
                                             drizzleState={this.props.drizzleState}
-                                            contract={machine}
+                                            contract={this.props.machine}
                                             method="machineOwner"
                                             methodArgs={[]}
                                         />
                                 </Table.Col>
                             </Table.Row>
+                            <Table.Row>
+                                <Table.Col>Contract Address</Table.Col>
+                                <Table.Col>
+                                       {this.props.drizzle.contracts[this.props.machine].address}
+                                </Table.Col>
+                            </Table.Row>
                             {
-                                infoNames && infoNames.value &&
-                                infoNames.value.map((object, i) =>
-                                    <Table.Row key={infoNames.value[i]}>
-                                        <Table.Col>{this.props.drizzle.web3.utils.hexToUtf8(infoNames.value[i])}</Table.Col>
+                                infoNames.map((object, i) =>
+                                    <Table.Row key={infoNames[i]}>
+                                        <Table.Col>{this.props.drizzle.web3.utils.hexToUtf8(infoNames[i])}</Table.Col>
                                         <Table.Col>
                                             <ContractData
                                                     drizzle={this.props.drizzle}
                                                     drizzleState={this.props.drizzleState}
-                                                    contract={machine}
+                                                    contract={this.props.machine}
                                                     method="getMachineInfo"
-                                                    methodArgs={[infoNames.value[i]]}
+                                                    methodArgs={[infoNames[i]]}
                                                     toUtf8
                                                 />
                                         </Table.Col>

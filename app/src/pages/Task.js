@@ -4,38 +4,64 @@ import {
   Table
 } from "tabler-react";
 
-class Task extends React.PureComponent {
+class Task extends React.Component {
 
     state = {};
 
-    render() {
-        console.log("Task")
+    constructor(props){
+        super(props);
+    }
+
+    componentDidMount(){
         var machine = this.props.machine
         var taskID = this.props.taskID
+        this.props.drizzle.contracts[machine].methods.getTask(taskID).call().then( task => {
+            this.setState({task:task});
+        });
+    }
 
-        var dataKey1 = this.props.drizzle.contracts[machine].methods["getTask"].cacheCall(taskID)
-        const contract  = this.props.drizzleState.contracts[machine];
-        const task = contract.getTask[dataKey1];
+    UNSAFE_componentWillReceiveProps(nextProps){
+        var machine = this.props.machine
+        var taskID = this.props.taskID
+        this.props.drizzle.contracts[machine].methods.getTask(taskID).call().then( newTask => {
+            this.setState({task:newTask});
+        });
+    }
 
-        return (
-            <Table.Row key={this.props.taskID}>
-                <Table.Col>
-                    {this.props.taskID}
-                </Table.Col>
-                <Table.Col>
-                    {task && task.value[1]}
-                </Table.Col>
-                <Table.Col>
-                    {task && new Date(task.value[2].toString() * 1000).toLocaleString()}
-                </Table.Col>
-                <Table.Col>
-                    {task && new Date(task.value[3].toString() * 1000).toLocaleString()}
-                </Table.Col>
-                <Table.Col>
-                    {task && task.value[0]}
-                </Table.Col>
-            </Table.Row>
-        )
+
+    shouldComponentUpdate(nextProps, nextState){
+        if (this.state && this.state.task != nextState.task){
+            return true
+        }else{
+            return false
+        }
+    }
+
+    render() {
+        var task = this.state.task;
+        if (task){
+            return (
+                <Table.Row key={this.props.taskID}>
+                    <Table.Col>
+                        {task && this.props.taskID}
+                    </Table.Col>
+                    <Table.Col>
+                        {task && task[1]}
+                    </Table.Col>
+                    <Table.Col>
+                        {task && new Date(task[2].toString() * 1000).toLocaleString()}
+                    </Table.Col>
+                    <Table.Col>
+                        {task && new Date(task[3].toString() * 1000).toLocaleString()}
+                    </Table.Col>
+                    <Table.Col>
+                        {task && task[0]}
+                    </Table.Col>
+                </Table.Row>
+            )
+        }else{
+            return (<div></div>);
+        }
     }
 }
 

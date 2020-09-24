@@ -50,13 +50,24 @@ const navBarItems: Array<navItem> = [
   },
   {
     value: "Machines",
-    icon: "image",
+    icon: "monitor",
     subItems: [
       { value: "VGR", to: "/VGR", LinkComponent: NavLink },
       { value: "HBW", to: "/HBW", LinkComponent: NavLink },
       { value: "MPO", to: "/MPO", LinkComponent: NavLink },
       { value: "SLD", to: "/SLD", LinkComponent: NavLink },
     ]
+  },{
+    value: "Products",
+    icon: "shopping-bag",
+  },
+  {
+    value: "Log",
+    icon: "server"
+  },
+  {
+    value: "Settings",
+    icon: "settings",
   }
 ];
 

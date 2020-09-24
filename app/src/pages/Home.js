@@ -8,25 +8,26 @@ import {
 } from "tabler-react";
 
 import SiteWrapper from "./SiteWrapper.react";
+import Machine from "./Machine"
 
 class Home extends React.Component {
 
-  updateMachine(machine){
-    console.log(machine)
+  state = {machine:"VGR"}
+
+  constructor(props) {
+    super(props);
+    this.machineComponent = React.createRef();
   }
 
   handleChange(e){
-    this.updateMachine(e.target.value)
+    this.setState({machine:e.target.value})
   }
 
-  componentDidMount(){
-     this.updateMachine("VGR")
-  }
 
   render () {
     return (
       <SiteWrapper>
-        <Page.Content title="Dashboard">
+        <Page.Content title="Machine Digital Twin">
           <Form.Group>
             <Form.Select onChange={this.handleChange.bind(this)}>
             <option>VGR</option>
@@ -35,6 +36,7 @@ class Home extends React.Component {
             <option>SLD</option>
             </Form.Select>
           </Form.Group>
+          <Machine drizzle={this.props.drizzle} drizzleState={this.props.drizzleState} machine={this.state.machine}/>
         </Page.Content>
       </SiteWrapper>
     )

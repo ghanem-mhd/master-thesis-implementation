@@ -10,7 +10,6 @@ const options = {
   },
   contracts: [VGR, HBW, SLD, MPO],
   events: {
-   VGR: ["NewTask"],
  },
 };
 

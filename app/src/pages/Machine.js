@@ -5,14 +5,11 @@ import { Page } from "tabler-react";
 
 import MachineInfo from "./MachineInfo";
 import MachineMetrics from "./MachineMetrics";
-import MachineTasks from "./MachineTasks";
-import SiteWrapper from "./SiteWrapper.react";
-
-import { withRouter } from "react-router";
+import AuthorizedParties from "./AuthorizedParties";
 
 class Machine extends React.Component {
 
-    state = {};
+    state = {machine:null};
 
     constructor(props) {
       super(props);
@@ -20,15 +17,13 @@ class Machine extends React.Component {
 
     render() {
         return (
-          <SiteWrapper>
-            <Page.Content title={this.props.match.params.machine + " Digital Twin"}>
-              <MachineMetrics drizzle={this.props.drizzle} drizzleState={this.props.drizzleState} machine={this.props.match.params.machine} />
-              <MachineInfo drizzle={this.props.drizzle} drizzleState={this.props.drizzleState} machine={this.props.match.params.machine} />
-              <MachineTasks drizzle={this.props.drizzle} drizzleState={this.props.drizzleState} machine={this.props.match.params.machine} />
-            </Page.Content>
-          </SiteWrapper>
+          <div>
+              <MachineMetrics drizzle={this.props.drizzle} drizzleState={this.props.drizzleState} machine={this.props.machine} />
+              <MachineInfo drizzle={this.props.drizzle} drizzleState={this.props.drizzleState} machine={this.props.machine} />
+              <AuthorizedParties drizzle={this.props.drizzle} drizzleState={this.props.drizzleState} machine={this.props.machine} methodName={"getAuthorizedManufacturers"} name={"Manufacturers"}/>
+          </div>
         );
     }
 }
 
-export default withRouter(Machine);
+export default Machine;
