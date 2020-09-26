@@ -7,7 +7,7 @@ import "../../contracts/setTypes/AddressSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-abstract contract Pipeline is Ownable {
+abstract contract Process is Ownable {
 
     mapping (uint => address) machinesContracts;
 

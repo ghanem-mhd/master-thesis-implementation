@@ -9,9 +9,9 @@ var VGRClient = require("../VGR/vgr-client");
 var ClientUtils = require("../client-utilities");
 var Wallet      = require("ethereumjs-wallet");
 
-class SupplyLineClient{
+class SupplyingProcessClient{
 
-    static TOPIC_START = "fl/supplyLine/start"
+    static TOPIC_START = "fl/supplyingProcess/start"
 
     constructor(){
         this.hbwClient  = new HBWClient();
@@ -34,7 +34,7 @@ class SupplyLineClient{
     onMQTTConnect(){
         Logger.info("SLPClient - MQTT client connected");
 
-        this.mqttClient.subscribe(SupplyLineClient.TOPIC_START, {qos: 0});
+        this.mqttClient.subscribe(SupplyingProcessClient.TOPIC_START, {qos: 0});
 
         this.hbwClient.connect();
         this.vgrClient.connect();
@@ -42,7 +42,7 @@ class SupplyLineClient{
         var contractsAsyncGets = [
             ContractManager.getWeb3Contract(process.env.NETWORK, "VGR"),
             ContractManager.getWeb3Contract(process.env.NETWORK, "HBW"),
-            ContractManager.getWeb3Contract(process.env.NETWORK, "SupplyLine"),
+            ContractManager.getWeb3Contract(process.env.NETWORK, "SupplyingProcess"),
         ];
 
         Promise.all(contractsAsyncGets).then( contracts => {
@@ -50,7 +50,7 @@ class SupplyLineClient{
 
             var VGRContract = contracts[0];
             var HBWContract = contracts[1];
-            this.supplyLineContract = contracts[2];
+            this.supplyingProcessContract = contracts[2];
 
             VGRContract.events.TaskFinished({  fromBlock: "latest" }, (error, event) => this.onVGRTaskFinished(error, event));
             HBWContract.events.TaskFinished({  fromBlock: "latest" }, (error, event) => this.onHBWTaskFinished(error, event));
@@ -65,9 +65,9 @@ class SupplyLineClient{
     }
 
     onMQTTMessage(topic, messageBuffer){
-        if (topic == SupplyLineClient.TOPIC_START){
+        if (topic == SupplyingProcessClient.TOPIC_START){
             var productID = Wallet.default.generate().getAddressString();
-            this.supplyLineContract.methods.getInfo(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            this.supplyingProcessContract.methods.getInfo(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.info("SLPClient - triggered...");
             }).catch(error => {
                 Logger.error(error.stack);
@@ -82,7 +82,7 @@ class SupplyLineClient{
             var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
 
             if (taskName == "GetInfo"){
-                this.supplyLineContract.methods.getInfoFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyingProcessContract.methods.getInfoFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
 
                 }).catch(error => {
                     Logger.error(error.stack);
@@ -90,7 +90,7 @@ class SupplyLineClient{
             }
 
             if (taskName == "DropToHBW"){
-                this.supplyLineContract.methods.dropToHBWFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyingProcessContract.methods.dropToHBWFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -105,7 +105,7 @@ class SupplyLineClient{
             var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
 
             if (taskName == "FetchContainer"){
-                this.supplyLineContract.methods.fetchContainerFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyingProcessContract.methods.fetchContainerFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
 
                 }).catch(error => {
                     Logger.error(error.stack);
@@ -115,6 +115,6 @@ class SupplyLineClient{
     }
 }
 
-var supplyLineContract = new SupplyLineClient();
+var supplyingProcessContract = new SupplyingProcessClient();
 
-supplyLineContract.connect();
+supplyingProcessContract.connect();

@@ -8,8 +8,8 @@
   "scripts": {
     "test": "oz compile && mocha --exit --recursive test",
     "test-mini": "oz compile && mocha -g 'VGR' --exit --recursive test",
-    "pro": "node ./clients/pipelines/production-line-client.js",
-    "sup": "node ./clients/pipelines/supply-line-client.js",
+    "pro": "node ./clients/processes/production-client.js",
+    "sup": "node ./clients/processes/supplying-client.js",
     "machine": "node ./utilities/run-client.js machine"
   },
   "author": "Mohammad Ghanem",

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
-import "./Pipeline.sol";
+import "./Process.sol";
 
-contract MockPipeline is Pipeline {
+contract MockProcess is Process {
 
     enum Machines {Machine1, Machine2 }
 

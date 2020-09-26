@@ -6,38 +6,38 @@ const helper = require("../utilities/helper");
 
 const VGRArtifact = contract.fromArtifact("VGR");
 const HBWArtifact = contract.fromArtifact("HBW");
-const SupplyLineArtifact = contract.fromArtifact("SupplyLine");
+const SupplyingProcessArtifact = contract.fromArtifact("SupplyingProcess");
 
 
-describe("SupplyLine", function () {
+describe("SupplyingProcess", function () {
     const [ Admin, VGRID, HBWID, product,  ] = accounts;
 
     beforeEach(async function () {
         this.VGRContract = await VGRArtifact.new(Admin, VGRID, {from: Admin});
         this.HBWContract = await HBWArtifact.new(Admin, HBWID, {from: Admin});
-        this.SupplyLineContract = await SupplyLineArtifact.new({from: Admin});
+        this.SupplyingProcessContract = await SupplyingProcessArtifact.new({from: Admin});
 
-        this.Manufacturer = this.SupplyLineContract.address;
+        this.Manufacturer = this.SupplyingProcessContract.address;
 
         await this.VGRContract.authorizeManufacturer(this.Manufacturer, {from:Admin});
         await this.HBWContract.authorizeManufacturer(this.Manufacturer, {from:Admin});
-        await this.SupplyLineContract.setVGRContractAddress(this.VGRContract.address, {from:Admin});
-        await this.SupplyLineContract.setHBWContractAddress(this.HBWContract.address, {from:Admin});
+        await this.SupplyingProcessContract.setVGRContractAddress(this.VGRContract.address, {from:Admin});
+        await this.SupplyingProcessContract.setHBWContractAddress(this.HBWContract.address, {from:Admin});
     });
 
     it('should trigger the second task after finishing the first one', async function () {
-        await this.SupplyLineContract.getInfo(product, {from:Admin});
+        await this.SupplyingProcessContract.getInfo(product, {from:Admin});
         await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
-        await this.SupplyLineContract.getInfoFinished(product , {from:Admin});
+        await this.SupplyingProcessContract.getInfoFinished(product , {from:Admin});
         receipt = await this.HBWContract.getTask(1);
         expect(receipt[1]).to.equal("FetchContainer");
     });
 
     it('should get the product info for storeWB task', async function () {
-        await this.SupplyLineContract.getInfo(product, {from:Admin});
+        await this.SupplyingProcessContract.getInfo(product, {from:Admin});
         await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
-        await this.SupplyLineContract.getInfoFinished(product , {from:Admin});
-        await this.SupplyLineContract.dropToHBWFinished(product , {from:Admin});
+        await this.SupplyingProcessContract.getInfoFinished(product , {from:Admin});
+        await this.SupplyingProcessContract.dropToHBWFinished(product , {from:Admin});
         receipt = await this.HBWContract.getTask(2);
         expect(receipt[1]).to.equal("StoreWB");
         expect(receipt[4]).to.deep.equal([helper.toHex("id"), helper.toHex("color")]);
