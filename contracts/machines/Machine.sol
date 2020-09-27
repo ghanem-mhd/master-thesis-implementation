@@ -73,7 +73,7 @@ abstract contract Machine is Ownable {
 
     // Task Structure
     struct Task{
-        address productID;
+        address productDID;
         string taskName;
         uint startTimestamp;
         uint finishTimestamp;
@@ -90,11 +90,11 @@ abstract contract Machine is Ownable {
     mapping (uint => Task) private tasks;
 
     // Task Eevents
-    event NewTask(uint indexed taskID, string taskName, address productID);     // to notifiy the machine to perfome a task
-    event TaskFinished(uint indexed taskID, string taskName, address productID);// to nitifiy others that a task has been finished
+    event NewTask(uint indexed taskID, string taskName, address productDID);     // to notifiy the machine to perfome a task
+    event TaskFinished(uint indexed taskID, string taskName, address productDID);// to nitifiy others that a task has been finished
 
     // Tasks Methods
-    function createTask(address productID, string memory taskName) internal onlyManufacturer returns (uint){
+    function createTask(address productDID, string memory taskName) internal onlyManufacturer returns (uint){
 
         taskIDCounter.increment();
         uint newtaskID = taskIDCounter.current();
@@ -103,12 +103,12 @@ abstract contract Machine is Ownable {
 
         Task storage task       = tasks[newtaskID];
         task.taskName           = taskName;
-        task.productID          = productID;
+        task.productDID          = productDID;
 
-        if(productID != address(0)){
-            productsTasks[productID].push(newtaskID);
-            if (!productsIDs.exists(productID)){
-                saveProduct(productID);
+        if(productDID != address(0)){
+            productsTasks[productDID].push(newtaskID);
+            if (!productsIDs.exists(productDID)){
+                saveProduct(productDID);
             }
         }
 
@@ -121,7 +121,7 @@ abstract contract Machine is Ownable {
 
         tasks[taskID].startTimestamp = now;
 
-        emit NewTask(taskID, getTaskName(taskID), tasks[taskID].productID);
+        emit NewTask(taskID, getTaskName(taskID), tasks[taskID].productDID);
     }
 
     function finishTask(uint taskID) public onlyMachine {
@@ -130,7 +130,7 @@ abstract contract Machine is Ownable {
 
         tasks[taskID].finishTimestamp = now;
 
-        emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productID);
+        emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productDID);
     }
 
     function killTask(uint taskID) public onlyMachineOwner {
@@ -167,7 +167,7 @@ abstract contract Machine is Ownable {
 
     function getTask(uint taskID) public view returns(address, string memory, uint, uint, bytes32 [] memory){
         require(tasksIds.exists(taskID), "Task doesn't exist.");
-        return (tasks[taskID].productID,
+        return (tasks[taskID].productDID,
             tasks[taskID].taskName,
             tasks[taskID].startTimestamp,
             tasks[taskID].finishTimestamp,
@@ -179,8 +179,8 @@ abstract contract Machine is Ownable {
         return tasksIds.count();
     }
 
-    function getProductTasks(address productID) public view returns(uint[] memory){
-        return productsTasks[productID];
+    function getProductTasks(address productDID) public view returns(uint[] memory){
+        return productsTasks[productDID];
     }
 
     // Product Operations Structure
@@ -189,29 +189,29 @@ abstract contract Machine is Ownable {
     mapping (address => bytes32[]) operationsNames;
 
     // Product Methods
-    function saveProduct(address productID) internal {
-        require(!productsIDs.exists(productID), "Product already exists.");
-        productsIDs.insert(productID);
+    function saveProduct(address productDID) internal {
+        require(!productsIDs.exists(productDID), "Product already exists.");
+        productsIDs.insert(productDID);
     }
 
-    function saveProductOperation(address productID, bytes32 operationName, string memory operationValue) public {
-        require(productsIDs.exists(productID), "Product doesn't exist.");
-        productsOperations[productID][operationName] = operationValue;
-        operationsNames[productID].push(operationName);
+    function saveProductOperation(address productDID, bytes32 operationName, string memory operationValue) public {
+        require(productsIDs.exists(productDID), "Product doesn't exist.");
+        productsOperations[productDID][operationName] = operationValue;
+        operationsNames[productDID].push(operationName);
     }
 
-    function getProductOperationValue(address productID, bytes32 operationName) public view returns (string memory){
-        require(productsIDs.exists(productID), "Product doesn't exist.");
-        return (productsOperations[productID][operationName]);
+    function getProductOperationValue(address productDID, bytes32 operationName) public view returns (string memory){
+        require(productsIDs.exists(productDID), "Product doesn't exist.");
+        return (productsOperations[productDID][operationName]);
     }
 
-    function getProductOperations(address productID) public view returns(bytes32 [] memory) {
-        return (operationsNames[productID]);
+    function getProductOperations(address productDID) public view returns(bytes32 [] memory) {
+        return (operationsNames[productDID]);
     }
 
     function getProductID(uint taskID) public view returns (address){
         require(tasksIds.exists(taskID), "Task doesn't exist.");
-        return tasks[taskID].productID;
+        return tasks[taskID].productDID;
     }
 
     // Reading Structure

@@ -65,7 +65,7 @@ describe('Machine', function () {
 
     it('starting a task should create a NewTask event', async function () {
         receipt = await this.MockMachineContract.createTaskWithoutProduct("someTaskName", {from:Manufacturer});
-        expectEvent(receipt, 'NewTask', { taskID: "1", taskName:"someTaskName", productID:constants.ZERO_ADDRESS });
+        expectEvent(receipt, 'NewTask', { taskID: "1", taskName:"someTaskName", productDID:constants.ZERO_ADDRESS });
     });
 
     it('should get the task information', async function () {
@@ -99,7 +99,7 @@ describe('Machine', function () {
     it('should emit TaskFinished event', async function () {
         await this.MockMachineContract.createTaskWithoutProduct("task1", { from : Manufacturer });
         taskFinishedEvent = await this.MockMachineContract.finishTask(1, {from:machineID});
-        expectEvent(taskFinishedEvent, 'TaskFinished', { taskID: "1", taskName:"task1", productID:constants.ZERO_ADDRESS });
+        expectEvent(taskFinishedEvent, 'TaskFinished', { taskID: "1", taskName:"task1", productDID:constants.ZERO_ADDRESS });
     });
 
     it('only machine can finish the task', async function () {

@@ -15,7 +15,7 @@ describe('VGR', function () {
 
     it('should start GetInfo task with correct input', async function () {
         NewTaskEvent = await this.VGRContract.getInfo(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "GetInfo", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "GetInfo", productDID:product});
     });
 
     it('should save output of the GetInfo task', async function () {
@@ -30,18 +30,18 @@ describe('VGR', function () {
     });
     it('should start HBWDrop task with correct input', async function () {
         NewTaskEvent = await this.VGRContract.dropToHBW(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "DropToHBW", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "DropToHBW", productDID:product});
     });
 
 
     it('should start MoveHBW2MPO task with correct input', async function () {
         NewTaskEvent = await this.VGRContract.moveHBW2MPO(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "MoveHBW2MPO", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "MoveHBW2MPO", productDID:product});
     });
 
     it('should start PickSorted task with correct input', async function () {
         NewTaskEvent = await this.VGRContract.pickSorted(product, "orange", {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "PickSorted", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "PickSorted", productDID:product});
         StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("color"));
         expect(StoredInputValue, "orange");
     });

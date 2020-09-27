@@ -15,7 +15,7 @@ describe('SLD', function () {
 
     it('should start Sort task with correct input', async function () {
         NewTaskEvent = await this.SLDContract.sort(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Sort", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Sort", productDID:product});
     });
 
     it('should save the operation of the Sort task', async function () {

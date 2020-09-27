@@ -15,17 +15,17 @@ describe('HBW', function () {
 
     it('should start FetchContainer task with correct input', async function () {
         NewTaskEvent = await this.HBWContract.fetchContainer(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "FetchContainer", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "FetchContainer", productDID:product});
     });
 
     it('should start StoreContainer task with correct input', async function () {
         NewTaskEvent = await this.HBWContract.storeContainer(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StoreContainer", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StoreContainer", productDID:product});
     });
 
     it('should start StoreWB task with correct input', async function () {
         NewTaskEvent = await this.HBWContract.storeWB(product, "123", "orange", {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StoreWB", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "StoreWB", productDID:product});
         StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("id"));
         expect(StoredInputValue, "123");
         StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("color"));
@@ -34,7 +34,7 @@ describe('HBW', function () {
 
     it('should start FetchWB task with correct input', async function () {
         NewTaskEvent = await this.HBWContract.fetchWB(product, "orange", {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "FetchWB", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "FetchWB", productDID:product});
         StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("color"));
         expect(StoredInputValue, "orange");
     });

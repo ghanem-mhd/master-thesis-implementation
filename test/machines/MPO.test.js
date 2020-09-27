@@ -15,6 +15,6 @@ describe('MPO', function () {
 
     it('should start Process task with correct input', async function () {
         NewTaskEvent = await this.MPOContract.process(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Process", productID:product});
+        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Process", productDID:product});
     });
 })
