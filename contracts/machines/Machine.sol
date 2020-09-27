@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
+import "../../contracts/Product.sol";
 import "../../contracts/RoleManager.sol";
 import "../../contracts/setTypes/UintSet.sol";
 import "../../contracts/setTypes/StringSet.sol";
@@ -16,9 +17,10 @@ abstract contract Machine is Ownable {
     using Bytes32Set for Bytes32Set.Set;
     using AddressSet for AddressSet.Set;
 
-    constructor(address _machineOwner, address _machineID) public {
-        machineOwner = _machineOwner;
-        machineID = _machineID;
+    constructor(address _machineOwner, address _machineID, address _productContractAddress) public {
+        machineOwner    = _machineOwner;
+        machineID       = _machineID;
+        productContract = Product(_productContractAddress);
     }
 
     // Modifiers
@@ -47,9 +49,12 @@ abstract contract Machine is Ownable {
         _;
     }
 
+    // Product Contract
+    Product productContract;
+
     // Machine Info Structure
     address public machineOwner; // the DID of machine owner
-    address public machineID;     // the DID of the machine
+    address public machineID;    // the DID of the machine
     mapping (bytes32 => bytes32) public info; // static information about the machine
     Bytes32Set.Set private infoNames;
 

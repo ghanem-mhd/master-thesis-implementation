@@ -7,7 +7,7 @@ contract SLD is Machine {
 
     enum TasksNames { Sort }
 
-    constructor(address _machineOwner, address _machineID) Machine(_machineOwner, _machineID) public {}
+    constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
 
     function getTaskName(TasksNames taskName) internal pure returns (string memory) {
         require(uint8(taskName) <= 1);

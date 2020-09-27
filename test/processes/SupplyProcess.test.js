@@ -2,19 +2,22 @@ const { accounts, contract } = require("@openzeppelin/test-environment");
 const { BN, constants ,expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { expect } = require("chai");
 const web3 = require("web3");
-const helper = require('../../utilities/helper')
+const helper = require("../../utilities/helper")
 
+const ProductArtifact = contract.fromArtifact("Product");
 const VGRArtifact = contract.fromArtifact("VGR");
 const HBWArtifact = contract.fromArtifact("HBW");
 const SupplyingProcessArtifact = contract.fromArtifact("SupplyingProcess");
 
 
 describe("SupplyingProcess", function () {
-    const [ Admin, VGRID, HBWID, product,  ] = accounts;
+    const [ Admin, VGRID, HBWID, product  ] = accounts;
 
     beforeEach(async function () {
-        this.VGRContract = await VGRArtifact.new(Admin, VGRID, {from: Admin});
-        this.HBWContract = await HBWArtifact.new(Admin, HBWID, {from: Admin});
+        this.ProductContract = await ProductArtifact.new({from: Admin});
+
+        this.VGRContract = await VGRArtifact.new(Admin, VGRID, this.ProductContract.address, {from: Admin});
+        this.HBWContract = await HBWArtifact.new(Admin, HBWID, this.ProductContract.address, {from: Admin});
         this.SupplyingProcessContract = await SupplyingProcessArtifact.new({from: Admin});
 
         this.Manufacturer = this.SupplyingProcessContract.address;
@@ -25,7 +28,7 @@ describe("SupplyingProcess", function () {
         await this.SupplyingProcessContract.setHBWContractAddress(this.HBWContract.address, {from:Admin});
     });
 
-    it('should trigger the second task after finishing the first one', async function () {
+    it("should trigger the second task after finishing the first one", async function () {
         await this.SupplyingProcessContract.getInfo(product, {from:Admin});
         await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
         await this.SupplyingProcessContract.getInfoFinished(product , {from:Admin});
@@ -33,7 +36,7 @@ describe("SupplyingProcess", function () {
         expect(receipt[1]).to.equal("FetchContainer");
     });
 
-    it('should get the product info for storeWB task', async function () {
+    it("should get the product info for storeWB task", async function () {
         await this.SupplyingProcessContract.getInfo(product, {from:Admin});
         await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
         await this.SupplyingProcessContract.getInfoFinished(product , {from:Admin});

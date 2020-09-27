@@ -13,14 +13,14 @@ const SLD = artifacts.require("SLD");
 
 module.exports = function(deployer) {
   deployer.then(async () => {
-    await deployer.deploy(Product);
+    var deployedProductContract = await deployer.deploy(Product);
     await deployer.deploy(MockProcess);
     await deployer.deploy(SupplyingProcess);
     await deployer.deploy(ProductionProcess);
-    await deployer.deploy(VGR, process.env.ADMIN, process.env.VGR);
-    await deployer.deploy(HBW, process.env.ADMIN, process.env.HBW);
-    await deployer.deploy(MPO, process.env.ADMIN, process.env.MPO);
-    await deployer.deploy(SLD, process.env.ADMIN, process.env.SLD);
-    await deployer.deploy(MockMachine, process.env.ADMIN, process.env.MockMachine);
+    await deployer.deploy(VGR, process.env.ADMIN, process.env.VGR, deployedProductContract.address);
+    await deployer.deploy(HBW, process.env.ADMIN, process.env.HBW, deployedProductContract.address);
+    await deployer.deploy(MPO, process.env.ADMIN, process.env.MPO, deployedProductContract.address);
+    await deployer.deploy(SLD, process.env.ADMIN, process.env.SLD, deployedProductContract.address);
+    await deployer.deploy(MockMachine, process.env.ADMIN, process.env.MockMachine, deployedProductContract.address);
   });
 };

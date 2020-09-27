@@ -5,7 +5,7 @@ import "./Machine.sol";
 
 contract MockMachine is Machine {
 
-    constructor(address _machineOwner, address _machineID) Machine(_machineOwner, _machineID) public {}
+    constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
 
     function createTaskWithProduct(address productID, string memory taskName) public {
         super.createTask(productID, taskName);
