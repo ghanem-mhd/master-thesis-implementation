@@ -42,6 +42,11 @@ abstract contract Machine is Ownable {
         _;
     }
 
+    modifier taskExists(uint taskID){
+        require(tasksIds.exists(taskID), "Task doesn't exist.");
+        _;
+    }
+
     // Machine Info Structure
     address public machineOwner; // the DID of machine owner
     address public machineID;     // the DID of the machine
@@ -115,8 +120,7 @@ abstract contract Machine is Ownable {
         return newtaskID;
     }
 
-    function startTask(uint taskID) internal onlyManufacturer {
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function startTask(uint taskID) internal taskExists(taskID) onlyManufacturer {
         require(tasks[taskID].startTimestamp == 0, "Task already started.");
 
         tasks[taskID].startTimestamp = now;
@@ -124,8 +128,7 @@ abstract contract Machine is Ownable {
         emit NewTask(taskID, getTaskName(taskID), tasks[taskID].productDID);
     }
 
-    function finishTask(uint taskID) public onlyMachine {
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function finishTask(uint taskID) public taskExists(taskID) onlyMachine {
         require(tasks[taskID].finishTimestamp == 0, "Task already finished.");
 
         tasks[taskID].finishTimestamp = now;
@@ -133,21 +136,18 @@ abstract contract Machine is Ownable {
         emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productDID);
     }
 
-    function killTask(uint taskID) public onlyMachineOwner {
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function killTask(uint taskID) public taskExists(taskID) onlyMachineOwner {
         require(tasks[taskID].finishTimestamp == 0, "Task already finished.");
 
         tasks[taskID].finishTimestamp = 1;
     }
 
-    function saveTaskParam(uint taskID, bytes32 inputName, string memory inputValue) public onlyManufacturer {
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function saveTaskParam(uint taskID, bytes32 inputName, string memory inputValue) public taskExists(taskID) onlyManufacturer {
         tasks[taskID].params[inputName] = inputValue;
         tasks[taskID].paramsNames.push(inputName);
     }
 
-    function isTaskFinished(uint taskID) public view returns(bool){
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function isTaskFinished(uint taskID) public taskExists(taskID) view returns(bool){
         if (tasks[taskID].finishTimestamp != 0 || tasks[taskID].finishTimestamp == 1){
             return true;
         }else{
@@ -155,18 +155,15 @@ abstract contract Machine is Ownable {
         }
     }
 
-    function getTaskName(uint taskID) public view returns (string memory) {
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function getTaskName(uint taskID) public taskExists(taskID) view returns (string memory) {
         return tasks[taskID].taskName;
     }
 
-    function getTaskInput(uint taskID, bytes32 inputName) public view returns (string memory){
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function getTaskInput(uint taskID, bytes32 inputName) public taskExists(taskID) view returns (string memory){
         return (tasks[taskID].params[inputName]);
     }
 
-    function getTask(uint taskID) public view returns(address, string memory, uint, uint, bytes32 [] memory){
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function getTask(uint taskID) public taskExists(taskID) view returns(address, string memory, uint, uint, bytes32 [] memory){
         return (tasks[taskID].productDID,
             tasks[taskID].taskName,
             tasks[taskID].startTimestamp,
@@ -209,8 +206,7 @@ abstract contract Machine is Ownable {
         return (operationsNames[productDID]);
     }
 
-    function getProductID(uint taskID) public view returns (address){
-        require(tasksIds.exists(taskID), "Task doesn't exist.");
+    function getProductID(uint taskID) public taskExists(taskID) view returns (address){
         return tasks[taskID].productDID;
     }
 
