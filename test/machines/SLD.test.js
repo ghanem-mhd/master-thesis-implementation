@@ -1,7 +1,7 @@
 const { accounts, contract } = require('@openzeppelin/test-environment');
 const { BN, constants ,expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
-const Helper = require('../utilities/helper')
+const Helper = require('../../utilities/helper')
 
 const SLDArtifact = contract.fromArtifact('SLD');
 
