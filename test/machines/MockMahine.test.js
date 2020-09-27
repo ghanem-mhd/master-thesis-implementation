@@ -84,9 +84,9 @@ describe('Machine', function () {
 
     it('should save task input', async function () {
         await this.MockMachineContract.createTaskWithoutProduct("task1", { from : Manufacturer } );
-        await this.MockMachineContract.saveInput(1, Helper.toHex("inputName"), "inputValue",  { from : Manufacturer });
-        saveInput = await this.MockMachineContract.getTaskInput(1, Helper.toHex("inputName"));
-        expect(saveInput).to.equal("inputValue");
+        await this.MockMachineContract.saveTaskParam(1, Helper.toHex("inputName"), "inputValue",  { from : Manufacturer });
+        saveTaskParam = await this.MockMachineContract.getTaskInput(1, Helper.toHex("inputName"));
+        expect(saveTaskParam).to.equal("inputValue");
     });
 
 

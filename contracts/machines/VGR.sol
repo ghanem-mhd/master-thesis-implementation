@@ -41,7 +41,7 @@ contract VGR is Machine {
 
     function pickSorted(address productID, string memory color) public{
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.PickSorted));
-        super.saveInput(newTaskID, "color", color);
+        super.saveTaskParam(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
 

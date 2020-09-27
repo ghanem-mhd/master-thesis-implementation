@@ -13,7 +13,7 @@ contract MockMachine is Machine {
 
     function createTaskWithoutProduct(string memory taskName) public {
         uint newTaskID = super.createTask(address(0), taskName);
-        super.saveInput(newTaskID, "taskInput", "1");
+        super.saveTaskParam(newTaskID, "taskInput", "1");
         super.startTask(newTaskID);
     }
 

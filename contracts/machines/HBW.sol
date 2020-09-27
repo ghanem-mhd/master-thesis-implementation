@@ -24,14 +24,14 @@ contract HBW is Machine {
 
     function storeWB(address productID, string memory id, string memory color) public {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.StoreWB));
-        super.saveInput(newTaskID, "id", id);
-        super.saveInput(newTaskID, "color", color);
+        super.saveTaskParam(newTaskID, "id", id);
+        super.saveTaskParam(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
 
     function fetchWB(address productID, string memory color) public {
         uint newTaskID = super.createTask(productID, getTaskName(TasksNames.FetchWB));
-        super.saveInput(newTaskID, "color", color);
+        super.saveTaskParam(newTaskID, "color", color);
         super.startTask(newTaskID);
     }
 
