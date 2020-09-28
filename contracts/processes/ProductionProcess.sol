@@ -14,6 +14,8 @@ contract ProductionProcess is Process {
 
     enum Machines { VGR, HBW, SLD, MPO }
 
+    constructor(address _productContractAddress) Process(_productContractAddress) public {}
+
     function setVGRContractAddress(address VGRContractAddress) public {
        super.setMachineContractAddress(uint(Machines.VGR), VGRContractAddress);
     }

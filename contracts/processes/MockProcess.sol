@@ -7,6 +7,8 @@ contract MockProcess is Process {
 
     enum Machines {Machine1, Machine2 }
 
+    constructor(address _productContractAddress) Process(_productContractAddress) public {}
+
     function setMachineContractAddressMock(uint machineID, address machineContractAddress) public {
         super.setMachineContractAddress(machineID, machineContractAddress);
     }

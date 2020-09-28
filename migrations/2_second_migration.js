@@ -14,9 +14,9 @@ const SLD = artifacts.require("SLD");
 module.exports = function(deployer) {
   deployer.then(async () => {
     var deployedProductContract = await deployer.deploy(Product);
-    await deployer.deploy(MockProcess);
-    await deployer.deploy(SupplyingProcess);
-    await deployer.deploy(ProductionProcess);
+    await deployer.deploy(MockProcess, deployedProductContract.address);
+    await deployer.deploy(SupplyingProcess, deployedProductContract.address);
+    await deployer.deploy(ProductionProcess, deployedProductContract.address);
     await deployer.deploy(VGR, process.env.ADMIN, process.env.VGR, deployedProductContract.address);
     await deployer.deploy(HBW, process.env.ADMIN, process.env.HBW, deployedProductContract.address);
     await deployer.deploy(MPO, process.env.ADMIN, process.env.MPO, deployedProductContract.address);

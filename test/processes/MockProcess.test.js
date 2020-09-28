@@ -3,13 +3,16 @@ const { BN, constants ,expectEvent, expectRevert } = require('@openzeppelin/test
 const { expect } = require('chai');
 const Helper = require('../../utilities/helper')
 
+const ProductArtifact = contract.fromArtifact("Product");
 const MockProcessArtifact = contract.fromArtifact('MockProcess');
 
 describe('MockProcess', function () {
-    const [ Owner, MachineContract1, ProductDID1, ProductDID2, ProductDID3, RandomAddress ] = accounts;
+    const [ Admin, Owner, MachineContract1, ProductDID1, ProductDID2, ProductDID3, RandomAddress ] = accounts;
 
     beforeEach(async function () {
-        this.MockProcessContract = await MockProcessArtifact.new({from: Owner});
+        this.ProductContract = await ProductArtifact.new({from: Admin});
+
+        this.MockProcessContract = await MockProcessArtifact.new(this.ProductContract.address, {from: Owner});
     });
 
     it('should set machine contract address', async function () {

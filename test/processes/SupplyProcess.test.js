@@ -19,7 +19,7 @@ describe("SupplyingProcess", function () {
 
         this.VGRContract = await VGRArtifact.new(Admin, VGRID, this.ProductContract.address, {from: Admin});
         this.HBWContract = await HBWArtifact.new(Admin, HBWID, this.ProductContract.address, {from: Admin});
-        this.SupplyingProcessContract = await SupplyingProcessArtifact.new({from: Admin});
+        this.SupplyingProcessContract = await SupplyingProcessArtifact.new(this.ProductContract.address, {from: Admin});
 
         this.Manufacturer = this.SupplyingProcessContract.address;
 

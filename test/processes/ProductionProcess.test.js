@@ -22,7 +22,7 @@ describe("ProductionProcess", function () {
         this.HBWContract = await HBWArtifact.new(Admin, HBWID, this.ProductContract.address,  {from: Admin});
         this.SLDContract = await SLDArtifact.new(Admin, SLDID, this.ProductContract.address, {from: Admin});
         this.MPOContract = await MPOArtifact.new(Admin, MPOID, this.ProductContract.address, {from: Admin});
-        this.ProductionProcessContract = await ProductionProcessArtifact.new({from: Admin});
+        this.ProductionProcessContract = await ProductionProcessArtifact.new(this.ProductContract.address, {from: Admin});
 
         this.Manufacturer = this.ProductionProcessContract.address;
 

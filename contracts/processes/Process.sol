@@ -2,6 +2,7 @@
 pragma solidity >=0.4.21 <0.7.0;
 
 
+import "../../contracts/Product.sol";
 import "../../contracts/setTypes/UintSet.sol";
 import "../../contracts/setTypes/AddressSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -12,12 +13,15 @@ abstract contract Process is Ownable {
     using UintSet for UintSet.Set;
     using Counters for Counters.Counter;
 
-    Counters.Counter private processesCounter;
+    constructor(address _productContractAddress) public {
+        productContract = Product(_productContractAddress);
+    }
 
+    Counters.Counter private processesCounter;
     mapping (address => uint256) private productProcessMapping;
     mapping (uint256 => address) private processProductMapping;
-
     mapping (uint => address) machinesContracts;
+    Product productContract;
 
     function setMachineContractAddress(uint machineID, address machineContractAddress) internal onlyOwner {
         machinesContracts[machineID] = machineContractAddress;
@@ -27,7 +31,7 @@ abstract contract Process is Ownable {
        return machinesContracts[machineID];
     }
 
-    function startProcess(address productDID) public returns(uint256) internal {
+    function startProcess(address productDID) internal returns(uint256) {
         processesCounter.increment();
         uint processID = processesCounter.current();
 
@@ -50,5 +54,13 @@ abstract contract Process is Ownable {
 
     function getProcessesCount() public view returns (uint256) {
         return processesCounter.current();
+    }
+
+    function authorizeMachine(address machineContractAddress, address productDID) public {
+        productContract.authorizeMachine(machineContractAddress, productDID);
+    }
+
+    function unauthorizeCurrentMachine(address productDID) public {
+        productContract.unauthorizeCurrentMachine(productDID);
     }
 }
