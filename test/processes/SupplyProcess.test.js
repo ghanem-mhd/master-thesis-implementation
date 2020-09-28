@@ -11,10 +11,11 @@ const SupplyingProcessArtifact = contract.fromArtifact("SupplyingProcess");
 
 
 describe("SupplyingProcess", function () {
-    const [ Admin, VGRID, HBWID, product  ] = accounts;
+    const [ Admin, VGRID, HBWID, Product, ProductOwner  ] = accounts;
 
     beforeEach(async function () {
         this.ProductContract = await ProductArtifact.new({from: Admin});
+        await this.ProductContract.createProduct(ProductOwner, Product);
 
         this.VGRContract = await VGRArtifact.new(Admin, VGRID, this.ProductContract.address, {from: Admin});
         this.HBWContract = await HBWArtifact.new(Admin, HBWID, this.ProductContract.address, {from: Admin});
@@ -29,24 +30,26 @@ describe("SupplyingProcess", function () {
     });
 
     it("should trigger the second task after finishing the first one", async function () {
-        await this.SupplyingProcessContract.getInfo(product, {from:Admin});
+        await this.ProductContract.authorizeMachine(this.VGRContract.address, Product, {from: ProductOwner});
+        await this.SupplyingProcessContract.getInfo(Product, {from:Admin});
         await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
-        await this.SupplyingProcessContract.getInfoFinished(product , {from:Admin});
+        await this.SupplyingProcessContract.getInfoFinished(Product , {from:Admin});
         receipt = await this.HBWContract.getTask(1);
         expect(receipt[1]).to.equal("FetchContainer");
     });
 
     it("should get the product info for storeWB task", async function () {
-        await this.SupplyingProcessContract.getInfo(product, {from:Admin});
+        await this.ProductContract.authorizeMachine(this.VGRContract.address, Product, {from: ProductOwner});
+        await this.SupplyingProcessContract.getInfo(Product, {from:Admin});
         await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
-        await this.SupplyingProcessContract.getInfoFinished(product , {from:Admin});
-        await this.SupplyingProcessContract.dropToHBWFinished(product , {from:Admin});
+        await this.SupplyingProcessContract.getInfoFinished(Product , {from:Admin});
+        await this.SupplyingProcessContract.dropToHBWFinished(Product , {from:Admin});
         receipt = await this.HBWContract.getTask(2);
         expect(receipt[1]).to.equal("StoreWB");
         expect(receipt[4]).to.deep.equal([helper.toHex("id"), helper.toHex("color")]);
         receipt = await this.HBWContract.getTaskInput(2, helper.toHex("id"));
-        expect(receipt).to.equal("1234");
+        expect(receipt).to.equal("");
         receipt = await this.HBWContract.getTaskInput(2, helper.toHex("color"));
-        expect(receipt).to.equal("white");
+        expect(receipt).to.equal("");
     });
 })

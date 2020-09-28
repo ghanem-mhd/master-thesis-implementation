@@ -117,9 +117,6 @@ abstract contract Machine is Ownable {
 
         if(productDID != address(0)){
             productsTasks[productDID].push(newtaskID);
-            if (!productsIDs.exists(productDID)){
-                saveProduct(productDID);
-            }
         }
 
         return newtaskID;
@@ -191,24 +188,18 @@ abstract contract Machine is Ownable {
     mapping (address => bytes32[]) operationsNames;
 
     // Product Methods
-    function saveProduct(address productDID) internal {
-        require(!productsIDs.exists(productDID), "Product already exists.");
-        productsIDs.insert(productDID);
+
+    function saveProductOperation(uint taskID, string memory operationName, string memory operationResult) public taskExists(taskID) {
+        address productDID = tasks[taskID].productDID;
+        productContract.saveProductOperation(productDID, taskID, operationName, operationResult);
     }
 
-    function saveProductOperation(address productDID, bytes32 operationName, string memory operationValue) public {
-        require(productsIDs.exists(productDID), "Product doesn't exist.");
-        productsOperations[productDID][operationName] = operationValue;
-        operationsNames[productDID].push(operationName);
+    function getProductOperation(uint opeationID) public view returns (address, uint, uint, string memory, string memory) {
+        return productContract.getProductOperation(opeationID);
     }
 
-    function getProductOperationValue(address productDID, bytes32 operationName) public view returns (string memory){
-        require(productsIDs.exists(productDID), "Product doesn't exist.");
-        return (productsOperations[productDID][operationName]);
-    }
-
-    function getProductOperations(address productDID) public view returns(bytes32 [] memory) {
-        return (operationsNames[productDID]);
+    function getProductOperations(address productDID) public view returns(uint [] memory) {
+        return productContract.getProductOperations(productDID);
     }
 
     function getProductID(uint taskID) public taskExists(taskID) view returns (address){

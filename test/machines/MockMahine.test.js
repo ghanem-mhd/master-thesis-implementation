@@ -57,12 +57,6 @@ describe("Machine", function () {
         await this.MockMachineContract.createTaskWithProduct(product, "someTaskName", {from:Manufacturer});
     });
 
-    it("should revert on saving same product twice", async function () {
-        await this.MockMachineContract.saveMockProduct(product, {from:Manufacturer});
-        var receipt = this.MockMachineContract.saveMockProduct(product, {from:Manufacturer});
-        await expectRevert(receipt, "Product already exists.");
-    });
-
     it("starting a task should create a NewTask event", async function () {
         receipt = await this.MockMachineContract.createTaskWithoutProduct("someTaskName", {from:Manufacturer});
         expectEvent(receipt, "NewTask", { taskID: "1", taskName:"someTaskName", productDID:constants.ZERO_ADDRESS });

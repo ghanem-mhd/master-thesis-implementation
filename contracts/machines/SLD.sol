@@ -14,14 +14,13 @@ contract SLD is Machine {
         if (TasksNames.Sort == taskName) return "Sort";
     }
 
-    function sort(address productID) public {
-        uint newTaskID = super.createTask(address(productID), getTaskName(TasksNames.Sort));
+    function sort(address productDID) public {
+        uint newTaskID = super.createTask(productDID, getTaskName(TasksNames.Sort));
         super.startTask(newTaskID);
     }
 
     function finishSorting(uint taskID, string memory color) public {
-        address productID = super.getProductID(taskID);
-        super.saveProductOperation(productID, "ColorDetection", color);
+        super.saveProductOperation(taskID, "ColorDetection", color);
         super.finishTask(taskID);
     }
 

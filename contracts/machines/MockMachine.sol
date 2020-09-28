@@ -17,11 +17,6 @@ contract MockMachine is Machine {
         super.startTask(newTaskID);
     }
 
-
-    function saveMockProduct(address productID) public {
-        super.saveProduct(productID);
-    }
-
     function saveMockReading(uint taskID, ReadingType readingType, int readingValue) public {
         uint readingID = super.saveReading(taskID, readingType, readingValue);
 

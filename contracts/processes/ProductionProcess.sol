@@ -48,8 +48,8 @@ contract ProductionProcess is Process {
     }
 
     function onSortingFinished(address productID) public {
-        string memory color = SLD(getAddress(Machines.SLD)).getProductOperationValue(productID, "ColorDetection");
-        VGR(getAddress(Machines.VGR)).pickSorted(productID, color);
+        //string memory color = SLD(getAddress(Machines.SLD)).getProductOperationValue(productID, "ColorDetection");
+        VGR(getAddress(Machines.VGR)).pickSorted(productID, "");
     }
 
     function getAddress(Machines machine) private view returns (address) {
