@@ -15,12 +15,6 @@ describe('MockProcess', function () {
         this.MockProcessContract = await MockProcessArtifact.new(this.ProductContract.address, {from: Owner});
     });
 
-    it('should set machine contract address', async function () {
-        await this.MockProcessContract.setMachineContractAddressMock(0, MachineContract1, {from:Owner});
-        storedMachineContractAddress = await this.MockProcessContract.getMachineContractAddress(0);
-        expect(storedMachineContractAddress).to.equal(MachineContract1);
-    });
-
     it('should increment process ID', async function () {
         await this.MockProcessContract.startMockProcess(ProductDID1, {from:Owner});
         await this.MockProcessContract.startMockProcess(ProductDID2, {from:Owner});

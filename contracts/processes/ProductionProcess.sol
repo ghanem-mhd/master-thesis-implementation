@@ -12,24 +12,27 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ProductionProcess is Process {
 
-    enum Machines { VGR, HBW, SLD, MPO }
+    VGR private VGRContract;
+    HBW private HBWContract;
+    SLD private SLDContract;
+    MPO private MPOContract;
 
     constructor(address _productContractAddress) Process(_productContractAddress) public {}
 
     function setVGRContractAddress(address VGRContractAddress) public {
-       super.setMachineContractAddress(uint(Machines.VGR), VGRContractAddress);
+       VGRContract = VGR(VGRContractAddress);
     }
 
     function setHBWContractAddress(address HBWContractAddress) public {
-       super.setMachineContractAddress(uint(Machines.HBW), HBWContractAddress);
+       HBWContract = HBW(HBWContractAddress);
     }
 
     function setSLDContractAddress(address SLDContractAddress) public {
-       super.setMachineContractAddress(uint(Machines.SLD), SLDContractAddress);
+       SLDContract = SLD(SLDContractAddress);
     }
 
     function setMPOContractAddress(address MPOContractAddress) public {
-        super.setMachineContractAddress(uint(Machines.MPO), MPOContractAddress);
+        MPOContract = MPO(MPOContractAddress);
     }
 
     function order(address productID, string memory color) public {
@@ -52,9 +55,5 @@ contract ProductionProcess is Process {
     function onSortingFinished(address productID) public {
         //string memory color = SLD(getAddress(Machines.SLD)).getProductOperationValue(productID, "ColorDetection");
         //VGR(getAddress(Machines.VGR)).pickSorted(productID, "");
-    }
-
-    function getAddress(Machines machine) private view returns (address) {
-        return super.getMachineContractAddress(uint(machine));
     }
 }

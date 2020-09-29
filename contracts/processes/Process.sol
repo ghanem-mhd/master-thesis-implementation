@@ -20,16 +20,7 @@ abstract contract Process is Ownable {
     Counters.Counter private processesCounter;
     mapping (address => uint256) private productProcessMapping;
     mapping (uint256 => address) private processProductMapping;
-    mapping (uint => address) machinesContracts;
     Product productContract;
-
-    function setMachineContractAddress(uint machineID, address machineContractAddress) internal onlyOwner {
-        machinesContracts[machineID] = machineContractAddress;
-    }
-
-    function getMachineContractAddress(uint machineID) public view returns (address) {
-       return machinesContracts[machineID];
-    }
 
     function startProcess(address productDID) internal returns(uint256) {
         processesCounter.increment();

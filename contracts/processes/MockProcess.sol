@@ -9,10 +9,6 @@ contract MockProcess is Process {
 
     constructor(address _productContractAddress) Process(_productContractAddress) public {}
 
-    function setMachineContractAddressMock(uint machineID, address machineContractAddress) public {
-        super.setMachineContractAddress(machineID, machineContractAddress);
-    }
-
     function startMockProcess(address productDID) public {
         super.startProcess(productDID);
     }
