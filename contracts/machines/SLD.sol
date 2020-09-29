@@ -5,18 +5,17 @@ import "./Machine.sol";
 
 contract SLD is Machine {
 
-    enum TasksNames { Sort }
+    enum TasksNames { Sorting }
 
     constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
 
     function getTaskName(TasksNames taskName) internal pure returns (string memory) {
         require(uint8(taskName) <= 1);
-        if (TasksNames.Sort == taskName) return "Sort";
+        if (TasksNames.Sorting == taskName) return "Sorting";
     }
 
-    function sort(address productDID) public {
-        uint newTaskID = super.createTask(productDID, getTaskName(TasksNames.Sort));
-        super.startTask(newTaskID);
+    function assignSortingTask(uint processID, address productDID) public {
+        super.assignTask(processID, productDID, getTaskName(TasksNames.Sorting));
     }
 
     function finishSorting(uint taskID, string memory color) public {

@@ -6,29 +6,30 @@ const Helper = require("../../utilities/helper")
 const ProductArtifact = contract.fromArtifact("Product");
 const VGRArtifact = contract.fromArtifact("VGR");
 
-describe("VGR", function () {
-    const [Admin, VGROwner, MachineID, Product, anyone, Manufacturer, ProductOwner ] = accounts;
+describe("VGR_Machine", function () {
+    const [Admin, VGROwner, MachineDID, ProductDID, anyone, Manufacturer, ProductOwner ] = accounts;
 
     beforeEach(async function () {
         this.ProductContract = await ProductArtifact.new({from: Admin});
 
-        await this.ProductContract.createProduct(ProductOwner, Product);
-        this.VGRContract = await VGRArtifact.new(VGROwner, MachineID, this.ProductContract.address, {from: VGROwner});
+        await this.ProductContract.createProduct(ProductDID, {from:ProductOwner});
+        this.VGRContract = await VGRArtifact.new(VGROwner, MachineDID, this.ProductContract.address, {from: VGROwner});
 
-        await this.ProductContract.authorizeMachine(this.VGRContract.address, Product, {from: ProductOwner});
+        await this.ProductContract.authorizeMachine(MachineDID, ProductDID, {from: ProductOwner});
         await this.VGRContract.authorizeManufacturer(Manufacturer, {from:VGROwner});
     });
 
-    it("should start GetInfo task with correct input", async function () {
-        NewTaskEvent = await this.VGRContract.getInfo(Product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "GetInfo", productDID:Product});
+    it("should accept a GetInfo task", async function () {
+        receipt = await this.VGRContract.assignGetInfoTask(1, ProductDID, {from:Manufacturer});
+        expectEvent(receipt, "TaskAssigned", { taskID: "1", taskName:"GetInfo", productDID:ProductDID, processID: "1", processContractAddress:Manufacturer });
     });
 
-    it("should save output of the GetInfo task", async function () {
-        await this.VGRContract.getInfo(Product, {from:Manufacturer});
-        await this.VGRContract.finishGetInfo(1, "123", "White", {from: MachineID});
+    it("should save the operation of the GetInfo task", async function () {
+        receipt = await this.VGRContract.assignGetInfoTask(1, ProductDID, {from:Manufacturer});
+        await this.VGRContract.startTask(1, {from: MachineDID});
+        await this.VGRContract.finishGetInfoTask(1, "123", "White", {from: MachineDID});
 
-        StoredProductOperations = await this.VGRContract.getProductOperations(Product);
+        StoredProductOperations = await this.VGRContract.getProductOperations(ProductDID);
         expect(StoredProductOperations[0].toString()).to.equal("1");
         expect(StoredProductOperations[1].toString()).to.equal("2");
 
@@ -45,20 +46,19 @@ describe("VGR", function () {
         expect(StoredProductOperation2[4]).to.equal("White");
     });
 
-    it("should start HBWDrop task with correct input", async function () {
-        NewTaskEvent = await this.VGRContract.dropToHBW(Product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "DropToHBW", productDID:Product});
+    it("should accept a DropToHBW task", async function () {
+        receipt = await this.VGRContract.assignDropToHBWTask(1, ProductDID, {from:Manufacturer});
+        expectEvent(receipt, "TaskAssigned", { taskID: "1", taskName:"DropToHBW", productDID:ProductDID, processID: "1", processContractAddress:Manufacturer });
     });
 
-
-    it("should start MoveHBW2MPO task with correct input", async function () {
-        NewTaskEvent = await this.VGRContract.moveHBW2MPO(Product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "MoveHBW2MPO", productDID:Product});
+    it("should accept a MoveHBW2MPO task", async function () {
+        receipt = await this.VGRContract.assignMoveHBW2MPOTask(1, ProductDID, {from:Manufacturer});
+        expectEvent(receipt, "TaskAssigned", { taskID: "1", taskName:"MoveHBW2MPO", productDID:ProductDID, processID: "1", processContractAddress:Manufacturer });
     });
 
-    it("should start PickSorted task with correct input", async function () {
-        NewTaskEvent = await this.VGRContract.pickSorted(Product, "orange", {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "PickSorted", productDID:Product});
+    it("should accept a PickSorted task", async function () {
+        receipt = await this.VGRContract.assignPickSortedTask(1, ProductDID, "orange", {from:Manufacturer});
+        expectEvent(receipt, "TaskAssigned", { taskID: "1", taskName:"PickSorted", productDID:ProductDID, processID: "1", processContractAddress:Manufacturer });
         StoredInputValue = await this.VGRContract.getTaskInput(1, Helper.toHex("color"));
         expect(StoredInputValue, "orange");
     });

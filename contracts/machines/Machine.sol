@@ -35,7 +35,7 @@ abstract contract Machine is Ownable {
     }
 
     modifier onlyManufacturer(){
-        require( manufacturers.exists(_msgSender()) || (_msgSender() == machineOwner)  , "Only authorized manufactures can call this function.");
+        require( manufacturers.exists(tx.origin) || (tx.origin == machineOwner)  , "Only authorized manufactures can call this function.");
         _;
     }
 
@@ -89,6 +89,8 @@ abstract contract Machine is Ownable {
         uint finishTimestamp;
         mapping (bytes32 => string) params;
         bytes32[] paramsNames;
+        uint processID;
+        address processContractAddress;
     }
     // counter to generate new task id
     Counters.Counter private taskIDCounter;
@@ -100,34 +102,36 @@ abstract contract Machine is Ownable {
     mapping (uint => Task) private tasks;
 
     // Task Eevents
-    event NewTask(uint indexed taskID, string taskName, address productDID);     // to notifiy the machine to perfome a task
-    event TaskFinished(uint indexed taskID, string taskName, address productDID);// to nitifiy others that a task has been finished
+    // to notifiy the machine to perfome a task
+    event TaskAssigned(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
+    // to notifiy others that a task has been finished
+    event TaskStarted(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
+    // to notifiy others that a task has been finished
+    event TaskFinished(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
 
     // Tasks Methods
-    function createTask(address productDID, string memory taskName) internal onlyManufacturer returns (uint){
-
+    function assignTask(uint processID, address productDID, string memory taskName) internal onlyManufacturer returns (uint){
         taskIDCounter.increment();
         uint newtaskID = taskIDCounter.current();
-
         tasksIds.insert(newtaskID);
-
         Task storage task       = tasks[newtaskID];
         task.taskName           = taskName;
-        task.productDID          = productDID;
-
+        task.productDID         = productDID;
+        task.processID          = processID;
+        task.processContractAddress = _msgSender();
         if(productDID != address(0)){
             productsTasks[productDID].push(newtaskID);
         }
-
+        emit TaskAssigned(newtaskID, getTaskName(newtaskID), productDID, processID, _msgSender());
         return newtaskID;
     }
 
-    function startTask(uint taskID) internal taskExists(taskID) onlyManufacturer {
+    function startTask(uint taskID) public taskExists(taskID) onlyMachine {
         require(tasks[taskID].startTimestamp == 0, "Task already started.");
 
         tasks[taskID].startTimestamp = now;
 
-        emit NewTask(taskID, getTaskName(taskID), tasks[taskID].productDID);
+        emit TaskStarted(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
     }
 
     function finishTask(uint taskID) public taskExists(taskID) onlyMachine {
@@ -135,7 +139,7 @@ abstract contract Machine is Ownable {
 
         tasks[taskID].finishTimestamp = now;
 
-        emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productDID);
+        emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
     }
 
     function killTask(uint taskID) public taskExists(taskID) onlyMachineOwner {

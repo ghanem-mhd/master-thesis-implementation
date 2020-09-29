@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/EnumerableMap.sol";
 import "../contracts/setTypes/UintSet.sol";
 
-contract Product is ERC721  {
+contract Product is Ownable {
 
     using UintSet for UintSet.Set;
     using Counters for Counters.Counter;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
-    Counters.Counter private tokensCounter;
-    mapping (address => uint256) private productTokenMapping;
+    Counters.Counter private productsCount;
     mapping (string => address) private productPhysicalIDMapping;
 
     struct Operation{
@@ -25,51 +24,82 @@ contract Product is ERC721  {
     }
     Counters.Counter private operationsCounter;
     UintSet.Set private operationsIds;
+
+    mapping (address => address) private productsOwners;
+    mapping (address => address) private productsAuthorizedManufacturers;
+    mapping (address => address) private productsAuthorizedMachines;
+
     mapping (uint => Operation) private operations;
     mapping (address => uint[]) private productsOperations;
     mapping (address => mapping (string => uint)) productsOperationsNames;
 
-    constructor() ERC721("Product", "PR") public {
-    }
 
     // Modifiers
     modifier productExists(address productDID){
-        require(productTokenMapping[productDID] != 0, "Product doesn't exist.");
+        require(productsOwners[productDID] != address(0), "Product doesn't exist.");
         _;
     }
 
-    function createProduct(address owner, address productDID) public returns (uint256) {
-        require(productTokenMapping[productDID] == 0, "Product already exist.");
-        tokensCounter.increment();
-        uint256 tokenID = tokensCounter.current();
-        _safeMint(owner, tokenID);
-        productTokenMapping[productDID] = tokenID;
-        return tokenID;
+    modifier onlyProductOwner(address productDID){
+        require(productsOwners[productDID] != address(0) &&
+        (tx.origin == productsOwners[productDID]),
+        "Only product owner can call this function.");
+        _;
+    }
+
+    modifier onlyAuthorizeManufacturerOrOwner(address productDID){
+        require( (tx.origin == productsOwners[productDID]) ||
+        (productsAuthorizedManufacturers[productDID] != address(0) && (tx.origin == productsAuthorizedManufacturers[productDID])),
+        "Only authorize manufacturer can call this function.");
+        _;
+    }
+
+    modifier onlyAuthorizeMachine(address productDID){
+        require(productsAuthorizedMachines[productDID] != address(0) &&
+        (tx.origin == productsAuthorizedMachines[productDID]),
+        "Only authorize machine can call this function.");
+        _;
+    }
+
+    function createProduct(address productDID) public {
+        require(productsOwners[productDID] == address(0), "Product already exist.");
+        productsOwners[productDID] = _msgSender();
+        productsCount.increment();
     }
 
     function ownerOfProduct(address productDID) public productExists(productDID) view returns (address){
-        return super.ownerOf(productTokenMapping[productDID]);
+        return productsOwners[productDID];
     }
 
-    function authorizeMachine(address machineDID, address productDID) public productExists(productDID) {
-        super.approve(machineDID, productTokenMapping[productDID]);
+    function authorizeManufacturer(address manufacturerDID, address productDID) public productExists(productDID) onlyProductOwner(productDID)  {
+        productsAuthorizedManufacturers[productDID] = manufacturerDID;
     }
 
-    function unauthorizeCurrentMachine(address productDID) public productExists(productDID) {
-        super.approve(address(0), productTokenMapping[productDID]);
+    function unauthorizeCurrentManufacturer(address productDID) public productExists(productDID) onlyProductOwner(productDID) {
+        productsAuthorizedManufacturers[productDID] = address(0);
     }
 
-    function getApprovedMachine(address productDID) public productExists(productDID) view returns(address){
-        return super.getApproved(productTokenMapping[productDID]);
+    function getAuthorizeManufacturer(address productDID) public productExists(productDID) view returns(address){
+        return productsAuthorizedManufacturers[productDID];
+    }
+
+    function authorizeMachine(address machineDID, address productDID) public productExists(productDID) onlyAuthorizeManufacturerOrOwner(productDID)  {
+        productsAuthorizedMachines[productDID] = machineDID;
+    }
+
+    function unauthorizeCurrentMachine(address productDID) public productExists(productDID) onlyAuthorizeManufacturerOrOwner(productDID) {
+        productsAuthorizedMachines[productDID] = address(0);
+    }
+
+    function getAuthorizedMachine(address productDID) public productExists(productDID) view returns(address){
+        return productsAuthorizedMachines[productDID];
     }
 
     function getProductsCount() public view returns(uint){
-        return tokensCounter.current();
+        return productsCount.current();
     }
 
-    function saveProductOperation(address productDID, uint taskID, string memory name, string memory result) productExists(productDID) public returns (uint){
-        uint256 tokenID = productTokenMapping[productDID];
-        require(getApproved(tokenID) == _msgSender(), "Sender is not approved for this operation.");
+    function saveProductOperation(address productDID, uint taskID, string memory name, string memory result) productExists(productDID) onlyAuthorizeMachine(productDID) public returns (uint){
         operationsCounter.increment();
         uint opeationID = operationsCounter.current();
         operationsIds.insert(opeationID);
@@ -108,11 +138,10 @@ contract Product is ERC721  {
         return productPhysicalIDMapping[physicalID];
     }
 
-    function getOperationResult(address productDID, string memory operationName) public productExists(productDID) view returns (string memory) {
+    function getProductOperationResult(address productDID, string memory operationName) public productExists(productDID) view returns (string memory) {
         require(productsOperationsNames[productDID][operationName] != 0, "Operation doesn't exists.");
         uint operationID = productsOperationsNames[productDID][operationName];
         ( , , , , string memory result) = getProductOperation(operationID);
         return result;
     }
-
 }

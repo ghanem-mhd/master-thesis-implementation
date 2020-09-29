@@ -17,31 +17,27 @@ contract VGR is Machine {
         if (TasksNames.MoveHBW2MPO == taskName) return "MoveHBW2MPO";
     }
 
-    function getInfo(address productID) public {
-        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.GetInfo));
-        super.startTask(newTaskID);
+    function assignGetInfoTask(uint processID, address productDID) public {
+        super.assignTask(processID, productDID, getTaskName(TasksNames.GetInfo));
     }
 
-    function finishGetInfo(uint taskID, string memory nfcTag, string memory color) public {
+    function finishGetInfoTask(uint taskID, string memory nfcTag, string memory color) public {
         super.saveProductOperation(taskID, "NFCTagReading", nfcTag);
         super.saveProductOperation(taskID, "ColorDetection", color);
         super.finishTask(taskID);
     }
 
-    function dropToHBW(address productID) public{
-        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.DropToHBW));
-        super.startTask(newTaskID);
+    function assignDropToHBWTask(uint processID, address productDID) public{
+        super.assignTask(processID, productDID, getTaskName(TasksNames.DropToHBW));
     }
 
-    function moveHBW2MPO(address productID) public{
-        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.MoveHBW2MPO));
-        super.startTask(newTaskID);
+    function assignMoveHBW2MPOTask(uint processID, address productDID) public{
+        super.assignTask(processID, productDID, getTaskName(TasksNames.MoveHBW2MPO));
     }
 
-    function pickSorted(address productID, string memory color) public{
-        uint newTaskID = super.createTask(productID, getTaskName(TasksNames.PickSorted));
-        super.saveTaskParam(newTaskID, "color", color);
-        super.startTask(newTaskID);
+    function assignPickSortedTask(uint processID, address productDID, string memory color) public{
+       uint taskID = super.assignTask(processID, productDID, getTaskName(TasksNames.PickSorted));
+       super.saveTaskParam(taskID, "color", color);
     }
 
     function saveReadingVGR(uint taskID, ReadingType readingType, int readingValue) public {

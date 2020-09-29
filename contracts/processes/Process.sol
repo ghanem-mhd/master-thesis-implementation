@@ -63,4 +63,16 @@ abstract contract Process is Ownable {
     function unauthorizeCurrentMachine(address productDID) public {
         productContract.unauthorizeCurrentMachine(productDID);
     }
+
+    function getProductOperation(uint opeationID) public view returns (address, uint, uint, string memory, string memory) {
+        return productContract.getProductOperation(opeationID);
+    }
+
+    function getProductOperations(address productDID) public view returns(uint [] memory) {
+        return productContract.getProductOperations(productDID);
+    }
+
+    function getProductOperationResult(address productDID, string memory operationName) public view returns (string memory) {
+        return productContract.getProductOperationResult(productDID, operationName);
+    }
 }

@@ -6,8 +6,8 @@ const Helper = require("../../utilities/helper")
 const ProductArtifact = contract.fromArtifact("Product");
 const MPOArtifact = contract.fromArtifact("MPO");
 
-describe("MPO", function () {
-    const [Admin, MPOOwner, MachineID, product, anyone, Manufacturer ] = accounts;
+describe("MPO_Machine", function () {
+    const [Admin, MPOOwner, MachineID, ProductDID, anyone, Manufacturer ] = accounts;
 
     beforeEach(async function () {
         this.ProductContract = await ProductArtifact.new({from: Admin});
@@ -16,8 +16,8 @@ describe("MPO", function () {
         await this.MPOContract.authorizeManufacturer(Manufacturer, {from:MPOOwner});
     });
 
-    it("should start Process task with correct input", async function () {
-        NewTaskEvent = await this.MPOContract.process(product, {from:Manufacturer});
-        expectEvent(NewTaskEvent, "NewTask", {taskID: "1", taskName: "Process", productDID:product});
+    it("should accept a Processing task", async function () {
+        receipt = await this.MPOContract.assignProcessingTask(1, ProductDID, {from:Manufacturer});
+        expectEvent(receipt, "TaskAssigned", { taskID: "1", taskName:"Processing", productDID:ProductDID, processID: "1", processContractAddress:Manufacturer });
     });
 })

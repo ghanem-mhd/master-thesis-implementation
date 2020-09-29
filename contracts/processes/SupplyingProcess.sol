@@ -22,22 +22,42 @@ contract SupplyingProcess is Process {
         super.setMachineContractAddress(uint(Machines.HBW), HBWContractAddress);
     }
 
-    function getInfo(address productID) public {
-        VGR(getAddress(Machines.VGR)).getInfo(productID);
+    function startSupplyingProcess(address productDID) public {
+        uint processID = super.startProcess(productDID);
+        step1(processID);
     }
 
-    function getInfoFinished(address productID) public {
-        HBW(getAddress(Machines.HBW)).fetchContainer(productID);
+    function step1(uint processID) public {
+        address VGRAddress = getAddress(Machines.VGR);
+        address VGRDID     = VGR(VGRAddress).getMachineID();
+        address productDID = super.getProductDID(processID);
+        super.authorizeMachine(VGRDID, productDID);
+        VGR(VGRAddress).assignGetInfoTask(processID, productDID);
     }
 
-    function fetchContainerFinished(address productID) public {
-        VGR(getAddress(Machines.VGR)).dropToHBW(productID);
+    function step2(uint processID) public {
+        address HBWAddress = getAddress(Machines.HBW);
+        address productDID = super.getProductDID(processID);
+        super.unauthorizeCurrentMachine(productDID);
+        HBW(HBWAddress).assignFetchContainerTask(processID);
     }
 
-    function dropToHBWFinished(address productID) public {
-        //string memory id    = VGR(getAddress(Machines.VGR)).getProductOperationValue(productID, "NFCTagReading");
-        //string memory color = VGR(getAddress(Machines.VGR)).getProductOperationValue(productID, "ColorDetection");
-        HBW(getAddress(Machines.HBW)).storeWB(productID, "", "");
+    function step3(uint processID) public {
+        address VGRAddress = getAddress(Machines.VGR);
+        address VGRDID     = VGR(VGRAddress).getMachineID();
+        address productDID = super.getProductDID(processID);
+        super.authorizeMachine(VGRDID, productDID);
+        VGR(VGRAddress).assignDropToHBWTask(processID, productDID);
+    }
+
+    function step4(uint processID) public {
+        address HBWAddress  = getAddress(Machines.HBW);
+        address HBWDID      = HBW(HBWAddress).getMachineID();
+        address productDID  = super.getProductDID(processID);
+        string memory NFCID = super.getProductOperationResult(productDID, "NFCTagReading");
+        string memory color = super.getProductOperationResult(productDID, "ColorDetection");
+        super.authorizeMachine(HBWDID, productDID);
+        HBW(HBWAddress).assignStoreProductTask(processID, productDID, NFCID, color);
     }
 
     function getAddress(Machines machine) private view returns (address) {

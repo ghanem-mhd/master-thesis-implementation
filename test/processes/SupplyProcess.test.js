@@ -11,45 +11,50 @@ const SupplyingProcessArtifact = contract.fromArtifact("SupplyingProcess");
 
 
 describe("SupplyingProcess", function () {
-    const [ Admin, VGRID, HBWID, Product, ProductOwner  ] = accounts;
+    const [ Admin, ManufacturerDID, VGR_DID, HBW_DID, ProductDID, ProductOwner  ] = accounts;
 
     beforeEach(async function () {
         this.ProductContract = await ProductArtifact.new({from: Admin});
-        await this.ProductContract.createProduct(ProductOwner, Product);
 
-        this.VGRContract = await VGRArtifact.new(Admin, VGRID, this.ProductContract.address, {from: Admin});
-        this.HBWContract = await HBWArtifact.new(Admin, HBWID, this.ProductContract.address, {from: Admin});
+        await this.ProductContract.createProduct(ProductDID, {from:ProductOwner});
+        await this.ProductContract.authorizeManufacturer(ManufacturerDID, ProductDID, {from:ProductOwner});
+
+        this.VGRContract              = await VGRArtifact.new(Admin, VGR_DID, this.ProductContract.address, {from: Admin});
+        this.HBWContract              = await HBWArtifact.new(Admin, HBW_DID, this.ProductContract.address, {from: Admin});
         this.SupplyingProcessContract = await SupplyingProcessArtifact.new(this.ProductContract.address, {from: Admin});
 
-        this.Manufacturer = this.SupplyingProcessContract.address;
-
-        await this.VGRContract.authorizeManufacturer(this.Manufacturer, {from:Admin});
-        await this.HBWContract.authorizeManufacturer(this.Manufacturer, {from:Admin});
+        this.ProcessContractAddress = this.SupplyingProcessContract.address;
+        await this.VGRContract.authorizeManufacturer(ManufacturerDID, {from:Admin});
+        await this.HBWContract.authorizeManufacturer(ManufacturerDID, {from:Admin});
         await this.SupplyingProcessContract.setVGRContractAddress(this.VGRContract.address, {from:Admin});
         await this.SupplyingProcessContract.setHBWContractAddress(this.HBWContract.address, {from:Admin});
     });
 
-    it("should trigger the second task after finishing the first one", async function () {
-        await this.ProductContract.authorizeMachine(this.VGRContract.address, Product, {from: ProductOwner});
-        await this.SupplyingProcessContract.getInfo(Product, {from:Admin});
-        await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
-        await this.SupplyingProcessContract.getInfoFinished(Product , {from:Admin});
-        receipt = await this.HBWContract.getTask(1);
-        expect(receipt[1]).to.equal("FetchContainer");
+    it("should authorize VGR when starting the supplying process", async function () {
+        await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {from:ManufacturerDID});
+        AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(ProductDID);
+        expect(AuthorizedMachine).to.equal(VGR_DID);
     });
 
-    it("should get the product info for storeWB task", async function () {
-        await this.ProductContract.authorizeMachine(this.VGRContract.address, Product, {from: ProductOwner});
-        await this.SupplyingProcessContract.getInfo(Product, {from:Admin});
-        await this.VGRContract.finishGetInfo(1,"1234", "white", {from:VGRID});
-        await this.SupplyingProcessContract.getInfoFinished(Product , {from:Admin});
-        await this.SupplyingProcessContract.dropToHBWFinished(Product , {from:Admin});
-        receipt = await this.HBWContract.getTask(2);
-        expect(receipt[1]).to.equal("StoreWB");
-        expect(receipt[4]).to.deep.equal([helper.toHex("id"), helper.toHex("color")]);
-        receipt = await this.HBWContract.getTaskInput(2, helper.toHex("id"));
-        expect(receipt).to.equal("");
-        receipt = await this.HBWContract.getTaskInput(2, helper.toHex("color"));
-        expect(receipt).to.equal("");
+    it("should authorize none when executing step 2", async function () {
+        await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {from:ManufacturerDID});
+        await this.SupplyingProcessContract.step2(1, {from:ManufacturerDID});
+        AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(ProductDID);
+        expect(AuthorizedMachine).to.equal(constants.ZERO_ADDRESS);
+    });
+
+    it("should authorize VGR when executing step 3", async function () {
+        await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {from:ManufacturerDID});
+        await this.SupplyingProcessContract.step3(1, {from:ManufacturerDID});
+        AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(ProductDID);
+        expect(AuthorizedMachine).to.equal(VGR_DID);
+    });
+
+    it("should authorize HBW when executing step 4 and check get info operations", async function () {
+        await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {from:ManufacturerDID});
+        await this.VGRContract.finishGetInfoTask(1,"1234", "white", {from:VGR_DID});
+        await this.SupplyingProcessContract.step4(1, {from:ManufacturerDID});
+        AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(ProductDID);
+        expect(AuthorizedMachine).to.equal(HBW_DID);
     });
 })
