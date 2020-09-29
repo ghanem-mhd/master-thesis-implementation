@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const Helper = require('../utilities/helper')
 const ProductArtifact = contract.fromArtifact('Product');
 
-describe('ProductContract', function () {
+describe('Product', function () {
     const [ Admin, Owner, ProductDID1, ProductDID2, MachineDID ] = accounts;
 
     beforeEach(async function () {
@@ -92,4 +92,21 @@ describe('ProductContract', function () {
         expect(StoredOperation[3]).to.equal("Physical Identification");
         expect(StoredOperation[4]).to.equal("ID1111");
     });
+
+    it('should get operation result for a certain product', async function () {
+        await this.ProductContract.createProduct(Owner, ProductDID1, {from:Admin});
+        await this.ProductContract.authorizeMachine(MachineDID, ProductDID1, {from: Owner});
+        await this.ProductContract.saveProductOperation(ProductDID1, 1, "OperationName", "OperationResult1005", {from: MachineDID});
+        OperationResult = await this.ProductContract.getOperationResult(ProductDID1, "OperationName");
+        expect(OperationResult).to.equal("OperationResult1005");
+    });
+
+
+    it('should revert when getting an operation result for non existing operation', async function () {
+        await this.ProductContract.createProduct(Owner, ProductDID1, {from:Admin});
+        await this.ProductContract.authorizeMachine(MachineDID, ProductDID1, {from: Owner});
+        receipt = this.ProductContract.getOperationResult(ProductDID1, "OperationName");
+        await expectRevert(receipt, "Operation doesn't exists.");
+    });
+
 })

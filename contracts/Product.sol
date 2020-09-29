@@ -27,6 +27,7 @@ contract Product is ERC721  {
     UintSet.Set private operationsIds;
     mapping (uint => Operation) private operations;
     mapping (address => uint[]) private productsOperations;
+    mapping (address => mapping (string => uint)) productsOperationsNames;
 
     constructor() ERC721("Product", "PR") public {
     }
@@ -79,6 +80,7 @@ contract Product is ERC721  {
         operation.name              = name;
         operation.result            = result;
         productsOperations[productDID].push(opeationID);
+        productsOperationsNames[productDID][name] = opeationID;
         return opeationID;
     }
 
@@ -104,6 +106,13 @@ contract Product is ERC721  {
 
     function getProductFromPhysicalID(string memory physicalID) public view returns (address) {
         return productPhysicalIDMapping[physicalID];
+    }
+
+    function getOperationResult(address productDID, string memory operationName) public productExists(productDID) view returns (string memory) {
+        require(productsOperationsNames[productDID][operationName] != 0, "Operation doesn't exists.");
+        uint operationID = productsOperationsNames[productDID][operationName];
+        ( , , , , string memory result) = getProductOperation(operationID);
+        return result;
     }
 
 }
