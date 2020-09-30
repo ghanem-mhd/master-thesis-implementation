@@ -33,7 +33,7 @@ describe("SLD_Machine", function () {
         StoredProductOperation = await this.SLDContract.getProductOperation(1);
         expect(StoredProductOperation[0]).to.equal(this.SLDContract.address);
         expect(StoredProductOperation[1].toString()).to.equal("1");
-        expect(StoredProductOperation[3]).to.equal("ColorDetection");
+        expect(StoredProductOperation[3]).to.equal("Sorting");
         expect(StoredProductOperation[4]).to.equal("Pink");
     });
 
