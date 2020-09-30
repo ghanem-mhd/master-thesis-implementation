@@ -193,7 +193,7 @@ abstract contract Machine is Ownable {
 
     // Product Methods
 
-    function saveProductOperation(uint taskID, string memory operationName, string memory operationResult) public taskExists(taskID) {
+    function saveProductOperation(uint taskID, string memory operationName, string memory operationResult) public taskExists(taskID) onlyMachine {
         address productDID = tasks[taskID].productDID;
         productContract.saveProductOperation(productDID, taskID, operationName, operationResult);
     }
