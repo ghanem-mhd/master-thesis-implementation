@@ -35,25 +35,45 @@ contract ProductionProcess is Process {
         MPOContract = MPO(MPOContractAddress);
     }
 
-    function order(address productID, string memory color) public {
-        //HBW(getAddress(Machines.HBW)).fetchWB(productID, color);
+    function startProductionProcess(address productDID) public {
+        uint processID = super.startProcess(productDID);
+        step1(processID);
     }
 
-    function onFetchWBFinished(address productID) public {
-        //VGR(getAddress(Machines.VGR)).moveHBW2MPO(productID);
+    function step1(uint processID) public {
+        address HBWDID      = HBWContract.getMachineID();
+        address productDID  = super.getProductDID(processID);
+        super.authorizeMachine(HBWDID, productDID);
+        HBWContract.assignFetchProductTask(processID, productDID);
     }
 
-    function onMoveHBW2MPOFinished(address productID) public {
-        //HBW(getAddress(Machines.HBW)).storeContainer(productID);
-        //MPO(getAddress(Machines.MPO)).process(productID);
+    function step2(uint processID) public {
+        address VGRDID     = VGRContract.getMachineID();
+        address productDID = super.getProductDID(processID);
+        super.authorizeMachine(VGRDID, productDID);
+        VGRContract.assignMoveHBW2MPOTask(processID, productDID);
     }
 
-    function onProcessingFinished(address productID) public {
-        //SLD(getAddress(Machines.SLD)).sort(productID);
+    function step3(uint processID) public {
+        address MPODID      = MPOContract.getMachineID();
+        address productDID = super.getProductDID(processID);
+        super.authorizeMachine(MPODID, productDID);
+        HBWContract.assignStoreContainerTask(processID);
+        MPOContract.assignProcessingTask(processID, productDID);
     }
 
-    function onSortingFinished(address productID) public {
-        //string memory color = SLD(getAddress(Machines.SLD)).getProductOperationValue(productID, "ColorDetection");
-        //VGR(getAddress(Machines.VGR)).pickSorted(productID, "");
+    function step4(uint processID) public {
+        address SLDDID     = SLDContract.getMachineID();
+        address productDID = super.getProductDID(processID);
+        super.authorizeMachine(SLDDID, productDID);
+        SLDContract.assignSortingTask(processID, productDID);
+    }
+
+    function step5(uint processID) public {
+        address VGRDID      = VGRContract.getMachineID();
+        address productDID  = super.getProductDID(processID);
+        string memory color = super.getProductOperationResult(productDID, "Sorting");
+        super.authorizeMachine(VGRDID, productDID);
+        VGRContract.assignPickSortedTask(processID, productDID, color);
     }
 }
