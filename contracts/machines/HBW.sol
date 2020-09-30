@@ -27,9 +27,8 @@ contract HBW is Machine {
         super.saveTaskParam(taskID, "color", color);
     }
 
-    function assignFetchProductTask(uint processID, string memory color) public {
-        uint taskID = super.assignTask(processID, address(0), getTaskName(TasksNames.FetchProduct));
-        super.saveTaskParam(taskID, "color", color);
+    function assignFetchProductTask(uint processID, address productDID) public {
+        super.assignTask(processID, productDID, getTaskName(TasksNames.FetchProduct));
     }
 
     function assignStoreContainerTask(uint processID) public {

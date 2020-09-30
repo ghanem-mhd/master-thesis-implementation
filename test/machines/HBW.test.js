@@ -36,9 +36,7 @@ describe("HBW_Machine", function () {
     });
 
     it("should accept a FetchProduct task", async function () {
-        receipt = await this.HBWContract.assignFetchProductTask(1, "orange", {from:Manufacturer});
-        expectEvent(receipt, "TaskAssigned", { taskID: "1", taskName:"FetchProduct", productDID:constants.ZERO_ADDRESS, processID: "1", processContractAddress:Manufacturer });
-        StoredInputValue = await this.HBWContract.getTaskInput(1, Helper.toHex("color"));
-        expect(StoredInputValue, "orange");
+        receipt = await this.HBWContract.assignFetchProductTask(1, ProductDID, {from:Manufacturer});
+        expectEvent(receipt, "TaskAssigned", { taskID: "1", taskName:"FetchProduct", productDID:ProductDID, processID: "1", processContractAddress:Manufacturer });
     });
 })
