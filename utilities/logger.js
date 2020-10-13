@@ -2,7 +2,6 @@ require("dotenv").config()
 
 const winston = require('winston');
 const MQTT    = require('mqtt');
-const DB      = require('./db');
 
 TOPIC_LOG = "log/clients"
 
@@ -64,13 +63,6 @@ logger.ClientLog = function(clientName, description, receipt) {
     }else {
         logger.info(`${clientName} - ${description}`);
     }
-    DB.LOG.insert(logMessage,function (error, doc) {
-        if (error) {
-            logger.error(error.stack);
-        } else {
-          mqtt.publish(TOPIC_LOG, JSON.stringify(doc));
-        }
-    });
 }
 
 module.exports=logger;

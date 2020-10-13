@@ -4,7 +4,6 @@ var ContractManager = require("../utilities/contracts-manager");
 var ProvidersManager = require("../utilities/providers-manager");
 var Helper = require("../utilities/helper");
 var Logger = require("../utilities/logger");
-var DB = require("../utilities/db");
 
 var JWT = require("did-jwt");
 var Web3 = require('web3');
@@ -121,16 +120,8 @@ module.exports = {
     var doc = {}
     doc["productID"] = "did:ethr:" + productID;
     doc["encodedCredentials"] = encodedCredential;
-    
+
     doc["operationName"] = operationName;
     doc["operationResult"] = operationResult;
-
-    DB.VC.insert(doc,function (error, docs) {
-      if (error) {
-        Logger.error(error.stack);
-      } else {
-        Logger.ClientLog(clientName, "Product operation has saved as verifiable credentials", doc);
-      }
-    });
   }
 }
