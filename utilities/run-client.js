@@ -1,10 +1,10 @@
 require("dotenv").config();
 
-var HBWClient = require("../clients/HBW/hbw-client");
-var VGRClient = require("../clients/VGR/vgr-client");
-var SLDClient = require("../clients/SLD/sld-client");
-var MPOClient = require("../clients/MPO/mpo-client");
-var ReadingClient = require("../clients/readings-client");
+var HBWClient = require("../MQTT/machines/hbw-client");
+var VGRClient = require("../MQTT/machines/vgr-client");
+var SLDClient = require("../MQTT/machines/sld-client");
+var MPOClient = require("../MQTT/machines/mpo-client");
+var ReadingClient = require("../MQTT/readings-client");
 
 for (var i=0; i<process.argv.length;i++) {
     switch (process.argv[i]) {

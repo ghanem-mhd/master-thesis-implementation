@@ -2,7 +2,11 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 
+const MQTTHandler = require('./MQTT/mqtt-handler');
+const Logger = require('./logger');
+
 const app = express();
+const mqttHandler = new MQTTHandler();
 const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
@@ -20,4 +24,6 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+app.listen(port, () => Logger.info(`Express Listening on port ${port}`));
+
+mqttHandler.connect();

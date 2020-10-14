@@ -48,6 +48,7 @@ module.exports = {
       Contract.events.NewTask({ fromBlock: "latest" }, newTasksCallback);
       Logger.info(clientName + " - Started listening for tasks...");
     }).catch(error => {
+      Logger.error(error.stack)
       Logger.error(clientName + " - Can't connect to the blockchain");
     });
   }, registerCallbackForNewReadingRequest: function (clientName, contractName, readingRequestCallback) {
