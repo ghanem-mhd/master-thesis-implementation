@@ -1,12 +1,6 @@
 require("dotenv").config()
 
 const winston = require('winston');
-const MQTT    = require('mqtt');
-
-TOPIC_LOG = "log/clients"
-
-const mqtt = MQTT.connect(process.env.LOCAL_MQTT);
-
 
 const logger = winston.createLogger({
 

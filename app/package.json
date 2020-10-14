@@ -1,41 +1,31 @@
 {
   "name": "app",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@drizzle/react-components": "^1.5.3",
-    "@drizzle/react-plugin": "^1.5.1",
-    "@drizzle/store": "^1.5.3",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "express": "^4.17.1",
-    "react": "^16.13.1",
-    "react-c3js": "^0.1.20",
-    "react-dom": "^16.13.1",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.3",
-    "tabler-react": "^1.30.1"
-  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "frontend": "cd frontend && yarn start",
+    "server": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn frontend\"",
+    "dev:server": "cd frontend && yarn build && cd .. && yarn start",
+    "start": "node server.js",
+    "heroku-postbuild": "cd frontend && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "ethr-did-resolver": "^2.2.0",
+    "keythereum": "^1.0.4",
+    "did-jwt": "^4.3.4",
+    "uport-credentials": "^1.3.3",
+    "ethereumjs-wallet": "^1.0.0",
+    "ethers": "^4.0.47"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "devDependencies": {
+    "concurrently": "^5.1.0"
+  },
+  "author": {
+    "name": "Mohammad Ghanem"
+  },
+  "license": "ISC"
 }
