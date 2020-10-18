@@ -1,23 +1,23 @@
 require("dotenv").config()
 
 const mqtt = require("mqtt");
+const Topics = require("../topics");
 
 var ContractManager = require("../../utilities/contracts-manager");
+
 var Logger = require("../../utilities/logger");
 var Helper = require("../../utilities/helper");
 var ClientUtils = require("../client-utilities");
 var ReadingsClient = require("../readings-client");
-class SLDClient{
 
-    static TOPIC_SLD_STATE = "f/i/state/sld"
-    static TOPIC_SLD_ACK   = "fl/sld/ack"
-    static TOPIC_SLD_DO    = "fl/sld/do"
-    static TOPIC_SLD_S     = "fl/sld/sound"
+class SLDClient {
+
+    static SORTING_TASK_NAME = "Sorting"
 
     constructor(){}
 
     connect(){
-        this.clientName = this.constructor.name; 
+        this.clientName = this.constructor.name;
         this.mqttClient = mqtt.connect(process.env.CURRENT_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
@@ -34,14 +34,14 @@ class SLDClient{
     }
 
     onMQTTClose(){
-        Logger.info("SLDClient - MQTT client disconnected");
+        Logger.logEvent(this.clientName, "MQTT client disconnected");
     }
 
     onMQTTConnect(){
-        Logger.info("SLDClient - MQTT client connected");
-        this.mqttClient.subscribe(SLDClient.TOPIC_SLD_ACK, {qos: 0});
+        Logger.logEvent(this.clientName, "MQTT client connected");
+        this.mqttClient.subscribe(Topics.TOPIC_SLD_ACK, {qos: 0});
         if(process.env.MACHINE_CLIENTS_STATE == true){
-            this.mqttClient.subscribe(SLDClient.TOPIC_SLD_STATE, {qos: 0});
+            this.mqttClient.subscribe(Topics.TOPIC_SLD_STATE, {qos: 0});
         }
         ClientUtils.registerCallbackForNewTasks(this.clientName, "SLD", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
@@ -51,28 +51,20 @@ class SLDClient{
     }
 
     onMQTTMessage(topic, messageBuffer){
-        if (topic == SLDClient.TOPIC_SLD_STATE){
-            var message = JSON.parse(messageBuffer.toString());
-            Logger.info("SLDClient status: " + messageBuffer.toString());
+        var incomingMessage = JSON.parse(messageBuffer.toString());
+        if (topic == Topics.TOPIC_SLD_STATE){
+            Logger.logEvent(this.clientName, "Status", incomingMessage);
         }
-
-        if (topic == SLDClient.TOPIC_SLD_ACK){
-            var message = JSON.parse(messageBuffer.toString());
-            Logger.ClientLog(this.clientName, "Received Ack message from SLD", message);
-            var taskID = message["taskID"];
-            var productID = message["productID"];
-            var code = message["code"];
+        if (topic == Topics.TOPIC_SLD_ACK){
+            Logger.logEvent(this.clientName, "Received Ack message from SLD", incomingMessage);
+            var {taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(incomingMessage);
             if (code == 2){
-                var color = message["type"];
-                this.createCredential(productID, "ColorDetection", color);
-                this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                    Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
-                    this.currentTaskID = 0;
-                }).catch(error => {
-                    Logger.error(error.stack);
-                });
+                this.currentTaskID = 0;
+                var color = incomingMessage["type"];
+                this.sortingTaskFinished(taskID, color);
             }else{
-                Logger.ClientLog(this.clientName, `Start task ${taskID}`, null);
+                this.currentTaskID = taskID;
+                ClientUtils.taskStarted(this.clientName, this.Contract, process.env.SLD, taskID);
             }
         }
     }
@@ -81,15 +73,12 @@ class SLDClient{
         if (error){
             Logger.error(error);
         }else{
-            ClientUtils.getTask("SLDClient", event, this.Contract).then((task) => {
+           ClientUtils.getTaskWithStatus("SLDClient", event, this.Contract).then((task) => {
                 if (task.isFinished){
                     return;
                 }
                 this.currentTaskID = task.taskID;
-                if (task.taskName == "Sort"){
-                    event = {}
-                    event["returnValues"] = { "readingType": 4};
-                    this.onNewReadingRequest(null, event);
+                if (task.taskName == SLDClient.SORTING_TASK_NAME){
                     this.handleSortTask(task);
                 }
             });
@@ -103,7 +92,7 @@ class SLDClient{
             var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
             var readingValue = this.readingsClient.getRecentReading(readingType);
             this.Contract.methods.saveReadingSLD(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.ClientLog(this.clientName, `New reading has been saved`, receipt);
+                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -114,25 +103,25 @@ class SLDClient{
         if (error){
             Logger.error(error);
         }else{
-            Logger.ClientLog(this.clientName, `New issue has been saved: ${event.returnValues["reason"]}`, null);
-            var taskMessage = ClientUtils.getSoundMessage(2);
-            this.mqttClient.publish(SLDClient.TOPIC_SLD_S, JSON.stringify(taskMessage));
+            Logger.logEvent(this.clientName, `New alert has been saved: ${event.returnValues["reason"]}`, null);
+            this.mqttClient.publish(Topics.TOPIC_SLD_S, JSON.stringify(ClientUtils.getSoundMessage(2)));
         }
     }
 
     async handleSortTask(task){
-        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 8);
-        this.sendTask(task.taskID, task.taskName, taskMessage);
+        var taskMessage = ClientUtils.getTaskMessageObject(task, 8);
+        this.sendTaskToMachine(task.taskID, task.taskName, taskMessage);
     }
 
-    sendTask(taskID, taskName, taskMessage,){
-        Logger.ClientLog(this.clientName, `Sending  task ${taskName} ${taskID} to SLD`, taskMessage);
-        this.mqttClient.publish(SLDClient.TOPIC_SLD_DO, JSON.stringify(taskMessage));
+    sendTaskToMachine(taskID, taskName, taskMessage,){
+        Logger.logEvent(this.clientName, `Sending ${taskName} task ${taskID} to SLD`, taskMessage);
+        this.mqttClient.publish(Topics.TOPIC_SLD_DO, JSON.stringify(taskMessage));
     }
 
-    async createCredential(productID, operationName, operationResult){
-        ClientUtils.createCredential(1, productID, operationName, operationResult).then( encodedCredential => {
-            ClientUtils.storeCredential("SLDClient", productID, encodedCredential, operationName, operationResult);
+    sortingTaskFinished(taskID, color){
+        this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            Logger.logEvent(this.clientName, `Sorting task ${taskID} finished`, receipt);
+            this.currentTaskID = 0;
         }).catch(error => {
             Logger.error(error.stack);
         });

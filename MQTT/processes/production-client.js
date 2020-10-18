@@ -5,14 +5,14 @@ const mqtt = require("mqtt");
 var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
 var Helper = require('../../utilities/helper');
-var HBWClient = require("../HBW/hbw-client");
-var VGRClient = require("../VGR/vgr-client");
-var SLDClient = require("../SLD/sld-client");
-var MPOClient = require("../MPO/mpo-client");
+var HBWClient = require("../machines/hbw-client");
+var VGRClient = require("../machines/vgr-client");
+var SLDClient = require("../machines/sld-client");
+var MPOClient = require("../machines/mpo-client");
 var ClientUtils = require("../client-utilities");
 var Wallet      = require("ethereumjs-wallet");
 
-class ProductionProcessClient{
+class ProductionProcessClient {
 
     //ORDERED
     //IN_PROCESS
@@ -22,15 +22,11 @@ class ProductionProcessClient{
     static TOPIC_ORDER = "f/o/order"
     static TOPIC_ORDER_STATUS = "f/i/order"
 
-    constructor(){
-        this.hbwClient  = new HBWClient();
-        this.vgrClient  = new VGRClient();
-        this.sldClient  = new SLDClient();
-        this.mpoClient  = new MPOClient();
-    }
+    constructor(){}
 
     connect(){
-        this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
+        this.clientName = "PLPClient";
+        this.mqttClient  = mqtt.connect(process.env.LOCAL_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
@@ -45,14 +41,9 @@ class ProductionProcessClient{
     }
 
     onMQTTConnect(){
-        Logger.info("PLPClient - MQTT client connected");
+        Logger.logEvent(this.clientName, "MQTT client connected");
 
         this.mqttClient.subscribe(ProductionProcessClient.TOPIC_ORDER, {qos: 0});
-
-        this.hbwClient.connect();
-        this.vgrClient.connect();
-        this.sldClient.connect();
-        this.mpoClient.connect();
 
         var contractsAsyncGets = [
             ContractManager.getWeb3Contract(process.env.NETWORK, "VGR"),
@@ -63,7 +54,7 @@ class ProductionProcessClient{
         ];
 
         Promise.all(contractsAsyncGets).then( contracts => {
-            Logger.info("PLPClient - start listening for tasks finish events...");
+            Logger.logEvent(this.clientName, "Start listening for tasks finish events...");
 
             var VGRContract = contracts[0];
             var HBWContract = contracts[1];
@@ -82,21 +73,21 @@ class ProductionProcessClient{
     }
 
     onMQTTClose(){
-        Logger.info("PLPClient - MQTT client disconnected");
+        Logger.logEvent(this.clientName, "MQTT client disconnected");
     }
 
     onMQTTMessage(topic, messageBuffer){
         var message = JSON.parse(messageBuffer.toString());
         if (topic == ProductionProcessClient.TOPIC_ORDER){
 
-            this.orderColor  = message["type"];
-            var productID   = Wallet.default.generate().getAddressString();
-            var color       = message["type"];
+            this.orderColor     = message["type"];
+            var productDID      = process.env.DUMMY_PRODUCT //Wallet.default.generate().getAddressString();
+            var color           = message["type"];
 
             this.publishOrderState("ORDERED", this.orderColor);
 
-            this.productionProcessContract.methods.order(productID, color).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("PLPClient - triggered...");
+            this.productionProcessContract.methods.startProductionProcess(productDID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.logEvent(this.clientName, "Production process started");
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -107,16 +98,16 @@ class ProductionProcessClient{
         if (error){
             Logger.error(error);
         }else{
-            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
-            if (taskName == "MoveHBW2MPO"){
+            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
+            if (taskName == VGRClient.TASK3){
                 this.publishOrderState("IN_PROCESS", this.orderColor);
-                this.productionProcessContract.methods.onMoveHBW2MPOFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.productionProcessContract.methods.step3(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
             }
 
-            if (taskName == "PickSorted"){
+            if (taskName == VGRClient.TASK4){
                 this.publishOrderState("SHIPPED", this.orderColor);
                 setTimeout(() => this.publishOrderState("WAITING_FOR_ORDER",""), 5000);
             }
@@ -127,9 +118,9 @@ class ProductionProcessClient{
         if (error){
             Logger.error(error);
         }else{
-            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
-            if (taskName == "FetchWB"){
-                this.productionProcessContract.methods.onFetchWBFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
+            if (taskName == HBWClient.TASK4){
+                this.productionProcessContract.methods.step2(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -141,9 +132,9 @@ class ProductionProcessClient{
         if (error){
             Logger.error(error);
         }else{
-            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
-            if (taskName == "Process"){
-                this.productionProcessContract.methods.onProcessingFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
+            if (taskName == MPOClient.PROCESSING_TASK_NAME){
+                this.productionProcessContract.methods.step4(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -156,9 +147,9 @@ class ProductionProcessClient{
         if (error){
             Logger.error(error);
         }else{
-            var {taskID, taskName, productID} = ClientUtils.getTaskInfo(event);
-            if (taskName == "Sort"){
-                this.productionProcessContract.methods.onSortingFinished(productID).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
+            if (taskName == SLDClient.SORTING_TASK_NAME){
+                this.productionProcessContract.methods.step5(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -172,6 +163,4 @@ class ProductionProcessClient{
     }
 }
 
-var client = new ProductionProcessClient();
-
-client.connect();
+module.exports = ProductionProcessClient

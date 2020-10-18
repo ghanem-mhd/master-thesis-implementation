@@ -1,16 +1,20 @@
 require("dotenv").config()
 
 const mqtt = require("mqtt");
+const Topics = require("../topics");
 
+var ContractManager = require("../../utilities/contracts-manager");
 var Logger = require("../../utilities/logger");
+var Helper = require("../../utilities/helper");
 var ClientUtils = require("../client-utilities");
 var ReadingsClient = require("../readings-client");
 
 class VGRClient{
 
-    static TOPIC_VGR_STATE = "f/i/state/vgr"
-    static TOPIC_VGR_ACK   = "fl/vgr/ack"
-    static TOPIC_VGR_DO    = "fl/vgr/do2"
+    static TASK1 = "GetInfo"
+    static TASK2 = "DropToHBW"
+    static TASK3 = "MoveHBW2MPO"
+    static TASK4 = "PickSorted"
 
     constructor(){}
 
@@ -32,14 +36,14 @@ class VGRClient{
     }
 
     onMQTTClose(){
-        Logger.info("VGRClient - MQTT client disconnected");
+        Logger.logEvent(this.clientName, "MQTT client disconnected");
     }
 
     onMQTTConnect(){
-        Logger.info("VGRClient - MQTT client connected");
-        this.mqttClient.subscribe(VGRClient.TOPIC_VGR_ACK, {qos: 0});
+        Logger.logEvent(this.clientName, "MQTT client connected");
+        this.mqttClient.subscribe(Topics.TOPIC_VGR_ACK, {qos: 0});
         if(process.env.MACHINE_CLIENTS_STATE == true){
-            this.mqttClient.subscribe(VGRClient.TOPIC_VGR_STATE, {qos: 0});
+            this.mqttClient.subscribe(Topics.TOPIC_VGR_STATE, {qos: 0});
         }
         ClientUtils.registerCallbackForNewTasks(this.clientName, "VGR", (error, event) => this.onNewTask(error, event), (Contract) => {
             this.Contract = Contract;
@@ -48,45 +52,26 @@ class VGRClient{
     }
 
     onMQTTMessage(topic, messageBuffer){
-        var message = JSON.parse(messageBuffer.toString());
-        if (topic == VGRClient.TOPIC_VGR_STATE){
-            Logger.info("VGRClient status: " + messageBuffer.toString());
+        var incomingMessage = JSON.parse(messageBuffer.toString());
+
+        if (topic == Topics.TOPIC_VGR_STATE){
+            Logger.logEvent(this.clientName, "Status", incomingMessage);
         }
 
-        if (topic == VGRClient.TOPIC_VGR_ACK){
-            Logger.ClientLog(this.clientName, "Received Ack message from VGR", message);
-
-            var taskID      = message["taskID"];
-            var code        = message["code"];
-
-            this.currentTaskID = 0;
-
+        if (topic == Topics.TOPIC_VGR_ACK){
+            Logger.logEvent(this.clientName, "Received Ack message from HBW", incomingMessage);
+            var {taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(incomingMessage);
             if (code == 3){
                 return;
             }
-
+            this.currentTaskID = 0;
             if (code == 1){
-                var productID  = message["productID"];
-                var workpiece   = message["workpiece"];
+                var workpiece   = incomingMessage["workpiece"];
                 if (workpiece){
-                    var color = workpiece["type"];
-                    var id = workpiece["id"];
-
-                    this.createCredential(productID, "NFCTagReading", id);
-                    this.createCredential(productID, "ColorDetection", color);
-
-                    this.Contract.methods.finishGetInfo(taskID, id, color).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                        Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
-                    }).catch(error => {
-                        Logger.error(error.stack);
-                    });
+                    this.getInfoTaskFinished(taskID, workpiece["type"], workpiece["id"])
                 }
             }else{
-                this.Contract.methods.finishTask(taskID).send({from:process.env.VGR}).then( receipt => {
-                    Logger.ClientLog(this.clientName, `Finished task ${taskID}`, receipt);
-                }).catch(error => {
-                    Logger.error(error.stack);
-                });
+                ClientUtils.taskFinished(this.clientName, this.Contract, process.env.VGR, taskID);
             }
         }
     }
@@ -95,25 +80,25 @@ class VGRClient{
         if (error){
             Logger.error(error);
         }else{
-            ClientUtils.getTask(this.clientName, event, this.Contract).then((task) => {
+           ClientUtils.getTaskWithStatus(this.clientName, event, this.Contract).then((task) => {
                 if (task.isFinished){
                     return;
                 }
                 this.currentTaskID = task.taskID;
 
-                if (task.taskName == "GetInfo"){
+                if (task.taskName == VGRClient.TASK1){
                     this.handleGetInfoTask(task);
                 }
 
-                if (task.taskName == "DropToHBW"){
+                if (task.taskName == VGRClient.TASK2){
                     this.handleDropToHBWTask(task);
                 }
 
-                if (task.taskName == "MoveHBW2MPO"){
+                if (task.taskName == VGRClient.TASK3){
                     this.handleMoveHBW2MPOTask(task);
                 }
 
-                if (task.taskName == "PickSorted"){
+                if (task.taskName == VGRClient.TASK4){
                     this.handlePickSortedTask(task);
                 }
             });
@@ -128,7 +113,7 @@ class VGRClient{
             var readingValue = this.readingsClient.getRecentReading(readingType);
 
             this.Contract.methods.saveReadingVGR(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.info("VGRClient - new reading has been saved");
+                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -136,38 +121,43 @@ class VGRClient{
     }
 
     async handleGetInfoTask(task){
-        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 1);
+        var taskMessage = ClientUtils.getTaskMessageObject(task, 1);
         this.sendTask(task.taskID, task.taskName, taskMessage);
+        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
     }
 
     async handleDropToHBWTask(task){
-        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 2);
+        var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
         this.sendTask(task.taskID, task.taskName, taskMessage);
+        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
     }
 
     async handleMoveHBW2MPOTask(task){
-        var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 5);
+        var taskMessage = ClientUtils.getTaskMessageObject(task, 5);
         this.sendTask(task.taskID, task.taskName, taskMessage);
+        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
     }
 
     async handlePickSortedTask(task){
         ClientUtils.getTaskInputs(this.Contract, task.taskID, ["color"]).then( inputValues => {
-            var taskMessage = ClientUtils.getTaskMessageObject(task.taskID, task.productID, 4);
+            var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
             taskMessage["type"] = inputValues[0];
             this.sendTask(task.taskID, task.taskName, taskMessage);
+            ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
         }).catch( error => {
             Logger.error(error.stack);
         });
     }
 
     sendTask(taskID, taskName, taskMessage){
-        Logger.ClientLog(this.clientName, `Sending  task ${taskName} ${taskID} to VGR`, taskMessage);
-        this.mqttClient.publish(VGRClient.TOPIC_VGR_DO, JSON.stringify(taskMessage));
+        Logger.logEvent(this.clientName, `Sending task ${taskName} ${taskID} to VGR`, taskMessage);
+        this.mqttClient.publish(Topics.TOPIC_VGR_DO, JSON.stringify(taskMessage));
     }
 
-    async createCredential(productID, operationName, operationResult){
-        ClientUtils.createCredential(1, productID, operationName, operationResult).then( encodedCredential => {
-            ClientUtils.storeCredential(this.clientName, productID, encodedCredential, operationName, operationResult);
+    getInfoTaskFinished(taskID, color, id){
+        this.Contract.methods.finishGetInfoTask(taskID, color, id).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            Logger.logEvent(this.clientName, `task ${taskID} finished`, receipt);
+            this.currentTaskID = 0;
         }).catch(error => {
             Logger.error(error.stack);
         });

@@ -1,10 +1,14 @@
 require("dotenv").config();
 
+var FactorySimulator = require("../MQTT/factory-simulator");
 var HBWClient = require("../MQTT/machines/hbw-client");
 var VGRClient = require("../MQTT/machines/vgr-client");
 var SLDClient = require("../MQTT/machines/sld-client");
 var MPOClient = require("../MQTT/machines/mpo-client");
 var ReadingClient = require("../MQTT/readings-client");
+
+
+new FactorySimulator().connect();
 
 for (var i=0; i<process.argv.length;i++) {
     switch (process.argv[i]) {

@@ -51,18 +51,26 @@ module.exports = {
       host: "127.0.0.1",
       port: 7545,
       network_id: "*" // Match any network id
-      //provider: () => new HDWalletProvider(process.env.ADMIN_MNEMONIC, "http://localhost:8545"), 
+      //provider: () => new HDWalletProvider(process.env.ADMIN_MNEMONIC, "http://localhost:8545"),
     },
     dev_cli: {
       host: "127.0.0.1",
       port: 8545,
       network_id: "*",
-      //provider: () => new HDWalletProvider(process.env.ADMIN_MNEMONIC, "http://localhost:8545"), 
+      //provider: () => new HDWalletProvider(process.env.ADMIN_MNEMONIC, "http://localhost:8545"),
     },
     rinkeby: {
       provider: () => new HDWalletProvider(process.env.ADMIN_MNEMONIC, "https://rinkeby.infura.io/v3/" + infuraProjectId),
       network_id: 4,
     },
+    quorum:{
+      host: "127.0.0.1",
+      port: 22000,
+      network_id: "*",
+      type: "quorum",
+      gas: 45000000,
+      gasPrice:0
+    }
 
     // Another network with more advanced options...
     // advanced: {

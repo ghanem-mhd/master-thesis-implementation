@@ -1,13 +1,12 @@
-const express = require('express');
-const path = require('path');
-const bodyParser = require('body-parser');
-
+const express     = require('express');
+const path        = require('path');
+const bodyParser  = require('body-parser');
 const MQTTHandler = require('./MQTT/mqtt-handler');
-const Logger = require('./logger');
+const Logger      = require('./utilities/logger');
 
-const app = express();
+const app         = express();
 const mqttHandler = new MQTTHandler();
-const port = process.env.PORT || 5000;
+const port        = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

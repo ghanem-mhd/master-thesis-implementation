@@ -36,26 +36,27 @@ logger.logTx = function(desc, receipt){
 }
 
 
-logger.ClientLog = function(clientName, description, receipt) {
+logger.logEvent = function(eventLocation, eventDescription, payload = null) {
     var logMessage = {
-        clientName: clientName,
-        description: description,
-        receipt: receipt,
+        eventLocation: eventLocation,
+        eventDescription: eventDescription,
+        payload: payload,
         transactionHash: null,
-        timestamp: new Date().toLocaleString(),
+        eventTimestamp: new Date().toLocaleString(),
     }
-    if (receipt){
-        if(receipt.hasOwnProperty('transactionHash')){
-            logger.info(`${clientName} - ${description} : ${receipt.transactionHash}`)
-            logMessage.transactionHash = receipt.transactionHash
+    if (payload){
+        if(payload.hasOwnProperty('transactionHash')){
+            logMessage.transactionHash = payload.transactionHash
         }
-        if(receipt.hasOwnProperty('tx')){
-            logger.info(`${clientName} - ${description} : ${receipt.tx}`)
-            logMessage.transactionHash = receipt.tx
+        if(payload.hasOwnProperty('tx')){
+            logMessage.transactionHash = payload.tx
         }
-        logger.verbose(logMessage)
-    }else {
-        logger.info(`${clientName} - ${description}`);
+    }
+    logger.verbose(logMessage)
+    if (logMessage.transactionHash){
+        logger.info(`${eventLocation} - ${eventDescription} : ${logMessage.transactionHash}`)
+    }else{
+        logger.info(`${eventLocation} - ${eventDescription}`);
     }
 }
 

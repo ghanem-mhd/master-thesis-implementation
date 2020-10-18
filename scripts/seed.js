@@ -16,21 +16,30 @@ var contractsAsyncGets = [
     ContractsManager.getWeb3Contract(process.env.NETWORK, "SLD"),
     ContractsManager.getWeb3Contract(process.env.NETWORK, "SupplyingProcess"),
     ContractsManager.getWeb3Contract(process.env.NETWORK, "ProductionProcess"),
+    ContractsManager.getWeb3Contract(process.env.NETWORK, "Product"),
 ];
 
 Promise.all(contractsAsyncGets).then( async contracts => {
-    var VGRContract = contracts[0];
-    var HBWContract = contracts[1];
-    var MPOContract = contracts[2];
-    var SLDContract = contracts[3];
-    var supplyingProcessContract = contracts[4];
-    var productionProcessContract = contracts[5];
+    var VGRContract                 = contracts[0];
+    var HBWContract                 = contracts[1];
+    var MPOContract                 = contracts[2];
+    var SLDContract                 = contracts[3];
+    var supplyingProcessContract    = contracts[4];
+    var productionProcessContract   = contracts[5];
+    var productContract             = contracts[6];
+
+    var productCommands = [
+        productContract.methods.createProduct(process.env.DUMMY_PRODUCT).send({from:process.env.PRODUCT_OWNER}),
+        productContract.methods.authorizeManufacturer(process.env.MANUFACTURER, process.env.DUMMY_PRODUCT).send({from:process.env.PRODUCT_OWNER})
+    ];
+    await Promise.all(productCommands);
+    Logger.info("Product seeding finished");
 
     var seedSupplyingProcessCommands = [
         supplyingProcessContract.methods.setVGRContractAddress(VGRContract._address).send({from:process.env.ADMIN}),
         supplyingProcessContract.methods.setHBWContractAddress(HBWContract._address).send({from:process.env.ADMIN}),
-        VGRContract.methods.authorizeManufacturer(supplyingProcessContract._address).send({from:process.env.ADMIN}),
-        HBWContract.methods.authorizeManufacturer(supplyingProcessContract._address).send({from:process.env.ADMIN})
+        VGRContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN}),
+        HBWContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN})
     ];
 
     await Promise.all(seedSupplyingProcessCommands);
@@ -41,10 +50,8 @@ Promise.all(contractsAsyncGets).then( async contracts => {
         productionProcessContract.methods.setHBWContractAddress(HBWContract._address).send({from:process.env.ADMIN}),
         productionProcessContract.methods.setMPOContractAddress(MPOContract._address).send({from:process.env.ADMIN}),
         productionProcessContract.methods.setSLDContractAddress(SLDContract._address).send({from:process.env.ADMIN}),
-        VGRContract.methods.authorizeManufacturer(productionProcessContract._address).send({from:process.env.ADMIN}),
-        HBWContract.methods.authorizeManufacturer(productionProcessContract._address).send({from:process.env.ADMIN}),
-        MPOContract.methods.authorizeManufacturer(productionProcessContract._address).send({from:process.env.ADMIN}),
-        SLDContract.methods.authorizeManufacturer(productionProcessContract._address).send({from:process.env.ADMIN}),
+        MPOContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN}),
+        SLDContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN}),
         VGRContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
         HBWContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
         MPOContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
