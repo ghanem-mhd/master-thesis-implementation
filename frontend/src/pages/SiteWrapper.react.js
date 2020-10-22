@@ -57,13 +57,18 @@ const navBarItems: Array<navItem> = [
       { value: "MPO", to: "/MPO", LinkComponent: NavLink },
       { value: "SLD", to: "/SLD", LinkComponent: NavLink },
     ]
-  },{
-    value: "Products",
-    icon: "shopping-bag",
   },
   {
-    value: "Log",
-    icon: "server"
+    value: "Products",
+    icon: "shopping-bag",
+    to: "/product",
+    LinkComponent: withRouter(NavLink),
+  },
+  {
+    value: "Processes",
+    icon: "server",
+    to: "/process",
+    LinkComponent: withRouter(NavLink),
   },
   {
     value: "Settings",

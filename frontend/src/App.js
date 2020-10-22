@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import HomePage from "./pages/Home";
 import Machine from "./pages/Machine"
+import Product from "./pages/Product"
+import Process from "./pages/Process"
 import MachineTasks from "./pages/MachineTasks"
 
 
@@ -32,6 +34,8 @@ function App(props: Props): React.Node {
                 <Switch>
                   <Route exact path="/"><HomePage drizzle={drizzle} drizzleState={drizzleState}/></Route>
                   <Route exact path="/tasks/:machine"><MachineTasks drizzle={drizzle} drizzleState={drizzleState}/></Route>
+                  <Route exact path="/product"><Product drizzle={drizzle} drizzleState={drizzleState}/></Route>
+                  <Route exact path="/process"><Process drizzle={drizzle} drizzleState={drizzleState}/></Route>
                 </Switch>
               </Router>
           )
