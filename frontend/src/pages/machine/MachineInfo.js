@@ -6,15 +6,11 @@ import {
   Card
 } from "tabler-react";
 
-const { AccountData, ContractData, ContractForm } = newContextComponents;
+const { ContractData } = newContextComponents;
 
 class MachineInfo extends React.PureComponent {
 
     state = {};
-
-    constructor(props){
-        super(props);
-    }
 
     getData(props){
         props.drizzle.contracts[props.machine].methods["getMachineInfoNames"].call().call().then( infoNames => {

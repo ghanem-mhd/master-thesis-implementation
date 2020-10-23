@@ -9,14 +9,9 @@ class AuthorizedParties extends React.PureComponent {
 
     state = {};
 
-    constructor(props){
-        super(props);
-    }
-
     getData(props){
         props.drizzle.contracts[props.machine].methods[props.methodName].call().call().then( list => {
             this.setState({list:list})
-
         });
     }
 

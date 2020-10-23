@@ -5,20 +5,16 @@ import {
   StampCard
 } from "tabler-react";
 
-const { AccountData, ContractData, ContractForm } = newContextComponents;
+const {  ContractData } = newContextComponents;
 
 class MachineMetrics extends React.PureComponent {
 
     state = {};
 
-    constructor(props){
-        super(props);
-    }
-
     render() {
         var machine = this.props.machine
         return (
-         <Grid.Row cards deck cards={true}>
+         <Grid.Row deck cards={true}>
           <Grid.Col sm={6} lg={3}>
             <StampCard
               color="blue"

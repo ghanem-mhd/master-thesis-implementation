@@ -1,4 +1,3 @@
-import Web3 from "web3";
 import VGR from './contracts/VGR.json'
 import HBW from './contracts/HBW.json'
 import SLD from './contracts/SLD.json'

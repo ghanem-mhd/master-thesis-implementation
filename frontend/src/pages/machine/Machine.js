@@ -1,7 +1,6 @@
 // @flow
 
 import * as React from "react";
-import { Page } from "tabler-react";
 
 import MachineInfo from "./MachineInfo";
 import MachineMetrics from "./MachineMetrics";
@@ -10,10 +9,6 @@ import AuthorizedParties from "./AuthorizedParties";
 class Machine extends React.Component {
 
     state = {machine:null};
-
-    constructor(props) {
-      super(props);
-    }
 
     render() {
         return (

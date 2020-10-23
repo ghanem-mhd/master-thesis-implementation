@@ -3,10 +3,10 @@ import * as React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import HomePage from "./pages/Home";
-import Machine from "./pages/Machine"
-import Product from "./pages/Product"
-import Process from "./pages/Process"
-import MachineTasks from "./pages/MachineTasks"
+import Product from "./pages/product/Product";
+import Process from "./pages/process/Process";
+import ManageProduct from "./pages/product/ManageProduct";
+import MachineTasks from "./pages/machine/MachineTasks";
 
 
 import "tabler-react/dist/Tabler.css";
@@ -36,6 +36,7 @@ function App(props: Props): React.Node {
                   <Route exact path="/tasks/:machine"><MachineTasks drizzle={drizzle} drizzleState={drizzleState}/></Route>
                   <Route exact path="/product"><Product drizzle={drizzle} drizzleState={drizzleState}/></Route>
                   <Route exact path="/process"><Process drizzle={drizzle} drizzleState={drizzleState}/></Route>
+                  <Route exact path="/manageProduct"><ManageProduct drizzle={drizzle} drizzleState={drizzleState}/></Route>
                 </Switch>
               </Router>
           )

@@ -1,7 +1,6 @@
 import React from "react";
 
-import { newContextComponents } from "@drizzle/react-components";
-import SiteWrapper from "./SiteWrapper.react";
+import SiteWrapper from "../SiteWrapper.react";
 import { withRouter } from "react-router";
 
 import {
@@ -13,15 +12,9 @@ import {
 
 import Task from "./Task";
 
-const { ContractData } = newContextComponents;
-
 class MachineTasks extends React.Component {
 
     state = {};
-
-    constructor(props){
-        super(props);
-    }
 
     getData(props){
         var machine = props.match.params.machine

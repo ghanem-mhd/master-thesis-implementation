@@ -8,13 +8,9 @@ class Task extends React.Component {
 
     state = {};
 
-    constructor(props){
-        super(props);
-    }
-
     componentDidMount(){
         var machine = this.props.machine
-        var taskID = this.props.taskID
+        var taskID  = this.props.taskID
         this.props.drizzle.contracts[machine].methods.getTask(taskID).call().then( task => {
             this.setState({task:task});
         });
@@ -30,7 +26,7 @@ class Task extends React.Component {
 
 
     shouldComponentUpdate(nextProps, nextState){
-        if (this.state && this.state.task != nextState.task){
+        if (this.state && this.state.task !== nextState.task){
             return true
         }else{
             return false

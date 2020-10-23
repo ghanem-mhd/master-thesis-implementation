@@ -8,7 +8,7 @@ import {
 } from "tabler-react";
 
 import SiteWrapper from "./SiteWrapper.react";
-import Machine from "./Machine"
+import Machine from "./machine/Machine"
 
 class Home extends React.Component {
 

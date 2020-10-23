@@ -12,9 +12,9 @@ import {
 
 import NotificationSystem from 'react-notification-system';
 
-import SiteWrapper from "./SiteWrapper.react";
+import SiteWrapper from "../SiteWrapper.react";
 
-class Product extends React.Component {
+class Process extends React.Component {
 
     notificationSystem = React.createRef();
 
@@ -22,18 +22,13 @@ class Product extends React.Component {
         super(props)
         this.state = {
             formValues:{
-                createProductInput1: {
+                supplyingProductDID: {
                     value: "",
                     invalid: false,
                     valid: false
                 },
-                authorizeManufacturerInput1: {
-                    value1: "",
-                    invalid: false,
-                    valid: false
-                },
-                authorizeManufacturerInput2: {
-                    value1: "",
+                productionProductDID: {
+                    value: "",
                     invalid: false,
                     valid: false
                 }
@@ -51,17 +46,22 @@ class Product extends React.Component {
         this.setState({formValues})
     }
 
-    onCreateButtonClicked(e){
+    checkProductDID(productDID){
+        let web3 = this.props.drizzle.web3;
+        return web3.utils.isAddress(productDID)
+    }
+
+    onSupplyingProcessStartClicked(e){
         let formValues = this.state.formValues;
-        let productDID = formValues["createProductInput1"].value;
+        let productDID = formValues["supplyingProductDID"].value;
         if (this.checkProductDID(productDID)){
-            this.props.drizzle.contracts["Product"].methods["createProduct"](productDID).send({
+            this.props.drizzle.contracts["SupplyingProcess"].methods["startSupplyingProcess"](productDID).send({
                 from:this.props.drizzleState.accounts[0],
-                gas: "6721975",
-                gasPrice: "2000000"
+                gas: process.env.REACT_APP_DEFAULT_GAS,
+                gasPrice: process.env.REACT_APP_GAS_PRICE
             }, this.sendTransactionCallback.bind(this));
         }else{
-            formValues["createProductInput1"].invalid = true
+            formValues["supplyingProductDID"].invalid = true
             this.setState({formValues})
         }
     }
@@ -84,15 +84,24 @@ class Product extends React.Component {
                 level: 'success',
                 position: 'br'
             });
-            this.resetInput("createProductInput1")
-            this.resetInput("authorizeManufacturerInput1")
-            this.resetInput("authorizeManufacturerInput2")
+            this.resetInput("productionProductDID")
+            this.resetInput("supplyingProductDID")
         }
     }
 
-    checkProductDID(productDID){
-        let web3 = this.props.drizzle.web3;
-        return web3.utils.isAddress(productDID)
+    onProductionProcessStartClicked(e){
+        let formValues = this.state.formValues;
+        let productDID = formValues["productionProductDID"].value;
+        if (this.checkProductDID(productDID)){
+            this.props.drizzle.contracts["ProductionProcess"].methods["startProductionProcess"](productDID).send({
+                from:this.props.drizzleState.accounts[0],
+                gas: process.env.REACT_APP_DEFAULT_GAS,
+                gasPrice: process.env.REACT_APP_GAS_PRICE
+            }, this.sendTransactionCallback.bind(this));
+        }else{
+            formValues["productionProductDID"].invalid = true
+            this.setState({formValues})
+        }
     }
 
     handleChange(event) {
@@ -106,17 +115,13 @@ class Product extends React.Component {
         this.setState({formValues})
     }
 
-    onAuthorizeButtonClicked(e){
-
-    }
-
     render () {
         return (
             <SiteWrapper>
-                <Page.Content title="Products">
+                <Page.Content title="Processes">
                     <Grid.Row>
                         <Grid.Col md={12} xl={12}>
-                            <Card title="Create New Product" isCollapsible>
+                            <Card title="Supplying Process" isCollapsible>
                                 <Card.Body>
                                     <Form.Group label="Product DID">
                                         <Form.InputGroup>
@@ -124,12 +129,12 @@ class Product extends React.Component {
                                                 <Form.InputGroupText>did:ethr:</Form.InputGroupText>
                                             </Form.InputGroupPrepend>
                                             <Form.Input
-                                                invalid={this.state.formValues.createProductInput1.invalid}
-                                                cross={this.state.formValues.createProductInput1.invalid}
-                                                valid={this.state.formValues.createProductInput1.valid}
-                                                tick={this.state.formValues.createProductInput1.valid}
-                                                name="createProductInput1"
-                                                placeholder="Product ethereum address 0x3f..."
+                                                invalid={this.state.formValues.supplyingProductDID.invalid}
+                                                cross={this.state.formValues.supplyingProductDID.invalid}
+                                                valid={this.state.formValues.supplyingProductDID.valid}
+                                                tick={this.state.formValues.supplyingProductDID.valid}
+                                                name="supplyingProductDID"
+                                                placeholder="Ethereum address 0x3f..."
                                                 onChange={this.handleChange.bind(this)}/>
                                         </Form.InputGroup>
                                     </Form.Group>
@@ -137,20 +142,18 @@ class Product extends React.Component {
                                 <Card.Footer>
                                     <div align="right">
                                         <Button
-                                            onClick={this.onCreateButtonClicked.bind(this)}
+                                            onClick={this.onSupplyingProcessStartClicked.bind(this)}
                                             color="primary">
-                                                Create
+                                                Start
                                         </Button>
                                     </div>
                                 </Card.Footer>
                             </Card>
                         </Grid.Col>
                     </Grid.Row>
-
                     <Grid.Row>
                         <Grid.Col md={12} xl={12}>
-
-                            <Card title="Authorize Manufacturer" isCollapsible>
+                            <Card title="Production Process" isCollapsible>
                                 <Card.Body>
                                     <Form.Group label="Product DID">
                                         <Form.InputGroup>
@@ -158,27 +161,12 @@ class Product extends React.Component {
                                                 <Form.InputGroupText>did:ethr:</Form.InputGroupText>
                                             </Form.InputGroupPrepend>
                                             <Form.Input
-                                                invalid={this.state.formValues.authorizeManufacturerInput1.invalid}
-                                                cross={this.state.formValues.authorizeManufacturerInput1.invalid}
-                                                valid={this.state.formValues.authorizeManufacturerInput1.valid}
-                                                tick={this.state.formValues.authorizeManufacturerInput1.valid}
-                                                name="authorizeManufacturerInput1"
-                                                placeholder="Product ethereum address 0x3f..."
-                                                onChange={this.handleChange.bind(this)}/>
-                                        </Form.InputGroup>
-                                    </Form.Group>
-                                   <Form.Group label="Manufacturer Address">
-                                        <Form.InputGroup>
-                                            <Form.InputGroupPrepend>
-                                                <Form.InputGroupText>did:ethr:</Form.InputGroupText>
-                                            </Form.InputGroupPrepend>
-                                            <Form.Input
-                                                invalid={this.state.formValues.authorizeManufacturerInput2.invalid}
-                                                cross={this.state.formValues.authorizeManufacturerInput2.invalid}
-                                                valid={this.state.formValues.authorizeManufacturerInput2.valid}
-                                                tick={this.state.formValues.authorizeManufacturerInput2.valid}
-                                                name="authorizeManufacturerInput2"
-                                                placeholder="Manufacturer ethereum address 0x3f..."
+                                                invalid={this.state.formValues.productionProductDID.invalid}
+                                                cross={this.state.formValues.productionProductDID.invalid}
+                                                valid={this.state.formValues.productionProductDID.valid}
+                                                tick={this.state.formValues.productionProductDID.valid}
+                                                name="productionProductDID"
+                                                placeholder="Ethereum address 0x3f..."
                                                 onChange={this.handleChange.bind(this)}/>
                                         </Form.InputGroup>
                                     </Form.Group>
@@ -186,9 +174,9 @@ class Product extends React.Component {
                                 <Card.Footer>
                                     <div align="right">
                                         <Button
-                                            onClick={this.onAuthorizeButtonClicked.bind(this)}
+                                            onClick={this.onProductionProcessStartClicked.bind(this)}
                                             color="primary">
-                                                Authorize
+                                                Start
                                         </Button>
                                     </div>
                                 </Card.Footer>
@@ -202,4 +190,4 @@ class Product extends React.Component {
     }
 }
 
-export default Product;
+export default Process;
