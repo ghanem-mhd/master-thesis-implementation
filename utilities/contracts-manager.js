@@ -17,12 +17,11 @@ module.exports = {
             return Promise.reject(error)
         }
     },
-    getTruffleContract: async function(provider, contractName) {
+    getTruffleContract: function(provider, contractName) {
         var artifact = require(`../build/contracts/${contractName}.json`)
         var contract = TruffleContract(artifact)
         contract.setProvider(provider)
-        var deployedInstance = await contract.deployed()
-        return deployedInstance;
+        return contract.deployed();
     },
     getRegistryContract: async function(provider){
         var artifact = require("../ethr-did-registry/build/contracts/EthereumDIDRegistry.json")

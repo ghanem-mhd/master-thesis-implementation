@@ -7,5 +7,16 @@ module.exports = {
   },
   toString: function(hex){
     return web3.utils.hexToString(hex)
+  },
+  sendTransaction(contractMethodCall) {
+    return new Promise(function (resolve, reject) {
+      contractMethodCall.on('error', error => {
+        reject(error);
+      }).on('confirmation', (num, receipt) => {
+          if (num == 2){
+              resolve(receipt);
+          }
+      });
+    });
   }
 }

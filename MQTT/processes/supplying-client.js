@@ -1,13 +1,13 @@
 require("dotenv").config()
 
-const mqtt = require("mqtt");
-
-var ContractManager = require("../../utilities/contracts-manager");
-var Logger          = require("../../utilities/logger");
-var HBWClient       = require("../machines/hbw-client");
-var VGRClient       = require("../machines/vgr-client");
-var ClientUtils     = require("../client-utilities");
-var Wallet          = require("ethereumjs-wallet");
+const mqtt              = require("mqtt");
+const ContractManager   = require("../../utilities/contracts-manager");
+const ProviderManager   = require("../../utilities/providers-manager");
+const Logger            = require("../../utilities/logger");
+const HBWClient         = require("../machines/hbw-client");
+const VGRClient         = require("../machines/vgr-client");
+const ClientUtils       = require("../client-utilities");
+const Wallet            = require("ethereumjs-wallet");
 
 class SupplyingProcessClient {
 
@@ -22,6 +22,8 @@ class SupplyingProcessClient {
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
+        this.provider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.MANUFACTURER_PK);
+        this.address = this.provider.addresses[0];
     }
 
     onMQTTError(error) {
@@ -37,7 +39,7 @@ class SupplyingProcessClient {
         var contractsAsyncGets = [
             ContractManager.getWeb3Contract(process.env.NETWORK, "VGR"),
             ContractManager.getWeb3Contract(process.env.NETWORK, "HBW"),
-            ContractManager.getWeb3Contract(process.env.NETWORK, "SupplyingProcess"),
+            ContractManager.getTruffleContract(this.provider, "SupplyingProcess"),
         ];
 
         Promise.all(contractsAsyncGets).then( contracts => {
@@ -59,7 +61,7 @@ class SupplyingProcessClient {
     onMQTTMessage(topic, messageBuffer){
         if (topic == SupplyingProcessClient.TOPIC_START){
             //var productDID = Wallet.default.generate().getAddressString();
-            this.supplyingProcessContract.methods.startSupplyingProcess(process.env.DUMMY_PRODUCT).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            this.supplyingProcessContract.startSupplyingProcess(process.env.DUMMY_PRODUCT, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Supplying process started");
             }).catch(error => {
                 Logger.error(error.stack);
@@ -73,13 +75,13 @@ class SupplyingProcessClient {
         }else{
             var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
             if (taskName == VGRClient.TASK1){
-                this.supplyingProcessContract.methods.step2(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyingProcessContract.step2(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
             }
             if (taskName == VGRClient.TASK2){
-                this.supplyingProcessContract.methods.step4(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyingProcessContract.step4(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -93,7 +95,7 @@ class SupplyingProcessClient {
         }else{
             var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
             if (taskName == HBWClient.TASK1){
-                this.supplyingProcessContract.methods.step3(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.supplyingProcessContract.step3(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });

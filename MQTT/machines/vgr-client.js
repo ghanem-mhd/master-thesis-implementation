@@ -1,13 +1,13 @@
 require("dotenv").config()
 
-const mqtt = require("mqtt");
-const Topics = require("../topics");
-
-var ContractManager = require("../../utilities/contracts-manager");
-var Logger = require("../../utilities/logger");
-var Helper = require("../../utilities/helper");
-var ClientUtils = require("../client-utilities");
-var ReadingsClient = require("../readings-client");
+const mqtt                  = require("mqtt");
+const Topics                = require("../topics");
+const ContractManager       = require("../../utilities/contracts-manager");
+const ProviderManager       = require("../../utilities/providers-manager");
+const Logger                = require("../../utilities/logger");
+const Helper                = require("../../utilities/helper");
+const ClientUtils           = require("../client-utilities");
+const ReadingsClient        = require("../readings-client");
 
 class VGRClient{
 
@@ -28,6 +28,8 @@ class VGRClient{
         this.readingsClient = new ReadingsClient();
         this.readingsClient.connect();
         this.currentTaskID = 0;
+        this.provider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.VGR_PK);
+        this.machineAddress = this.provider.addresses[0];
     }
 
     onMQTTError(err) {
@@ -45,10 +47,11 @@ class VGRClient{
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_VGR_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks(this.clientName, "VGR", (error, event) => this.onNewTask(error, event), (Contract) => {
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "VGR", (error, event) => this.onNewTask(error, event));
+        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "VGR", (error, event) => this.onNewReadingRequest(error, event));
+        ContractManager.getTruffleContract(this.provider, "VGR").then( Contract => {
             this.Contract = Contract;
         });
-        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "VGR", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -71,7 +74,7 @@ class VGRClient{
                     this.getInfoTaskFinished(taskID, workpiece["type"], workpiece["id"])
                 }
             }else{
-                ClientUtils.taskFinished(this.clientName, this.Contract, process.env.VGR, taskID);
+                ClientUtils.taskFinished(this.clientName, this.Contract, this.machineAddress, taskID);
             }
         }
     }
@@ -111,9 +114,13 @@ class VGRClient{
         }else{
             var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
             var readingValue = this.readingsClient.getRecentReading(readingType);
-
-            this.Contract.methods.saveReadingVGR(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
+            this.Contract.saveReadingHBW(this.currentTaskID,
+                readingTypeIndex,
+                readingValue, {
+                from:this.machineAddress,
+                gas: process.env.DEFAULT_GAS
+                }).then( receipt => {
+                    Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -123,19 +130,19 @@ class VGRClient{
     async handleGetInfoTask(task){
         var taskMessage = ClientUtils.getTaskMessageObject(task, 1);
         this.sendTask(task.taskID, task.taskName, taskMessage);
-        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
+        ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
     }
 
     async handleDropToHBWTask(task){
         var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
         this.sendTask(task.taskID, task.taskName, taskMessage);
-        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
+        ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
     }
 
     async handleMoveHBW2MPOTask(task){
         var taskMessage = ClientUtils.getTaskMessageObject(task, 5);
         this.sendTask(task.taskID, task.taskName, taskMessage);
-        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
+        ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
     }
 
     async handlePickSortedTask(task){
@@ -143,7 +150,7 @@ class VGRClient{
             var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
             taskMessage["type"] = inputValues[0];
             this.sendTask(task.taskID, task.taskName, taskMessage);
-            ClientUtils.taskStarted(this.clientName, this.Contract, process.env.VGR, task.taskID);
+            ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
         }).catch( error => {
             Logger.error(error.stack);
         });
@@ -155,7 +162,7 @@ class VGRClient{
     }
 
     getInfoTaskFinished(taskID, color, id){
-        this.Contract.methods.finishGetInfoTask(taskID, color, id).send({from:process.env.VGR, gas: process.env.DEFAULT_GAS}).then( receipt => {
+        this.Contract.finishGetInfoTask(taskID, color, id, {from:this.machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
             Logger.logEvent(this.clientName, `task ${taskID} finished`, receipt);
             this.currentTaskID = 0;
         }).catch(error => {

@@ -1,14 +1,13 @@
 require("dotenv").config()
 
-const mqtt = require("mqtt");
-const Topics = require("../topics");
-
-var ContractManager = require("../../utilities/contracts-manager");
-
-var Logger = require("../../utilities/logger");
-var Helper = require("../../utilities/helper");
-var ClientUtils = require("../client-utilities");
-var ReadingsClient = require("../readings-client");
+const mqtt                  = require("mqtt");
+const Topics                = require("../topics");
+const ContractManager       = require("../../utilities/contracts-manager");
+const ProviderManager       = require("../../utilities/providers-manager");
+const Logger                = require("../../utilities/logger");
+const Helper                = require("../../utilities/helper");
+const ClientUtils           = require("../client-utilities");
+const ReadingsClient        = require("../readings-client");
 
 class SLDClient {
 
@@ -26,6 +25,8 @@ class SLDClient {
         this.readingsClient = new ReadingsClient();
         this.readingsClient.connect();
         this.currentTaskID = 0;
+        this.provider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.SLD_PK);
+        this.machineAddress = this.provider.addresses[0];
     }
 
     onMQTTError(error) {
@@ -43,11 +44,12 @@ class SLDClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_SLD_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks(this.clientName, "SLD", (error, event) => this.onNewTask(error, event), (Contract) => {
-            this.Contract = Contract;
-        });
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "SLD", (error, event) => this.onNewTask(error, event));
         ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "SLD", (error, event) => this.onNewReadingRequest(error, event));
         ClientUtils.registerCallbackForNewIssue(this.clientName, "SLD", (error, event) => this.onNewIssue(error, event));
+        ContractManager.getTruffleContract(this.provider, "SLD").then( Contract => {
+            this.Contract = Contract;
+        });
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -64,7 +66,7 @@ class SLDClient {
                 this.sortingTaskFinished(taskID, color);
             }else{
                 this.currentTaskID = taskID;
-                ClientUtils.taskStarted(this.clientName, this.Contract, process.env.SLD, taskID);
+                ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, taskID);
             }
         }
     }
@@ -91,8 +93,13 @@ class SLDClient {
         }else{
             var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
             var readingValue = this.readingsClient.getRecentReading(readingType);
-            this.Contract.methods.saveReadingSLD(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
+            this.Contract.saveReadingHBW(this.currentTaskID,
+                readingTypeIndex,
+                readingValue, {
+                from:this.machineAddress,
+                gas: process.env.DEFAULT_GAS
+                }).then( receipt => {
+                    Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -119,7 +126,7 @@ class SLDClient {
     }
 
     sortingTaskFinished(taskID, color){
-        this.Contract.methods.finishSorting(taskID, color).send({from:process.env.SLD, gas: process.env.DEFAULT_GAS}).then( receipt => {
+        this.Contract.finishSorting(taskID, color, {from:this.machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
             Logger.logEvent(this.clientName, `Sorting task ${taskID} finished`, receipt);
             this.currentTaskID = 0;
         }).catch(error => {

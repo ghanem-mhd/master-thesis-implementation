@@ -25,7 +25,7 @@ module.exports = {
     return { readingTypeIndex, readingType };
   },
   getTaskInputRequest: function (machineContract, taskID, inputName) {
-    return machineContract.methods.getTaskInput(taskID, Helper.toHex(inputName)).call({})
+    return machineContract.getTaskInput(taskID, Helper.toHex(inputName))
   },
   getTaskInputs: function (machineContract, taskID, inputsNames) {
     requests = [];
@@ -34,9 +34,8 @@ module.exports = {
     });
     return Promise.all(requests);
   },
-  registerCallbackForNewTasks: function (clientName, contractName, newTasksCallback, onContractReady) {
+  registerCallbackForNewTasks: function (clientName, contractName, newTasksCallback) {
     ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
-      onContractReady(Contract)
       Contract.events.TaskAssigned({ fromBlock: "latest" }, newTasksCallback);
       Logger.logEvent(clientName, "Started listening for tasks...");
     }).catch(error => {
@@ -68,7 +67,7 @@ module.exports = {
         "productDID": productDID,
         "processID" : processID
       }
-      contract.methods.isTaskFinished(taskID).call({}).then(isFinished => {
+      contract.isTaskFinished(taskID).then(isFinished => {
         if (isFinished) {
           task["isFinished"] = true
           resolve(task);
@@ -135,15 +134,15 @@ module.exports = {
     var code        = incomingAckMessage["code"];
     return { taskID, productDID, processID, code };
   },
-  taskFinished(clientName, contract, machine, taskID){
-    contract.methods.finishTask(taskID).send({from:machine, gas: process.env.DEFAULT_GAS}).then( receipt => {
+  taskFinished(clientName, contract, machineAddress, taskID){
+    contract.finishTask(taskID, {from:machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
             Logger.logEvent(clientName, `Task ${taskID} finished`, receipt);
     }).catch(error => {
             Logger.error(error.stack);
     });
   },
-  taskStarted(clientName, contract, machine, taskID){
-    contract.methods.startTask(taskID).send({from:machine, gas: process.env.DEFAULT_GAS}).then( receipt => {
+  taskStarted(clientName, contract, machineAddress, taskID){
+    contract.startTask(taskID, {from:machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
             Logger.logEvent(clientName, `Task ${taskID} started`, receipt);
     }).catch(error => {
             Logger.error(error.stack);

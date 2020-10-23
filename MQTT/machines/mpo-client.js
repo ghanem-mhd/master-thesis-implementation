@@ -1,13 +1,13 @@
 require("dotenv").config()
 
-const mqtt = require("mqtt");
-const Topics = require("../topics");
-
-var ContractManager = require("../../utilities/contracts-manager");
-var Logger = require("../../utilities/logger");
-var Helper = require("../../utilities/helper");
-var ClientUtils = require("../client-utilities");
-var ReadingsClient = require("../readings-client");
+const mqtt                  = require("mqtt");
+const Topics                = require("../topics");
+const ContractManager       = require("../../utilities/contracts-manager");
+const ProviderManager       = require("../../utilities/providers-manager");
+const Logger                = require("../../utilities/logger");
+const Helper                = require("../../utilities/helper");
+const ClientUtils           = require("../client-utilities");
+const ReadingsClient        = require("../readings-client");
 
 class MPOClient {
 
@@ -25,6 +25,8 @@ class MPOClient {
         this.readingsClient = new ReadingsClient();
         this.readingsClient.connect();
         this.currentTaskID = 0;
+        this.provider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.MPO_PK);
+        this.machineAddress = this.provider.addresses[0];
     }
 
     onMQTTError(error) {
@@ -43,10 +45,11 @@ class MPOClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_MPO_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks(this.clientName, "MPO", (error, event) => this.onNewTask(error, event), (Contract) => {
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "MPO", (error, event) => this.onNewTask(error, event));
+        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "MPO", (error, event) => this.onNewReadingRequest(error, event));
+        ContractManager.getTruffleContract(this.provider, "MPO").then( Contract => {
             this.Contract = Contract;
         });
-        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "MPO", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -61,10 +64,10 @@ class MPOClient {
             var {taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(incomingMessage);
             if (code == 2){
                 this.currentTaskID = 0;
-                ClientUtils.taskFinished(this.clientName, this.Contract, process.env.MPO, taskID);
+                ClientUtils.taskFinished(this.clientName, this.Contract, this.machineAddress, taskID);
             }else{
                 this.currentTaskID = taskID;
-                ClientUtils.taskStarted(this.clientName, this.Contract, process.env.MPO, taskID);
+                ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, taskID);
             }
         }
 
@@ -85,7 +88,7 @@ class MPOClient {
                 Logger.error(error.stack);
             });
             try {
-                this.Contract.methods.saveProductOperation(productID, Helper.toHex(operationName), operationResult).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.Contract.saveProductOperation(productID, Helper.toHex(operationName), operationResult, {from:this.machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
                     Logger.info("MPOClient - operation has been saved in smart contract");
                 });
             } catch (error) {
@@ -116,9 +119,13 @@ class MPOClient {
         }else{
             var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
             var readingValue = this.readingsClient.getRecentReading(readingType);
-
-            this.Contract.methods.saveReadingMPO(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.MPO, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
+            this.Contract.saveReadingHBW(this.currentTaskID,
+                readingTypeIndex,
+                readingValue, {
+                from:this.machineAddress,
+                gas: process.env.DEFAULT_GAS
+                }).then( receipt => {
+                    Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });

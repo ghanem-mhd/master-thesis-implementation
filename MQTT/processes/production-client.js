@@ -1,16 +1,15 @@
 require("dotenv").config()
 
-const mqtt = require("mqtt");
-
-var ContractManager = require("../../utilities/contracts-manager");
-var Logger = require("../../utilities/logger");
-var Helper = require('../../utilities/helper');
-var HBWClient = require("../machines/hbw-client");
-var VGRClient = require("../machines/vgr-client");
-var SLDClient = require("../machines/sld-client");
-var MPOClient = require("../machines/mpo-client");
-var ClientUtils = require("../client-utilities");
-var Wallet      = require("ethereumjs-wallet");
+const mqtt              = require("mqtt");
+const ContractManager   = require("../../utilities/contracts-manager");
+const ProviderManager   = require("../../utilities/providers-manager");
+const Logger            = require("../../utilities/logger");
+const HBWClient         = require("../machines/hbw-client");
+const VGRClient         = require("../machines/vgr-client");
+const SLDClient         = require("../machines/sld-client");
+const MPOClient         = require("../machines/mpo-client");
+const ClientUtils       = require("../client-utilities");
+const Wallet            = require("ethereumjs-wallet");
 
 class ProductionProcessClient {
 
@@ -31,8 +30,9 @@ class ProductionProcessClient {
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
-
         this.publishOrderState("WAITING_FOR_ORDER", "");
+        this.provider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.MANUFACTURER_PK);
+        this.address = this.provider.addresses[0];
     }
 
     onMQTTError(error) {
@@ -50,7 +50,7 @@ class ProductionProcessClient {
             ContractManager.getWeb3Contract(process.env.NETWORK, "HBW"),
             ContractManager.getWeb3Contract(process.env.NETWORK, "SLD"),
             ContractManager.getWeb3Contract(process.env.NETWORK, "MPO"),
-            ContractManager.getWeb3Contract(process.env.NETWORK, "ProductionProcess"),
+            ContractManager.getTruffleContract(this.provider, "ProductionProcess"),
         ];
 
         Promise.all(contractsAsyncGets).then( contracts => {
@@ -62,10 +62,10 @@ class ProductionProcessClient {
             var MPOContract = contracts[3];
             this.productionProcessContract = contracts[4];
 
-            VGRContract.events.TaskFinished({  fromBlock: "latest" }, (error, event) => this.onVGRTaskFinished(error, event));
-            HBWContract.events.TaskFinished({  fromBlock: "latest" }, (error, event) => this.onHBWTaskFinished(error, event));
-            SLDContract.events.TaskFinished({  fromBlock: "latest" }, (error, event) => this.onSLDTaskFinished(error, event));
-            MPOContract.events.TaskFinished({  fromBlock: "latest" }, (error, event) => this.onMPOTaskFinished(error, event));
+            VGRContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onVGRTaskFinished(error, event));
+            HBWContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onHBWTaskFinished(error, event));
+            SLDContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onSLDTaskFinished(error, event));
+            MPOContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onMPOTaskFinished(error, event));
 
         }).catch( error => {
             Logger.error(error.stack);
@@ -86,7 +86,7 @@ class ProductionProcessClient {
 
             this.publishOrderState("ORDERED", this.orderColor);
 
-            this.productionProcessContract.methods.startProductionProcess(productDID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+            this.productionProcessContract.startProductionProcess(productDID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Production process started");
             }).catch(error => {
                 Logger.error(error.stack);
@@ -101,7 +101,7 @@ class ProductionProcessClient {
             var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
             if (taskName == VGRClient.TASK3){
                 this.publishOrderState("IN_PROCESS", this.orderColor);
-                this.productionProcessContract.methods.step3(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.productionProcessContract.step3(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -120,7 +120,7 @@ class ProductionProcessClient {
         }else{
             var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
             if (taskName == HBWClient.TASK4){
-                this.productionProcessContract.methods.step2(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.productionProcessContract.step2(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -134,7 +134,7 @@ class ProductionProcessClient {
         }else{
             var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
             if (taskName == MPOClient.PROCESSING_TASK_NAME){
-                this.productionProcessContract.methods.step4(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.productionProcessContract.step4(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });
@@ -149,7 +149,7 @@ class ProductionProcessClient {
         }else{
             var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
             if (taskName == SLDClient.SORTING_TASK_NAME){
-                this.productionProcessContract.methods.step5(processID).send({from:process.env.MANUFACTURER, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                this.productionProcessContract.step5(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 }).catch(error => {
                     Logger.error(error.stack);
                 });

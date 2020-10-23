@@ -1,13 +1,13 @@
 require("dotenv").config()
 
-const mqtt = require("mqtt");
-const Topics = require("../topics");
-
-var ContractManager = require("../../utilities/contracts-manager");
-var Logger = require("../../utilities/logger");
-var Helper = require("../../utilities/helper");
-var ClientUtils = require("../client-utilities");
-var ReadingsClient = require("../readings-client");
+const mqtt                  = require("mqtt");
+const Topics                = require("../topics");
+const ContractManager       = require("../../utilities/contracts-manager");
+const ProviderManager       = require("../../utilities/providers-manager");
+const Logger                = require("../../utilities/logger");
+const Helper                = require("../../utilities/helper");
+const ClientUtils           = require("../client-utilities");
+const ReadingsClient        = require("../readings-client");
 
 class HBWClient {
 
@@ -28,6 +28,8 @@ class HBWClient {
         this.readingsClient = new ReadingsClient();
         this.readingsClient.connect();
         this.currentTaskID = 0;
+        this.provider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.HBW_PK);
+        this.machineAddress = this.provider.addresses[0];
     }
 
     onMQTTError(error) {
@@ -45,10 +47,11 @@ class HBWClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_HBW_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks(this.clientName, "HBW", (error, event) => this.onNewTask(error, event), (Contract) => {
+        ClientUtils.registerCallbackForNewTasks(this.clientName, "HBW", (error, event) => this.onNewTask(error, event));
+        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "HBW", (error, event) => this.onNewReadingRequest(error, event));
+        ContractManager.getTruffleContract(this.provider, "HBW").then( Contract => {
             this.Contract = Contract;
         });
-        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "HBW", (error, event) => this.onNewReadingRequest(error, event));
     }
 
     onMQTTMessage(topic, messageBuffer){
@@ -62,7 +65,7 @@ class HBWClient {
             Logger.logEvent(this.clientName, "Received Ack message from HBW", incomingMessage);
             var {taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(incomingMessage);
             this.currentTaskID = 0;
-            ClientUtils.taskFinished(this.clientName, this.Contract, process.env.HBW, taskID);
+            ClientUtils.taskFinished(this.clientName, this.Contract, this.machineAddress, taskID);
         }
     }
 
@@ -102,8 +105,13 @@ class HBWClient {
         }else{
             var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
             var readingValue = this.readingsClient.getRecentReading(readingType);
-            this.Contract.methods.saveReadingHBW(this.currentTaskID, readingTypeIndex, readingValue).send({from:process.env.HBW, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
+            this.Contract.saveReadingHBW(this.currentTaskID,
+                readingTypeIndex,
+                readingValue, {
+                from:this.machineAddress,
+                gas: process.env.DEFAULT_GAS
+                }).then( receipt => {
+                    Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
@@ -113,7 +121,7 @@ class HBWClient {
     async handleFetchContainerTask(task){
         var taskMessage = ClientUtils.getTaskMessageObject(task, 1);
         this.sendTask(task.taskID, task.taskName, taskMessage);
-        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.HBW, task.taskID);
+        ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
     }
 
     async handleStoreWBTask(task){
@@ -121,7 +129,7 @@ class HBWClient {
             var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
             taskMessage["workpiece"] = { type:inputValues[0], id:inputValues[1], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
-            ClientUtils.taskStarted(this.clientName, this.Contract, process.env.HBW, task.taskID);
+            ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
         }).catch( error => {
             Logger.error(error.stack);
         });
@@ -132,7 +140,7 @@ class HBWClient {
             var taskMessage = ClientUtils.getTaskMessageObject(task, 3);
             taskMessage["workpiece"] = { id:"", type:inputValues[0], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
-            ClientUtils.taskStarted(this.clientName, this.Contract, process.env.HBW, task.taskID);
+            ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
         }).catch( error => {
             Logger.error(error.stack);
         });
@@ -141,7 +149,7 @@ class HBWClient {
     async handleStoreContainerTask(task){
         var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
         this.sendTask(task.taskID, task.taskName, taskMessage);
-        ClientUtils.taskStarted(this.clientName, this.Contract, process.env.HBW, task.taskID);
+        ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
     }
 
     sendTask(taskID, taskName, taskMessage){

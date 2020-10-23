@@ -24,8 +24,8 @@ module.exports = {
   generateMnemonic: function(mnemonic){
     return ethers.Wallet.fromMnemonic(mnemonic);
   },
-  readFromFile: function(keystoreName, password){
-    let json = JSON.stringify(require(`../keystore/${keystoreName}.json`));
+  readFromFile: function(filePath, password){
+    let json = JSON.stringify(require(filePath));
     return ethers.Wallet.fromEncryptedJson(json, password);
   },
   getAddress: function(keystoreName){

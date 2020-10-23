@@ -1,22 +1,22 @@
 require("dotenv").config()
 
-var web3                = require('web3')
-var ContractsManager    = require("../utilities/contracts-manager");
-var Logger              = require("../utilities/logger");
+const Web3                = require('web3')
+const ContractsManager    = require("../utilities/contracts-manager");
+const ProviderManager     = require("../utilities/providers-manager");
+const Logger              = require("../utilities/logger");
+const Helper              = require("../utilities/helper");
 
-
-function toHex(string){
-    return web3.utils.padRight(web3.utils.asciiToHex(string), 64)
-}
+var adminProvider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.ADMIN_PRIVATE_KEY);
+var productOwnerProvider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.PRODUCT_OWNER_PK);
 
 var contractsAsyncGets = [
-    ContractsManager.getWeb3Contract(process.env.NETWORK, "VGR"),
-    ContractsManager.getWeb3Contract(process.env.NETWORK, "HBW"),
-    ContractsManager.getWeb3Contract(process.env.NETWORK, "MPO"),
-    ContractsManager.getWeb3Contract(process.env.NETWORK, "SLD"),
-    ContractsManager.getWeb3Contract(process.env.NETWORK, "SupplyingProcess"),
-    ContractsManager.getWeb3Contract(process.env.NETWORK, "ProductionProcess"),
-    ContractsManager.getWeb3Contract(process.env.NETWORK, "Product"),
+    ContractsManager.getTruffleContract(adminProvider, "VGR"),
+    ContractsManager.getTruffleContract(adminProvider, "HBW"),
+    ContractsManager.getTruffleContract(adminProvider, "MPO"),
+    ContractsManager.getTruffleContract(adminProvider, "SLD"),
+    ContractsManager.getTruffleContract(adminProvider, "SupplyingProcess"),
+    ContractsManager.getTruffleContract(adminProvider, "ProductionProcess"),
+    ContractsManager.getTruffleContract(productOwnerProvider, "Product"),
 ];
 
 Promise.all(contractsAsyncGets).then( async contracts => {
@@ -28,69 +28,86 @@ Promise.all(contractsAsyncGets).then( async contracts => {
     var productionProcessContract   = contracts[5];
     var productContract             = contracts[6];
 
-    var productCommands = [
-        productContract.methods.createProduct(process.env.DUMMY_PRODUCT).send({from:process.env.PRODUCT_OWNER}),
-        productContract.methods.authorizeManufacturer(process.env.MANUFACTURER, process.env.DUMMY_PRODUCT).send({from:process.env.PRODUCT_OWNER})
-    ];
-    await Promise.all(productCommands);
-    Logger.info("Product seeding finished");
+    try{
+        Logger.info("Funding accounts started");
+        var web3 = new Web3(adminProvider)
+        receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.VGR_ADDRESS, value:web3.utils.toWei("100","ether")});
+        Logger.info("Fund VGR " + receipt.transactionHash);
+        receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.HBW_ADDRESS , value:web3.utils.toWei("100","ether")});
+        Logger.info("Fund HBW " + receipt.transactionHash);
+        receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.MPO_ADDRESS , value:web3.utils.toWei("100","ether")});
+        Logger.info("Fund MPO " + receipt.transactionHash);
+        receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.SLD_ADDRESS , value:web3.utils.toWei("100","ether")});
+        Logger.info("Fund SLD " + receipt.transactionHash);
+        receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.MANUFACTURER_ADDRESS , value:web3.utils.toWei("100","ether")});
+        Logger.info("Fund Manufacturer " + receipt.transactionHash);
+        receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.MAINTAINER_ADDRESS , value:web3.utils.toWei("100","ether")});
+        Logger.info("Fund Maintainer " + receipt.transactionHash);
+        receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.PRODUCT_OWNER_ADDRESS , value:web3.utils.toWei("100","ether")});
+        Logger.info("Fund Product Owner " + receipt.transactionHash);
+    } catch (error) {
+        Logger.error(error.stack);
+    } finally {
+        Logger.info("Funding accounts finished");
+    }
 
-    var seedSupplyingProcessCommands = [
-        supplyingProcessContract.methods.setVGRContractAddress(VGRContract._address).send({from:process.env.ADMIN}),
-        supplyingProcessContract.methods.setHBWContractAddress(HBWContract._address).send({from:process.env.ADMIN}),
-        VGRContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN}),
-        HBWContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN})
-    ];
+    try {
+        Logger.info("Product seeding started");
+        receipt = await Helper.sendTransaction(productContract.createProduct(process.env.DUMMY_PRODUCT, {from:process.env.PRODUCT_OWNER_ADDRESS}));
+        Logger.info("createProduct "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(productContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, process.env.DUMMY_PRODUCT, {from:process.env.PRODUCT_OWNER_ADDRESS}));
+        Logger.info("authorizeManufacturer "+ receipt.transactionHash);
+    } catch (error) {
+        Logger.error(error.message);
+    } finally {
+        Logger.info("Product seeding finished");
+    }
 
-    await Promise.all(seedSupplyingProcessCommands);
-    Logger.info("SupplyingProcess seeding finished");
+    try {
+        Logger.info("SupplyingProcess seeding started");
+        receipt = await Helper.sendTransaction(supplyingProcessContract.setVGRContractAddress(VGRContract.address, {from:adminProvider.addresses[0]}));
+        Logger.info("setVGRContractAddress "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(supplyingProcessContract.setHBWContractAddress(HBWContract.address, {from:adminProvider.addresses[0]}));
+        Logger.info("setHBWContractAddress "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(VGRContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeManufacturer1 "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(HBWContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeManufacturer2 "+ receipt.transactionHash);
+    } catch (error) {
+        Logger.error(error.message);
+    } finally {
+        Logger.info("SupplyingProcess seeding finished");
+    }
 
-    var seedProductionProcessCommands = [
-        productionProcessContract.methods.setVGRContractAddress(VGRContract._address).send({from:process.env.ADMIN}),
-        productionProcessContract.methods.setHBWContractAddress(HBWContract._address).send({from:process.env.ADMIN}),
-        productionProcessContract.methods.setMPOContractAddress(MPOContract._address).send({from:process.env.ADMIN}),
-        productionProcessContract.methods.setSLDContractAddress(SLDContract._address).send({from:process.env.ADMIN}),
-        MPOContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN}),
-        SLDContract.methods.authorizeManufacturer(process.env.MANUFACTURER).send({from:process.env.ADMIN}),
-        VGRContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
-        HBWContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
-        MPOContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN}),
-        SLDContract.methods.authorizeMaintainer(process.env.MAINTAINER).send({from:process.env.ADMIN})
-    ];
-    await Promise.all(seedProductionProcessCommands);
-    Logger.info("ProductionProcess seeding finished");
-
-    var VGRInfoCommands = [
-        VGRContract.methods.saveMachineInfo(toHex("Serial No."), toHex("4CE0460D0G")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-        VGRContract.methods.saveMachineInfo(toHex("Model No."),  toHex("X8zRQm4D")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS})
-    ];
-    await Promise.all(VGRInfoCommands);
-    Logger.info("VGR seeding finished");
-
-    var SLDInfoCommands = [
-        SLDContract.methods.saveMachineInfo(toHex("Serial No."), toHex("JXqAg7Mh")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-        SLDContract.methods.saveMachineInfo(toHex("Model No."),  toHex("GKHJXur2")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-        SLDContract.methods.saveMaintenanceOperation("Replace part no. U6DmXrdC").send({from:process.env.MAINTAINER, gas: process.env.DEFAULT_GAS}),
-    ];
-    await Promise.all(SLDInfoCommands);
-    Logger.info("SLD seeding finished");
-
-    var MPOInfoCommands = [
-        MPOContract.methods.saveMachineInfo(toHex("Serial No."), toHex("Us25vnzA")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-        MPOContract.methods.saveMachineInfo(toHex("Model No."),  toHex("U6DmXrdC")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS})
-    ];
-    await Promise.all(MPOInfoCommands);
-    Logger.info("MPO seeding finished");
-
-
-    var HBWInfoCommands = [
-        HBWContract.methods.saveMachineInfo(toHex("Serial No."), toHex("2SDsjAEE")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-        HBWContract.methods.saveMachineInfo(toHex("Model No."),  toHex("Zr4e8wFb")).send({from:process.env.ADMIN, gas: process.env.DEFAULT_GAS}),
-    ];
-    await Promise.all(HBWInfoCommands);
-    Logger.info("HBW seeding finished");
-
+    try {
+        Logger.info("ProductionProcess seeding started");
+        receipt = await Helper.sendTransaction(productionProcessContract.setVGRContractAddress(VGRContract.address, {from:adminProvider.addresses[0]}));
+        Logger.info("setVGRContractAddress "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(productionProcessContract.setHBWContractAddress(HBWContract.address, {from:adminProvider.addresses[0]}));
+        Logger.info("setHBWContractAddress "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(productionProcessContract.setMPOContractAddress(MPOContract.address, {from:adminProvider.addresses[0]}));
+        Logger.info("setMPOContractAddress "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(productionProcessContract.setSLDContractAddress(SLDContract.address, {from:adminProvider.addresses[0]}));
+        Logger.info("setSLDContractAddress "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(MPOContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeManufacturer1 "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(SLDContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeManufacturer2 "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(VGRContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeMaintainer1 "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(HBWContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeMaintainer2 "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(MPOContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeMaintainer3 "+ receipt.transactionHash);
+        receipt = await Helper.sendTransaction(SLDContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {from:adminProvider.addresses[0]}));
+        Logger.info("authorizeMaintainer4 "+ receipt.transactionHash);
+    } catch (error) {
+        Logger.error(error.message);
+    } finally {
+        Logger.info("ProductionProcess seeding finished");
+    }
     process.exit(0);
 }).catch( error => {
     Logger.error(error.stack);
+    process.exit(0);
 });

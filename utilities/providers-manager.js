@@ -11,6 +11,8 @@ module.exports = {
                 return new Web3.providers.WebsocketProvider(`ws://${config.networks.dev_gui.host}:${config.networks.dev_gui.port}`);
             case 'dev_cli':
                 return new Web3.providers.WebsocketProvider(`ws://${config.networks.dev_cli.host}:${config.networks.dev_cli.port}`);
+            case 'quorum':
+                return new Web3.providers.WebsocketProvider(`ws://${config.networks.quorum.host}:${config.networks.quorum.wsPort}`);
             case 'rinkeby':
                return null;
             }
@@ -22,6 +24,8 @@ module.exports = {
                 return new HDWalletProvider(privateKeyOrMnemonic, `http://${config.networks.dev_gui.host}:${config.networks.dev_gui.port}`);
             case 'dev_cli':
                 return new HDWalletProvider(privateKeyOrMnemonic, `http://${config.networks.dev_cli.host}:${config.networks.dev_cli.port}`);
+            case 'quorum':
+                return new HDWalletProvider(privateKeyOrMnemonic, `http://${config.networks.quorum.host}:${config.networks.quorum.port}`);
             case 'rinkeby':
                return config.networks.rinkeby.provider();
             }
