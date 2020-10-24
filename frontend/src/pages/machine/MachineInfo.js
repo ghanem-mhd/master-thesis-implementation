@@ -32,70 +32,69 @@ class MachineInfo extends React.PureComponent {
         return (
             <Grid.Row>
                 <Grid.Col md={12} xl={12}>
-                    <Card
-                    title="Machine Info"
-                    isCollapsible
-                    isClosable
-                    body={
-                        infoNames && <Table>
-                            <Table.Header>
-                                <Table.Row>
-                                    <Table.ColHeader>Info Name</Table.ColHeader>
-                                    <Table.ColHeader>Info Value</Table.ColHeader>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                            <Table.Row>
-                                <Table.Col>Machine ID</Table.Col>
-                                <Table.Col>
-                                        did:ethr:<ContractData
-                                            drizzle={this.props.drizzle}
-                                            drizzleState={this.props.drizzleState}
-                                            contract={this.props.machine}
-                                            method="machineID"
-                                            methodArgs={[]}
-                                        />
-                                </Table.Col>
-                            </Table.Row>
-                            <Table.Row>
-                                <Table.Col>Machine Owner</Table.Col>
-                                <Table.Col>
-                                        did:ethr:<ContractData
-                                            drizzle={this.props.drizzle}
-                                            drizzleState={this.props.drizzleState}
-                                            contract={this.props.machine}
-                                            method="machineOwner"
-                                            methodArgs={[]}
-                                        />
-                                </Table.Col>
-                            </Table.Row>
-                            <Table.Row>
-                                <Table.Col>Contract Address</Table.Col>
-                                <Table.Col>
-                                       {this.props.drizzle.contracts[this.props.machine].address}
-                                </Table.Col>
-                            </Table.Row>
-                            {
-                                infoNames.map((object, i) =>
-                                    <Table.Row key={infoNames[i]}>
-                                        <Table.Col>{this.props.drizzle.web3.utils.hexToUtf8(infoNames[i])}</Table.Col>
-                                        <Table.Col>
-                                            <ContractData
-                                                    drizzle={this.props.drizzle}
-                                                    drizzleState={this.props.drizzleState}
-                                                    contract={this.props.machine}
-                                                    method="getMachineInfo"
-                                                    methodArgs={[infoNames[i]]}
-                                                    toUtf8
-                                                />
-                                        </Table.Col>
+                    <Card title="Machine Info" isCollapsible>
+                        {infoNames &&
+                        <Card.Body>
+                            <Table>
+                                <Table.Header>
+                                    <Table.Row>
+                                        <Table.ColHeader>Info Name</Table.ColHeader>
+                                        <Table.ColHeader>Info Value</Table.ColHeader>
                                     </Table.Row>
-                                )
-                            }
-                            </Table.Body>
-                        </Table>
-                    }
-                    />
+                                </Table.Header>
+                                <Table.Body>
+                                <Table.Row>
+                                    <Table.Col>Machine ID</Table.Col>
+                                    <Table.Col>
+                                            did:ethr:<ContractData
+                                                drizzle={this.props.drizzle}
+                                                drizzleState={this.props.drizzleState}
+                                                contract={this.props.machine}
+                                                method="machineID"
+                                                methodArgs={[]}
+                                            />
+                                    </Table.Col>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Col>Machine Owner</Table.Col>
+                                    <Table.Col>
+                                            did:ethr:<ContractData
+                                                drizzle={this.props.drizzle}
+                                                drizzleState={this.props.drizzleState}
+                                                contract={this.props.machine}
+                                                method="machineOwner"
+                                                methodArgs={[]}
+                                            />
+                                    </Table.Col>
+                                </Table.Row>
+                                <Table.Row>
+                                    <Table.Col>Contract Address</Table.Col>
+                                    <Table.Col>
+                                        {this.props.drizzle.contracts[this.props.machine].address}
+                                    </Table.Col>
+                                </Table.Row>
+                                {
+                                    infoNames.map((object, i) =>
+                                        <Table.Row key={infoNames[i]}>
+                                            <Table.Col>{this.props.drizzle.web3.utils.hexToUtf8(infoNames[i])}</Table.Col>
+                                            <Table.Col>
+                                                <ContractData
+                                                        drizzle={this.props.drizzle}
+                                                        drizzleState={this.props.drizzleState}
+                                                        contract={this.props.machine}
+                                                        method="getMachineInfo"
+                                                        methodArgs={[infoNames[i]]}
+                                                        toUtf8
+                                                    />
+                                            </Table.Col>
+                                        </Table.Row>
+                                    )
+                                }
+                                </Table.Body>
+                            </Table>
+                        </Card.Body>
+                        }
+                    </Card>
                 </Grid.Col>
             </Grid.Row>
         )
