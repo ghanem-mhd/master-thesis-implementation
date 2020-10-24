@@ -57,8 +57,6 @@ class CreateProduct extends React.Component {
                 position: 'br'
             });
             this.resetInput("createProductInput1")
-            this.resetInput("authorizeManufacturerInput1")
-            this.resetInput("authorizeManufacturerInput2")
         }
     }
 

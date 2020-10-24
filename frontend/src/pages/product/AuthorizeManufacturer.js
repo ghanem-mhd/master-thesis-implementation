@@ -61,7 +61,6 @@ class AuthorizeManufacturer extends React.Component {
                 level: 'success',
                 position: 'br'
             });
-            this.resetInput("createProductInput1")
             this.resetInput("authorizeManufacturerInput1")
             this.resetInput("authorizeManufacturerInput2")
         }
