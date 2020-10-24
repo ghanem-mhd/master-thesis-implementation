@@ -5,15 +5,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/EnumerableMap.sol";
 import "../contracts/setTypes/UintSet.sol";
+import "../contracts/setTypes/Bytes32Set.sol";
 
 contract Product is Ownable {
 
     using UintSet for UintSet.Set;
+    using Bytes32Set for Bytes32Set.Set;
     using Counters for Counters.Counter;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     Counters.Counter private productsCount;
     mapping (string => address) private productPhysicalIDMapping;
+
+    mapping (address => mapping (bytes32 => bytes32)) proudctsInfo;
+    mapping (address => bytes32[]) private productsInfoNames;
+    mapping (address => uint) private productsCreationTime;
 
     struct Operation{
         address machineDID;
@@ -65,10 +71,15 @@ contract Product is Ownable {
         require(productsOwners[productDID] == address(0), "Product already exist.");
         productsOwners[productDID] = _msgSender();
         productsCount.increment();
+        productsCreationTime[productDID] = now;
     }
 
-    function ownerOfProduct(address productDID) public productExists(productDID) view returns (address){
+    function getProductOwner(address productDID) public productExists(productDID) view returns (address){
         return productsOwners[productDID];
+    }
+
+    function getProductCreationTime(address productDID) public productExists(productDID) view returns (uint){
+        return productsCreationTime[productDID];
     }
 
     function authorizeManufacturer(address manufacturerDID, address productDID) public productExists(productDID) onlyProductOwner(productDID)  {
@@ -139,9 +150,22 @@ contract Product is Ownable {
     }
 
     function getProductOperationResult(address productDID, string memory operationName) public productExists(productDID) view returns (string memory) {
-        require(productsOperationsNames[productDID][operationName] != 0, "Operation doesn't exists.");
+        require(productsOperationsNames[productDID][operationName] != 0, "Operation doesn't exist.");
         uint operationID = productsOperationsNames[productDID][operationName];
         ( , , , , string memory result) = getProductOperation(operationID);
         return result;
+    }
+
+    function saveProductInfo(address productDID, bytes32 infoName, bytes32 infoValue) public productExists(productDID) onlyProductOwner(productDID) {
+        productsInfoNames[productDID].push(infoName);
+        proudctsInfo[productDID][infoName] = infoValue;
+    }
+
+    function getProductInfoNames(address productDID) public productExists(productDID) view returns(bytes32 [] memory) {
+        return productsInfoNames[productDID];
+    }
+
+    function getProductInfo(address productDID, bytes32 infoName) public productExists(productDID) view returns(bytes32)  {
+        return proudctsInfo[productDID][infoName];
     }
 }

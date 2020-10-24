@@ -19,12 +19,12 @@ describe('Product', function () {
 
     it('should get the owner of a product', async function () {
         await this.ProductContract.createProduct(ProductDID1, {from:Owner});
-        AcutalProductOwner = await this.ProductContract.ownerOfProduct(ProductDID1);
+        AcutalProductOwner = await this.ProductContract.getProductOwner(ProductDID1);
         expect(AcutalProductOwner).to.equal(Owner);
     });
 
     it('should revert for non existing product', async function () {
-        receipt = this.ProductContract.ownerOfProduct(ProductDID1);
+        receipt = this.ProductContract.getProductOwner(ProductDID1);
         await expectRevert(receipt, "Product doesn't exist.");
     });
 
@@ -126,7 +126,29 @@ describe('Product', function () {
         await this.ProductContract.createProduct(ProductDID1, {from:Owner});
         await this.ProductContract.authorizeMachine(MachineDID, ProductDID1, {from: Owner});
         receipt = this.ProductContract.getProductOperationResult(ProductDID1, "OperationName");
-        await expectRevert(receipt, "Operation doesn't exists.");
+        await expectRevert(receipt, "Operation doesn't exist.");
     });
+
+    it("should let the owner save product info", async function () {
+        await this.ProductContract.createProduct(ProductDID1, {from:Owner});
+        await this.ProductContract.saveProductInfo(ProductDID1, Helper.toHex("serialNumber"), Helper.toHex("12345"), { from:Owner });
+        infoNames = await this.ProductContract.getProductInfoNames(ProductDID1)
+        expect(infoNames).to.deep.equal([Helper.toHex("serialNumber")]);
+        storedSerialNumber = await this.ProductContract.getProductInfo(ProductDID1, Helper.toHex("serialNumber"))
+        expect(Helper.toString(storedSerialNumber)).to.equal("12345");
+    });
+
+    it("should only allow the owner to save product info", async function () {
+        await this.ProductContract.createProduct(ProductDID1, {from:Owner});
+        var receipt = this.ProductContract.saveProductInfo(ProductDID1, Helper.toHex(""), Helper.toHex(""), { from:NotOwner });
+        await expectRevert(receipt, "Only product owner can call this function.");
+    });
+
+    it('should revert when saving an info for non existing operation', async function () {
+        var receipt = this.ProductContract.saveProductInfo(ProductDID1, Helper.toHex("serialNumber"), Helper.toHex("12345"), { from:Owner });
+        await expectRevert(receipt, "Product doesn't exist.");
+    });
+
+
 
 })
