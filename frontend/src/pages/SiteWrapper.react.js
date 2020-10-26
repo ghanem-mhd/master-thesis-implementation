@@ -6,21 +6,17 @@ import { NavLink, withRouter } from "react-router-dom";
 import {
   Site,
   Nav,
-  Grid,
-  List,
   Button,
   RouterContextProvider,
 } from "tabler-react";
 
-import type { NotificationProps } from "tabler-react";
+import { store } from 'react-notifications-component';
+import Misc from './utilities/Misc';
 
 type Props = {|
   +children: React.Node,
 |};
 
-type State = {|
-  notificationsObjects: Array<NotificationProps>,
-|};
 
 type subNavItem = {|
   +value: string,
@@ -76,21 +72,41 @@ const navBarItems: Array<navItem> = [
   }
 ];
 
-const accountDropdownProps = {
-  name: "Jane Pearson",
-  description: "Administrator",
-  options: [
-    { icon: "user", value: "Profile" },
-    { icon: "settings", value: "Settings" },
-    { icon: "mail", value: "Inbox", badge: "6" },
-    { icon: "send", value: "Message" },
-    { isDivider: true },
-    { icon: "help-circle", value: "Need help?" },
-    { icon: "log-out", value: "Sign out" },
-  ],
-};
-
 class SiteWrapper extends React.Component<Props, State> {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      currentAccount: null,
+    }
+  }
+
+  componentDidMount(){
+    const provider = this.props.provider;
+    provider.request({ method: 'eth_accounts' }).then(this.handleAccountsChanged.bind(this))
+    .catch((err) => {
+      console.error(err);
+    });
+    provider.on('accountsChanged', this.handleAccountsChanged.bind(this));
+  }
+
+  handleAccountsChanged(accounts) {
+    if (accounts.length === 0) {
+      Misc.showAccountNotConnectedNotification(store);
+    } else{
+      this.setState({currentAccount: accounts[0]});
+    }
+  }
+
+  connect() {
+    this.props.provider
+      .request({ method: 'eth_requestAccounts' })
+      .then(this.handleAccountsChanged.bind(this))
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   render(): React.Node {
 
     return (
@@ -100,20 +116,18 @@ class SiteWrapper extends React.Component<Props, State> {
           alt: "Tabler React",
           imageURL: "./tabler.svg",
           navItems: (
-            <Nav.Item type="div" className="d-none d-md-flex">
-              <Button
-                href="https://github.com/tabler/tabler-react"
-                target="_blank"
-                outline
-                size="sm"
-                RootComponent="a"
-                color="primary"
-              >
-                Source code
-              </Button>
-            </Nav.Item>
-          ),
-          accountDropdown: accountDropdownProps,
+            <div>
+            {
+              this.state.currentAccount && <div>{"Current Account: "}{this.state.currentAccount}</div>
+            }{
+              !this.state.currentAccount &&
+              <Nav.Item type="div" className="d-none d-md-flex">
+                <Button size="sm" color="primary" onClick={this.connect.bind(this)}>Connect</Button>
+
+              </Nav.Item>
+            }
+            </div>
+          )
         }}
         navProps={{ itemsObjects: navBarItems }}
         routerContextComponentType={withRouter(RouterContextProvider)}

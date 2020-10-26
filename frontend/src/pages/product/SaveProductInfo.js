@@ -9,44 +9,43 @@ import {
 } from "tabler-react";
 
 import AddressInput from '../utilities/AddressInput';
+import InfoInput from '../utilities/InfoInput';
 import { store } from 'react-notifications-component';
 import Misc from '../utilities/Misc';
 
-class AuthorizeManufacturer extends React.Component {
+class SaveProductInfo extends React.Component {
 
-    productDIDInputRef          = React.createRef();
-    manufacturerAddressInputRef = React.createRef();
+    productDIDInputRef  = React.createRef();
+    infoInputRef        = React.createRef();
 
     constructor(props) {
         super(props)
         this.state = {
             inputValidity:{
                 productDID:false,
-                manufacturerAddress:false
+                info:false
             }
         }
         this.initialState = this.state;
     }
 
     resetInputs(){
-        var productDIDInput             = this.productDIDInputRef.current;
-        var manufacturerAddressInput    = this.manufacturerAddressInputRef.current;
-        productDIDInput.resetInput();
-        manufacturerAddressInput.resetInput();
+        this.productDIDInputRef.current.resetInput();
+        this.infoInputRef.current.resetInput();
         this.setState(this.initialState);
     }
 
-    onAuthorizeButtonClicked(e){
-        var productDIDInput             = this.productDIDInputRef.current;
-        var manufacturerAddressInput    = this.manufacturerAddressInputRef.current;
-        var productDID                  = productDIDInput.state.addressInputState.value;
-        var manufacturerAddress         = manufacturerAddressInput.state.addressInputState.value;
-
+    onSaveButtonClicked(e){
+        var productDIDInput         = this.productDIDInputRef.current;
+        var infoInput               = this.infoInputRef.current;
+        var productDID              = productDIDInput.state.addressInputState.value;
+        var infoName                = Misc.toHex(this.props.web3, infoInput.state.inputValues.infoName);
+        var infoValue               = Misc.toHex(this.props.web3, infoInput.state.inputValues.infoValue);
         Misc.getCurrentAccount(this.props.web3, (error, account) => {
             if (error){
                 Misc.showAccountNotConnectedNotification(store);
             } else {
-                this.props.contracts["Product"].methods["authorizeManufacturer"](manufacturerAddress, productDID).send({
+                this.props.contracts["Product"].methods["saveProductInfo"](productDID, infoName, infoValue).send({
                     from:account,
                     gas: process.env.REACT_APP_DEFAULT_GAS,
                     gasPrice: process.env.REACT_APP_GAS_PRICE
@@ -70,13 +69,13 @@ class AuthorizeManufacturer extends React.Component {
     onProductDIDValidityChanged(valid){
         var inputValidity = {};
         inputValidity.productDID = valid;
-        inputValidity.manufacturerAddress = this.state.inputValidity.manufacturerAddress;
+        inputValidity.info = this.state.inputValidity.info;
         this.setState({inputValidity})
     }
 
-    onManufacturerAddressValidityChanged(valid){
+    onInfoValidityChanged(valid){
         var inputValidity = {};
-        inputValidity.manufacturerAddress = valid;
+        inputValidity.info = valid;
         inputValidity.productDID = this.state.inputValidity.productDID;
         this.setState({inputValidity})
     }
@@ -85,30 +84,24 @@ class AuthorizeManufacturer extends React.Component {
         return (
             <Grid.Row>
                 <Grid.Col>
-                    <Card title="Authorize Manufacturer" isCollapsible>
+                    <Card title="Save Product Info" isCollapsible>
                         <Card.Body>
                             <AddressInput
                                         label="Product DID"
                                         showDIDMethod={true}
                                         web3={this.props.web3}
                                         onAddressValidityChanged={this.onProductDIDValidityChanged.bind(this)}
-                                        ref={this.productDIDInputRef}
-                            />
-                            <AddressInput
-                                        label="Manufacturer Address"
-                                        showDIDMethod={false}
-                                        web3={this.props.web3}
-                                        onAddressValidityChanged={this.onManufacturerAddressValidityChanged.bind(this)}
-                                        ref={this.manufacturerAddressInputRef}
-                            />
+                                        ref={this.productDIDInputRef}/>
+                            <InfoInput  onInfoValidityChanged={this.onInfoValidityChanged.bind(this)}
+                                        ref={this.infoInputRef} />
                         </Card.Body>
                         <Card.Footer>
                             <div align="right">
                                 <Button
-                                    disabled={!this.state.inputValidity.productDID || !this.state.inputValidity.manufacturerAddress}
-                                    onClick={this.onAuthorizeButtonClicked.bind(this)}
+                                    disabled={!this.state.inputValidity.productDID || !this.state.inputValidity.info}
+                                    onClick={this.onSaveButtonClicked.bind(this)}
                                     color="primary">
-                                        Authorize
+                                        Save
                                 </Button>
                             </div>
                         </Card.Footer>
@@ -119,4 +112,4 @@ class AuthorizeManufacturer extends React.Component {
     }
 }
 
-export default AuthorizeManufacturer;
+export default SaveProductInfo;

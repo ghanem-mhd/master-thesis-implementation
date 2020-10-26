@@ -8,29 +8,34 @@ import {
 
 import SiteWrapper from "../SiteWrapper.react";
 import StartProcess from "./StartProcess";
+import ConnectionContext from '../utilities/ConnectionContext';
 
 class Process extends React.Component {
-
     render () {
         return (
-            <SiteWrapper>
-                <Page.Content title="Processes">
-                    <StartProcess
-                        drizzle={this.props.drizzle}
-                        drizzleState={this.props.drizzleState}
-                        title="Supplying Process"
-                        contractName="SupplyingProcess"
-                        methodName="startSupplyingProcess"
-                    />
-                    <StartProcess
-                        drizzle={this.props.drizzle}
-                        drizzleState={this.props.drizzleState}
-                        title="Production Process"
-                        contractName="ProductionProcess"
-                        methodName="startProductionProcess"
-                    />
-                </Page.Content>
-            </SiteWrapper>
+            <ConnectionContext.Consumer>
+                {(connectionContext) => {
+                const { provider, web3, contracts } = connectionContext;
+                return (
+                    <SiteWrapper provider={provider}>
+                        <Page.Content title="Processes">
+                            <StartProcess
+                                contracts={contracts}
+                                web3={web3}
+                                title="Supplying Process"
+                                contractName="SupplyingProcess"
+                                methodName="startSupplyingProcess"/>
+                            <StartProcess
+                                contracts={contracts}
+                                web3={web3}
+                                title="Production Process"
+                                contractName="ProductionProcess"
+                                methodName="startProductionProcess"/>
+                        </Page.Content>
+                    </SiteWrapper>
+                    )
+                }}
+            </ConnectionContext.Consumer>
         )
     }
 }

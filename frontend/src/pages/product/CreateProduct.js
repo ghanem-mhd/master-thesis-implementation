@@ -3,92 +3,62 @@
 import * as React from "react";
 
 import {
-  Form,
   Grid,
   Card,
   Button
 } from "tabler-react";
 
-import NotificationSystem from 'react-notification-system';
+import AddressInput from '../utilities/AddressInput';
+import { store } from 'react-notifications-component';
+import Misc from '../utilities/Misc';
 
 class CreateProduct extends React.Component {
 
-    notificationSystem = React.createRef();
+    addressInputRef = React.createRef();
 
     constructor(props) {
         super(props)
         this.state = {
-            formValues:{
-                createProductInput1: {
-                    value: "",
-                    invalid: false,
-                    valid: false
-                }
-            }
+            createDisabled:true
         }
     }
 
-    resetInput(inputName){
-        let formValues = this.state.formValues;
-        Array.from(document.querySelectorAll(`[name="${inputName}"]`)).forEach(
-                input => (input.value = "")
-        );
-        formValues[inputName].invalid = false
-        formValues[inputName].valid = false
-        this.setState({formValues})
-    }
-
-    sendTransactionCallback(error, transactionHash){
-        const notification = this.notificationSystem.current;
-        if (error){
-            console.log(error)
-            notification.addNotification({
-                title: 'Error',
-                message: error.message,
-                level: 'error',
-                position: 'br',
-                autoDismiss: 0
-            });
-        }else{
-            notification.addNotification({
-                title: 'Process Started',
-                message: 'Transaction Hash: \n' + transactionHash,
-                level: 'success',
-                position: 'br'
-            });
-            this.resetInput("createProductInput1")
-        }
-    }
-
-    checkProductDID(productDID){
-        let web3 = this.props.drizzle.web3;
-        return web3.utils.isAddress(productDID)
-    }
-
-    handleChange(event) {
-        let formValues = this.state.formValues;
-        let name = event.target.name;
-        let value = event.target.value;
-
-        formValues[name].value = value;
-        formValues[name].invalid = !this.checkProductDID(value);
-        formValues[name].valid = !formValues[name].invalid;
-        this.setState({formValues})
+    resetInput(){
+        this.addressInputRef.current.resetInput();
+        this.setState({createDisabled:true});
     }
 
     onCreateButtonClicked(e){
-        let formValues = this.state.formValues;
-        let productDID = formValues["createProductInput1"].value;
-        if (this.checkProductDID(productDID)){
-            this.props.drizzle.contracts["Product"].methods["createProduct"](productDID).send({
-                from:this.props.drizzleState.accounts[0],
-                gas: process.env.REACT_APP_DEFAULT_GAS,
-                gasPrice: process.env.REACT_APP_GAS_PRICE
-            }, this.sendTransactionCallback.bind(this));
-        }else{
-            formValues["createProductInput1"].invalid = true
-            this.setState({formValues})
-        }
+        const AddressInput = this.addressInputRef.current;
+        var productDID = AddressInput.state.addressInputState.value;
+        Misc.getCurrentAccount(this.props.web3,(error, account) => {
+            if (error){
+                Misc.showAccountNotConnectedNotification(store);
+            } else {
+                this.props.contracts["Product"].methods["createProduct"](productDID).send({
+                    from:account,
+                    gas: process.env.REACT_APP_DEFAULT_GAS,
+                    gasPrice: process.env.REACT_APP_GAS_PRICE
+                })
+                .on('transactionHash', (hash) => {
+                    Misc.showTransactionHashMessage(store, hash);
+                    this.resetInput();
+                })
+                .on('confirmation', (confirmationNumber, receipt) => {
+                    console.log(confirmationNumber)
+                    if (confirmationNumber === process.env.REACT_APP_CONFIRMATION_COUNT){
+                        Misc.showTransactionConfirmed(store, receipt);
+                    }
+                }).on('error', (error) => {
+                    console.log(error)
+                    Misc.showErrorMessage(store, error.message);
+                });
+            }
+        });
+    }
+
+    onAddressValidityChanged(valid){
+        this.setState({createDisabled:!valid})
     }
 
     render () {
@@ -97,25 +67,18 @@ class CreateProduct extends React.Component {
                 <Grid.Col md={12} xl={12}>
                     <Card title="Create New Product" isCollapsible>
                         <Card.Body>
-                            <Form.Group label="Product DID">
-                                <Form.InputGroup>
-                                    <Form.InputGroupPrepend>
-                                        <Form.InputGroupText>did:ethr:</Form.InputGroupText>
-                                    </Form.InputGroupPrepend>
-                                    <Form.Input
-                                        invalid={this.state.formValues.createProductInput1.invalid}
-                                        cross={this.state.formValues.createProductInput1.invalid}
-                                        valid={this.state.formValues.createProductInput1.valid}
-                                        tick={this.state.formValues.createProductInput1.valid}
-                                        name="createProductInput1"
-                                        placeholder="Product ethereum address 0x3f..."
-                                        onChange={this.handleChange.bind(this)}/>
-                                </Form.InputGroup>
-                            </Form.Group>
+                            <AddressInput
+                                        label="Product DID"
+                                        showDIDMethod={true}
+                                        web3={this.props.web3}
+                                        onAddressValidityChanged={this.onAddressValidityChanged.bind(this)}
+                                        ref={this.addressInputRef}
+                            />
                         </Card.Body>
                         <Card.Footer>
                             <div align="right">
                                 <Button
+                                    disabled={this.state.createDisabled}
                                     onClick={this.onCreateButtonClicked.bind(this)}
                                     color="primary">
                                         Create
@@ -124,7 +87,6 @@ class CreateProduct extends React.Component {
                         </Card.Footer>
                     </Card>
                 </Grid.Col>
-                <NotificationSystem ref={this.notificationSystem} />
             </Grid.Row>
         )
     }

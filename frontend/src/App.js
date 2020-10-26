@@ -1,49 +1,100 @@
 
 import * as React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Page, Dimmer, Header, Container } from "tabler-react";
+
+import ReactNotification from 'react-notifications-component';
+import detectEthereumProvider from '@metamask/detect-provider';
+import Web3 from 'web3';
 
 import HomePage from "./pages/Home";
 import Product from "./pages/product/Product";
 import Process from "./pages/process/Process";
 import ManageProduct from "./pages/product/ManageProduct";
 import MachineTasks from "./pages/machine/MachineTasks";
-
+import ConnectionContext from "./pages/utilities/ConnectionContext";
+import ContractsLoader from "./pages/utilities/ContractsLoader";
 
 import "tabler-react/dist/Tabler.css";
+import 'react-notifications-component/dist/theme.css';
 
-import { DrizzleContext } from "@drizzle/react-plugin";
-import { Drizzle } from "@drizzle/store";
+class App extends React.Component {
 
-import drizzleOptions from "./drizzleOptions";
+	constructor(props) {
+		super(props);
+		this.state = {
+			loading: true,
+		}
+	}
 
-const drizzle = new Drizzle(drizzleOptions);
+	handleChainChanged(_chainId) {
+		var web3 = this.state.web3;
+		if (typeof web3 === 'undefined' || web3 === null){
+			this.setState({ errorMessage: "Web3 is null.", loading:false});
+		}else{
+			ContractsLoader.load(web3).then(contracts => {
+				this.setState({web3:web3, provider:this.state.provider, contracts:contracts, loading:false, errorMessage:null});
+			}).catch( error => {
+				this.setState({errorMessage:error, loading:false});
+			});
+		}
+	}
 
-type Props = {||};
+	componentDidMount(){
+		detectEthereumProvider({timeout:3000, silent:false}).then( provider => {
+			if (provider == null){
+				this.setState({errorMessage:"MetaMask is not installed.", loading:false});
+			}else{
+				provider.autoRefreshOnNetworkChange= false;
+				var web3 = new Web3(provider || "ws://localhost:23000");
+				web3.eth.handleRevert = true;
+				this.setState({provider:provider, loading:true, web3:web3});
+				provider.on('chainChanged', this.handleChainChanged.bind(this));
+				this.handleChainChanged(null);
+			}
+		}).catch( error => {
+			console.log(error);
+			this.setState({errorMessage:"MetaMask is not installed.", loading:false});
+		});
+	}
 
-function App(props: Props): React.Node {
-  return (
-    <DrizzleContext.Provider drizzle={drizzle}>
-      <DrizzleContext.Consumer>
-        {drizzleContext => {
-          const { drizzle, drizzleState, initialized } = drizzleContext;
-          if (!initialized) {
-            return "Loading..."
-          }
-          return (
-              <Router>
-                <Switch>
-                  <Route exact path="/"><HomePage drizzle={drizzle} drizzleState={drizzleState}/></Route>
-                  <Route exact path="/tasks/:machine"><MachineTasks drizzle={drizzle} drizzleState={drizzleState}/></Route>
-                  <Route exact path="/product"><Product drizzle={drizzle} drizzleState={drizzleState}/></Route>
-                  <Route exact path="/process"><Process drizzle={drizzle} drizzleState={drizzleState}/></Route>
-                  <Route exact path="/manageProduct"><ManageProduct drizzle={drizzle} drizzleState={drizzleState}/></Route>
-                </Switch>
-              </Router>
-          )
-        }}
-      </DrizzleContext.Consumer>
-    </DrizzleContext.Provider>
-  );
+	render () {
+		if (this.state.loading){
+			return (
+			<Page className="text-center">
+				<Container>
+				<Dimmer active loader/>
+				</Container>
+			</Page>
+			);
+		}
+
+		if (this.state.errorMessage != null){
+			return (
+			<Page className="text-center">
+			<Container>
+				<Header.H1 className="display-1 text-muted mb-5">{"Oops! Something Went Wrong!"}</Header.H1>
+				<Header.H2>{this.state.errorMessage}</Header.H2>
+			</Container>
+			</Page>
+			)
+		}
+
+		return (
+			<ConnectionContext.Provider value={{ provider: this.state.provider, web3: this.state.web3, contracts: this.state.contracts}}>
+			<Router>
+				<ReactNotification />
+				<Switch>
+				<Route exact path="/"><HomePage/></Route>
+				<Route exact path="/tasks/:machine"><MachineTasks/></Route>
+				<Route exact path="/product"><Product web3={this.state.web3} provider={this.state.provider} contracts={this.state.contracts}/></Route>
+				<Route exact path="/process"><Process/></Route>
+				<Route exact path="/manageProduct"><ManageProduct/></Route>
+				</Switch>
+			</Router>
+			</ConnectionContext.Provider>
+		);
+	}
 }
 
 export default App;
