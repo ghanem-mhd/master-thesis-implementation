@@ -91,6 +91,7 @@ abstract contract Machine is Ownable {
         bytes32[] paramsNames;
         uint processID;
         address processContractAddress;
+        address manufacturer;
     }
     // counter to generate new task id
     Counters.Counter private taskIDCounter;
@@ -103,7 +104,12 @@ abstract contract Machine is Ownable {
 
     // Task Eevents
     // to notifiy the machine to perfome a task
-    event TaskAssigned(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
+    event TaskAssigned(uint indexed taskID,
+        string taskName,
+        address productDID,
+        uint processID,
+        address processContractAddress,
+        address manufacturer);
     // to notifiy others that a task has been finished
     event TaskStarted(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
     // to notifiy others that a task has been finished
@@ -114,15 +120,16 @@ abstract contract Machine is Ownable {
         taskIDCounter.increment();
         uint newtaskID = taskIDCounter.current();
         tasksIds.insert(newtaskID);
-        Task storage task       = tasks[newtaskID];
-        task.taskName           = taskName;
-        task.productDID         = productDID;
-        task.processID          = processID;
+        Task storage task           = tasks[newtaskID];
+        task.taskName               = taskName;
+        task.productDID             = productDID;
+        task.processID              = processID;
+        task.manufacturer           = tx.origin;
         task.processContractAddress = _msgSender();
         if(productDID != address(0)){
             productsTasks[productDID].push(newtaskID);
         }
-        emit TaskAssigned(newtaskID, getTaskName(newtaskID), productDID, processID, _msgSender());
+        emit TaskAssigned(newtaskID, taskName, productDID, processID, _msgSender(), tx.origin);
         return newtaskID;
     }
 
