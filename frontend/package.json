@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@drizzle/react-components": "^1.5.3",
-    "@drizzle/react-plugin": "^1.5.1",
-    "@drizzle/store": "^1.5.3",
     "@metamask/detect-provider": "^1.1.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
