@@ -1,5 +1,15 @@
 body {
-    margin: 0;
+    margin: 10;
     padding: 0;
     font-family: sans-serif;
+}
+
+.emptyListStatus {
+    font-size: 1.8rem;
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 2rem !important;
+    margin-top: 2rem !important;
+    text-align: center !important;
+    color: #9aa0ac !important;
 }

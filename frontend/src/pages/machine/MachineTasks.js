@@ -1,6 +1,5 @@
 import React from "react";
 
-import SiteWrapper from "../SiteWrapper.react";
 import { withRouter } from "react-router";
 
 import {
@@ -9,75 +8,105 @@ import {
   Card,
   Page
 } from "tabler-react";
-
-import Task from "./Task";
+import Misc from '../utilities/Misc';
+import ConnectionContext from '../utilities/ConnectionContext';
 
 class MachineTasks extends React.Component {
 
-    state = {};
+    constructor(props) {
+      super(props);
+      this.state = {
+        tasks: []
+      }
+    }
 
-    getData(props){
-        var machine = props.match.params.machine
-        props.drizzle.contracts[machine].methods["getTasksCount"].call().call().then( result => {
-            this.setState({tasksCount:result})
+    getTaskObject(TaskResult){
+        var task            = {};
+        task.product        = TaskResult[0];
+        task.name           = TaskResult[1];
+        task.startingTime   = Misc.formatTimestamp(TaskResult[2]);
+        task.finishingTime  = Misc.formatTimestamp(TaskResult[3]);
+        return task;
+    }
+
+    getMachineTasks(machine){
+        var MachineContract   = this.contracts[machine];
+        MachineContract.methods["getTasksCount"]().call().then( tasksCount => {
+            for (let taskID = 1; taskID <= tasksCount; taskID++) {
+                MachineContract.methods["getTask"](taskID).call().then( taskResult => {
+                    var task = this.getTaskObject(taskResult);
+                    task.ID = taskID;
+                    this.setState( (state, props) => {
+                        var tasks = this.state.tasks;
+                        tasks.push(task);
+                        return {
+                            tasks: tasks
+                        };
+                    });
+                }).catch( error => {
+                    console.log(error);
+                });
+            }
+        }).catch( error => {
+            console.log(error);
         });
     }
 
     componentDidMount(){
-        this.getData(this.props)
+        this.getMachineTasks(this.props.match.params.machine)
     }
 
     UNSAFE_componentWillReceiveProps(nextProps){
-        this.getData(nextProps)
+        if (this.props.match.params.machine !== nextProps.match.params.machine){
+            this.getMachineTasks(nextProps.match.params.machine);
+        }
     }
 
     render() {
-        var machine = this.props.match.params.machine
-        var tasksCount = this.state.tasksCount;
-        if (tasksCount){
-            return (
-                <SiteWrapper>
-                    <Page.Content title={machine + " Digital Twin"}>
+        return (
+            <ConnectionContext.Consumer>
+                {(connectionContext) => {
+                this.web3       = connectionContext.web3;
+                this.contracts  = connectionContext.contracts;
+                return (
+                    <Page.Content title={this.props.match.params.machine + " Machine Digital Twin"}>
                         <Grid.Row>
-                            <Grid.Col md={12} xl={12}>
-                                <Card
-                                    title="Machine Tasks"
-                                    isCollapsible
-                                    isClosable
-                                    body={
+                            <Grid.Col>
+                                <Card title="Machine Tasks" isCollapsible>
+                                    <Card.Body>
                                         <Table>
                                             <Table.Header>
                                                 <Table.Row>
                                                     <Table.ColHeader>Task ID</Table.ColHeader>
                                                     <Table.ColHeader>Task Name</Table.ColHeader>
-                                                    <Table.ColHeader>Starting Time</Table.ColHeader>
-                                                    <Table.ColHeader>Finishing Time</Table.ColHeader>
+                                                    <Table.ColHeader alignContent="center">Starting Time</Table.ColHeader>
+                                                    <Table.ColHeader alignContent="center">Finishing Time</Table.ColHeader>
                                                     <Table.ColHeader>Product</Table.ColHeader>
                                                 </Table.Row>
                                             </Table.Header>
                                             <Table.Body>
                                             {
-                                                [...Array(parseInt(tasksCount)+1).keys()].slice(1).map((x, i) =>
-                                                            <Task
-                                                                key={x}
-                                                                drizzle={this.props.drizzle}
-                                                                drizzleState={this.props.drizzleState}
-                                                                machine={machine}
-                                                                taskID={x}
-                                                        />)
+                                                this.state.tasks.map((task, i) =>
+                                                    <Table.Row key={task.ID}>
+                                                        <Table.Col>{task.ID}</Table.Col>
+                                                        <Table.Col>{task.name}</Table.Col>
+                                                        <Table.Col alignContent="center">{task.startingTime}</Table.Col>
+                                                        <Table.Col alignContent="center">{task.finishingTime}</Table.Col>
+                                                        <Table.Col>{task.product}</Table.Col>
+                                                    </Table.Row>
+                                                )
                                             }
                                             </Table.Body>
                                         </Table>
-                                    }
-                                />
+                                    </Card.Body>
+                                </Card>
                             </Grid.Col>
                         </Grid.Row>
                     </Page.Content>
-                </SiteWrapper>
-            )
-        }else{
-            return (<div>Loading</div>);
-        }
+                    )
+                }}
+            </ConnectionContext.Consumer>
+        )
     }
 }
 

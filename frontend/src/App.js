@@ -7,11 +7,17 @@ import ReactNotification from 'react-notifications-component';
 import detectEthereumProvider from '@metamask/detect-provider';
 import Web3 from 'web3';
 
+
+import SiteWrapper from "./pages/SiteWrapper.react";
 import HomePage from "./pages/Home";
 import Product from "./pages/product/Product";
 import Process from "./pages/process/Process";
 import ManageProduct from "./pages/product/ManageProduct";
+
+import Machine from "./pages/machine/Machine";
 import MachineTasks from "./pages/machine/MachineTasks";
+import ManageMachine from "./pages/machine/ManageMachine";
+
 import ConnectionContext from "./pages/utilities/ConnectionContext";
 import ContractsLoader from "./pages/utilities/ContractsLoader";
 
@@ -82,16 +88,20 @@ class App extends React.Component {
 
 		return (
 			<ConnectionContext.Provider value={{ provider: this.state.provider, web3: this.state.web3, contracts: this.state.contracts}}>
-			<Router>
-				<ReactNotification />
-				<Switch>
-				<Route exact path="/"><HomePage/></Route>
-				<Route exact path="/tasks/:machine"><MachineTasks/></Route>
-				<Route exact path="/product"><Product web3={this.state.web3} provider={this.state.provider} contracts={this.state.contracts}/></Route>
-				<Route exact path="/process"><Process/></Route>
-				<Route exact path="/manageProduct"><ManageProduct/></Route>
-				</Switch>
-			</Router>
+				<Router>
+					<ReactNotification />
+					<SiteWrapper>
+						<Switch>
+							<Route exact path="/"><HomePage/></Route>
+							<Route exact path="/machine"><Machine/></Route>
+							<Route exact path="/:machine/manage"><ManageMachine/></Route>
+							<Route exact path="/:machine/tasks"><MachineTasks/></Route>
+							<Route exact path="/product"><Product/></Route>
+							<Route exact path="/process"><Process /></Route>
+							<Route exact path="/manageProduct"><ManageProduct /></Route>
+						</Switch>
+					</SiteWrapper>
+				</Router>
 			</ConnectionContext.Provider>
 		);
 	}

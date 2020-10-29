@@ -1,99 +1,119 @@
 import React from "react";
-import { newContextComponents } from "@drizzle/react-components";
 import {
   Table,
   Grid,
-  Card
+  Card,
+  Dimmer
 } from "tabler-react";
+import Misc from '../utilities/Misc';
 
-const { ContractData } = newContextComponents;
+class MachineInfo extends React.Component {
 
-class MachineInfo extends React.PureComponent {
+    constructor(props) {
+      super(props);
+      this.state = {
+        info: [],
+        loading: true
+      }
+    }
 
-    state = {};
+    getMachineInfo(machine){
+        var MachineContract   = this.props.contracts[machine];
 
-    getData(props){
-        props.drizzle.contracts[props.machine].methods["getMachineInfoNames"].call().call().then( infoNames => {
-            this.setState({infoNames:infoNames})
+        var newState = {};
+        newState.info = []
+        this.setState(newState);
 
+        MachineContract.methods["getMachineID"]().call().then( result => {
+            this.setState( (state, props) => {
+                var info = this.state.info;
+                var fullMachineDID = "did:ethr:" + result;
+                info.push({infoName:"Machine DID", infoValue:fullMachineDID});
+                return {
+                    info: info
+                };
+            });
+        }).catch( error => {
+            console.log(error);
         });
+
+        MachineContract.methods["getMachineOwner"]().call().then( result => {
+            this.setState( (state, props) => {
+                var info = this.state.info;
+                info.push({infoName:"Machine Owner", infoValue:result});
+                info.push({infoName:"Contract Address", infoValue:MachineContract._address});
+                return {
+                    info: info
+                };
+            });
+        }).catch( error => {
+            console.log(error);
+        });
+
+        MachineContract.methods["getMachineInfoNames"]().call().then( infoNames => {
+            if (infoNames.length > 0){
+                for (let infoName of infoNames){
+                    MachineContract.methods["getMachineInfo"](infoName).call().then( infoValue => {
+                        var infoNameString  = Misc.toString(this.props.web3, infoName);
+                        var infoValueString = Misc.toString(this.props.web3, infoValue);
+                        this.setState( (state, props) => {
+                            var info = this.state.info;
+                            info.push({infoName:infoNameString, infoValue:infoValueString});
+                            return {
+                                info: info
+                            };
+                        });
+                    }).catch( error => {
+                        console.log(error);
+                    });
+                }
+            }
+        }).catch( error => {
+            console.log(error);
+        });
+
     }
 
     componentDidMount(){
-        this.getData(this.props)
+        this.getMachineInfo(this.props.machine)
     }
 
     UNSAFE_componentWillReceiveProps(nextProps){
-        this.getData(nextProps)
+        if (this.props.machine !== nextProps.machine){
+            this.getMachineInfo("");
+        }
     }
 
     render() {
-        var infoNames =  this.state.infoNames;
         return (
             <Grid.Row>
-                <Grid.Col md={12} xl={12}>
+                <Grid.Col>
                     <Card title="Machine Info" isCollapsible>
-                        {infoNames &&
-                        <Card.Body>
-                            <Table>
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.ColHeader>Info Name</Table.ColHeader>
-                                        <Table.ColHeader>Info Value</Table.ColHeader>
-                                    </Table.Row>
-                                </Table.Header>
-                                <Table.Body>
-                                <Table.Row>
-                                    <Table.Col>Machine ID</Table.Col>
-                                    <Table.Col>
-                                            did:ethr:<ContractData
-                                                drizzle={this.props.drizzle}
-                                                drizzleState={this.props.drizzleState}
-                                                contract={this.props.machine}
-                                                method="machineID"
-                                                methodArgs={[]}
-                                            />
-                                    </Table.Col>
-                                </Table.Row>
-                                <Table.Row>
-                                    <Table.Col>Machine Owner</Table.Col>
-                                    <Table.Col>
-                                            did:ethr:<ContractData
-                                                drizzle={this.props.drizzle}
-                                                drizzleState={this.props.drizzleState}
-                                                contract={this.props.machine}
-                                                method="machineOwner"
-                                                methodArgs={[]}
-                                            />
-                                    </Table.Col>
-                                </Table.Row>
-                                <Table.Row>
-                                    <Table.Col>Contract Address</Table.Col>
-                                    <Table.Col>
-                                        {this.props.drizzle.contracts[this.props.machine].address}
-                                    </Table.Col>
-                                </Table.Row>
-                                {
-                                    infoNames.map((object, i) =>
-                                        <Table.Row key={infoNames[i]}>
-                                            <Table.Col>{this.props.drizzle.web3.utils.hexToUtf8(infoNames[i])}</Table.Col>
-                                            <Table.Col>
-                                                <ContractData
-                                                        drizzle={this.props.drizzle}
-                                                        drizzleState={this.props.drizzleState}
-                                                        contract={this.props.machine}
-                                                        method="getMachineInfo"
-                                                        methodArgs={[infoNames[i]]}
-                                                        toUtf8
-                                                    />
-                                            </Table.Col>
+                        <Dimmer active={false} loader>
+                            <Card.Body>
+                                {this.state.info.length === 0
+                                ? <div className="emptyListStatus">{"No Machine Info."}</div>
+                                :<Table>
+                                    <Table.Header>
+                                        <Table.Row>
+                                            <Table.ColHeader>Info Name</Table.ColHeader>
+                                            <Table.ColHeader>Info Value</Table.ColHeader>
                                         </Table.Row>
-                                    )
+                                    </Table.Header>
+                                    <Table.Body>
+                                    {
+                                        this.state.info.map((object, i) =>
+                                            <Table.Row key={this.state.info[i].infoName}>
+                                                <Table.Col>{this.state.info[i].infoName}</Table.Col>
+                                                <Table.Col>{this.state.info[i].infoValue}</Table.Col>
+                                            </Table.Row>
+                                        )
+                                    }
+                                    </Table.Body>
+                                </Table>
                                 }
-                                </Table.Body>
-                            </Table>
-                        </Card.Body>
-                        }
+                            </Card.Body>
+                        </Dimmer>
                     </Card>
                 </Grid.Col>
             </Grid.Row>

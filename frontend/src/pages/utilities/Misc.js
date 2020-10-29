@@ -76,7 +76,12 @@ const Misc = {
         });
     },
     formatTimestamp: function(timestamp){
-        return new Date(timestamp.toString() * 1000).toLocaleString();
+        if (timestamp.toString() === '0'){
+            return "n.a"
+        }else{
+             return new Date(timestamp.toString() * 1000).toLocaleString();
+        }
+
     }
 }
 

@@ -1,82 +1,112 @@
 import React from "react";
-import { newContextComponents } from "@drizzle/react-components";
+import { Link } from "react-router-dom";
 import {
   Grid,
   StampCard
 } from "tabler-react";
 
-const {  ContractData } = newContextComponents;
 
-class MachineMetrics extends React.PureComponent {
+class MachineMetrics extends React.Component {
 
-    state = {};
+    constructor(props) {
+      super(props);
+      this.state = {
+        metrics: {
+          tasksCount:0,
+          issuesCount:0,
+          readingsCount:0,
+          maintenanceOperationsCount:0,
+        },
+      }
+    }
+
+    componentDidMount(){
+      this.getMetrics(this.props.machine)
+    }
+
+    UNSAFE_componentWillReceiveProps(nextProps){
+        if (this.props.machine !== nextProps.machine){
+          this.getMetrics(nextProps.machine);
+        }
+    }
+
+    getMetrics(machine){
+      var MachineContract   = this.props.contracts[machine]
+
+      MachineContract.methods["getTasksCount"]().call().then( result => {
+          this.setState( (state, props) => {
+              var metrics = this.state.metrics;
+              metrics.tasksCount = result;
+              return {
+                  metrics: metrics
+              };
+          });
+      }).catch( error => {
+          console.log(error);
+      });
+
+      MachineContract.methods["getReadingsCount"]().call().then( result => {
+        this.setState( (state, props) => {
+            var metrics = this.state.metrics;
+            metrics.readingsCount = result;
+            return {
+                metrics: metrics
+            };
+        });
+      }).catch( error => {
+          console.log(error);
+      });
+
+      MachineContract.methods["getIssuesCount"]().call().then( result => {
+        this.setState( (state, props) => {
+            var metrics = this.state.metrics;
+            metrics.issuesCount = result;
+            return {
+                metrics: metrics
+            };
+        });
+      }).catch( error => {
+          console.log(error);
+      });
+
+      MachineContract.methods["getMaintenanceOperationsCount"]().call().then( result => {
+        this.setState( (state, props) => {
+            var metrics = this.state.metrics;
+            metrics.maintenanceOperationsCount = result;
+            return {
+                metrics: metrics
+            };
+        });
+      }).catch( error => {
+          console.log(error);
+      });
+    }
 
     render() {
-        var machine = this.props.machine
-        return (
-         <Grid.Row deck cards={true}>
-          <Grid.Col sm={6} lg={3}>
-            <StampCard
-              color="blue"
-              icon="list"
-              header={
-                <small>
-                    <ContractData drizzle={this.props.drizzle}
-                                drizzleState={this.props.drizzleState}
-                                contract={machine}
-                                method="getTasksCount"
-                                methodArgs={[]}/> Tasks
-                </small>
-              }
-            />
-          </Grid.Col>
-          <Grid.Col sm={6} lg={3}>
-            <StampCard
-              color="green"
-              icon="radio"
-              header={
-                <small>
-                    <ContractData drizzle={this.props.drizzle}
-                                drizzleState={this.props.drizzleState}
-                                contract={machine}
-                                method="getReadingsCount"
-                                methodArgs={[]}/> Readings
-                </small>
-              }
-            />
-          </Grid.Col>
-          <Grid.Col sm={6} lg={3}>
-            <StampCard
-              color="red"
-              icon="alert-circle"
-              header={
-                <small>
-                    <ContractData drizzle={this.props.drizzle}
-                                drizzleState={this.props.drizzleState}
-                                contract={machine}
-                                method="getIssuesCount"
-                                methodArgs={[]}/> Alerts
-                </small>
-              }
-            />
-          </Grid.Col>
-          <Grid.Col sm={6} lg={3}>
-            <StampCard
-              color="yellow"
-              icon="alert-circle"
-              header={
-                <small>
-                    <ContractData drizzle={this.props.drizzle}
-                                drizzleState={this.props.drizzleState}
-                                contract={machine}
-                                method="getMaintenanceOperationsCount"
-                                methodArgs={[]}/> M. Operations
-                </small>
-              }
-            />
-          </Grid.Col>
+      return (
+        <Grid.Row cards={true}>
+            <Grid.Col sm={6} lg={3}>
+              <StampCard color="blue" icon="list">
+                <Link to={"/" + this.props.machine + "/tasks"}>{this.state.metrics.tasksCount}  Tasks</Link>
+              </StampCard>
+            </Grid.Col>
+            <Grid.Col sm={6} lg={3}>
+              <StampCard color="green" icon="radio">
+                {this.state.metrics.issuesCount} Readings
+              </StampCard>
+            </Grid.Col>
+            <Grid.Col sm={6} lg={3}>
+              <StampCard color="red" icon="alert-circle">
+                {this.state.metrics.readingsCount} Alerts
+              </StampCard>
+            </Grid.Col>
+            <Grid.Col sm={6} lg={3}>
+              <StampCard color="yellow" icon="alert-circle">
+                {this.state.metrics.maintenanceOperationsCount} M. Operations
+              </StampCard>
+            </Grid.Col>
         </Grid.Row>
-        )
+      )
     }
 }
 

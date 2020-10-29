@@ -10,7 +10,7 @@ import {
   Alert
 } from "tabler-react";
 
-import SiteWrapper from "../SiteWrapper.react";
+import ConnectionContext from '../utilities/ConnectionContext';
 import ProductDIDInput from './ProductDIDInput';
 import Misc from '../utilities/Misc';
 
@@ -43,7 +43,7 @@ class Product extends React.Component {
 
 
     getProductData(productDID){
-        var ProductContract = this.props.contracts["Product"];
+        var ProductContract = this.contracts["Product"];
         ProductContract.methods["getAuthorizeManufacturer"](productDID).call().then( result => {
             this.setState( (state, props) => {
                 var product = this.state.product;
@@ -70,10 +70,10 @@ class Product extends React.Component {
 
         ProductContract.methods["getProductInfoNames"](productDID).call().then( infoNames => {
             if (infoNames.length > 0){
-                for (const infoName of infoNames){
+                for (let infoName of infoNames){
                     ProductContract.methods["getProductInfo"](productDID, infoName).call().then( infoValue => {
-                        var infoNameString = Misc.toString(this.props.web3, infoName);
-                        var infoValueString = Misc.toString(this.props.web3, infoValue);
+                        var infoNameString = Misc.toString(this.web3, infoName);
+                        var infoValueString = Misc.toString(this.web3, infoValue);
                         this.setState( (state, props) => {
                             var product = this.state.product;
                             product.info.push({infoName:infoNameString, infoValue:infoValueString});
@@ -114,7 +114,7 @@ class Product extends React.Component {
     }
 
     initiateGetProductData(productDID){
-        var ProductContract = this.props.contracts["Product"];
+        var ProductContract = this.contracts["Product"];
         ProductContract.methods["getProductOwner"](productDID).call().then( result => {
             var newState                    = {};
             newState.error                  = null;
@@ -137,82 +137,88 @@ class Product extends React.Component {
 
     render () {
         return (
-            <SiteWrapper provider={this.props.provider}>
-                <Page.Content title="Product Digital Twin"  >
-                    <ProductDIDInput onFindButtonClicked={this.initiateGetProductData.bind(this)} web3={this.props.web3}/>
-                    {this.state && this.state.error &&
-                            <Grid.Row className="justify-content-center">
-                                <Grid.Col sm={12} lg={6}>
-                                    <Alert type="danger">{this.state.error}</Alert>
+            <ConnectionContext.Consumer>
+                {(connectionContext) => {
+                this.web3       = connectionContext.web3;
+                this.contracts  = connectionContext.contracts;
+                return (
+                    <Page.Content title="Product Digital Twin"  >
+                        <ProductDIDInput onFindButtonClicked={this.initiateGetProductData.bind(this)} web3={this.web3}/>
+                        {this.state && this.state.error &&
+                                <Grid.Row className="justify-content-center">
+                                    <Grid.Col sm={12} lg={6}>
+                                        <Alert type="danger">{this.state.error}</Alert>
+                                    </Grid.Col>
+                                </Grid.Row>
+                        }
+                        {this.state && this.state.product && this.state.product.info &&
+                            <Grid.Row>
+                                <Grid.Col>
+                                    <Card title="Product Info" isCollapsible>
+                                        <Card.Body>
+                                            <Table>
+                                                <Table.Header>
+                                                    <Table.Row>
+                                                        <Table.ColHeader>Info Name</Table.ColHeader>
+                                                        <Table.ColHeader>Info Value</Table.ColHeader>
+                                                    </Table.Row>
+                                                </Table.Header>
+                                                <Table.Body>
+                                                {
+                                                    this.state.product.info.map((object, i) =>
+                                                        <Table.Row key={this.state.product.info[i].infoName}>
+                                                            <Table.Col>{this.state.product.info[i].infoName}</Table.Col>
+                                                            <Table.Col>{this.state.product.info[i].infoValue}</Table.Col>
+                                                        </Table.Row>
+                                                    )
+                                                }
+                                                </Table.Body>
+                                            </Table>
+                                        </Card.Body>
+                                    </Card>
                                 </Grid.Col>
                             </Grid.Row>
-                    }
-                    {this.state && this.state.product && this.state.product.info &&
-                        <Grid.Row>
-                            <Grid.Col>
-                                <Card title="Product Info" isCollapsible>
-                                    <Card.Body>
-                                        <Table>
-                                            <Table.Header>
-                                                <Table.Row>
-                                                    <Table.ColHeader>Info Name</Table.ColHeader>
-                                                    <Table.ColHeader>Info Value</Table.ColHeader>
-                                                </Table.Row>
-                                            </Table.Header>
-                                            <Table.Body>
-                                            {
-                                                this.state.product.info.map((object, i) =>
-                                                    <Table.Row key={this.state.product.info[i].infoName}>
-                                                        <Table.Col>{this.state.product.info[i].infoName}</Table.Col>
-                                                        <Table.Col>{this.state.product.info[i].infoValue}</Table.Col>
+                        }
+                        {this.state && this.state.product && this.state.product.operations &&
+                            <Grid.Row>
+                                <Grid.Col>
+                                    <Card title="Product Operations" isCollapsible>
+                                        <Card.Body>
+                                            <Table>
+                                                <Table.Header>
+                                                    <Table.Row>
+                                                        <Table.ColHeader>ID</Table.ColHeader>
+                                                        <Table.ColHeader>Name</Table.ColHeader>
+                                                        <Table.ColHeader>Result</Table.ColHeader>
+                                                        <Table.ColHeader>Time</Table.ColHeader>
+                                                        <Table.ColHeader>Machine ID</Table.ColHeader>
+                                                        <Table.ColHeader>Task ID</Table.ColHeader>
                                                     </Table.Row>
-                                                )
-                                            }
-                                            </Table.Body>
-                                        </Table>
-                                    </Card.Body>
-                                </Card>
-                            </Grid.Col>
-                        </Grid.Row>
-                    }
-                    {this.state && this.state.product && this.state.product.operations &&
-                        <Grid.Row>
-                            <Grid.Col>
-                                <Card title="Product Operations" isCollapsible>
-                                    <Card.Body>
-                                        <Table>
-                                            <Table.Header>
-                                                <Table.Row>
-                                                    <Table.ColHeader>ID</Table.ColHeader>
-                                                    <Table.ColHeader>Name</Table.ColHeader>
-                                                    <Table.ColHeader>Result</Table.ColHeader>
-                                                    <Table.ColHeader>Time</Table.ColHeader>
-                                                    <Table.ColHeader>Machine ID</Table.ColHeader>
-                                                    <Table.ColHeader>Task ID</Table.ColHeader>
-                                                </Table.Row>
-                                            </Table.Header>
-                                            <Table.Body>
-                                            {
-                                                this.state.product.operations.map((object, i) =>
-                                                    <Table.Row key={this.state.product.operations.ID}>
-                                                        <Table.Col>{this.state.product.operations[i].ID}</Table.Col>
-                                                        <Table.Col>{this.state.product.operations[i].name}</Table.Col>
-                                                        <Table.Col>{this.state.product.operations[i].result}</Table.Col>
-                                                        <Table.Col>{this.state.product.operations[i].time}</Table.Col>
-                                                        <Table.Col>{this.state.product.operations[i].machine}</Table.Col>
-                                                        <Table.Col>{this.state.product.operations[i].taskID}</Table.Col>
-                                                    </Table.Row>
-                                                )
-                                            }
-                                            </Table.Body>
-                                        </Table>
-                                    </Card.Body>
-                                </Card>
-                            </Grid.Col>
-                        </Grid.Row>
-                    }
-                </Page.Content>
-            </SiteWrapper>
+                                                </Table.Header>
+                                                <Table.Body>
+                                                {
+                                                    this.state.product.operations.map((object, i) =>
+                                                        <Table.Row key={this.state.product.operations.ID}>
+                                                            <Table.Col>{this.state.product.operations[i].ID}</Table.Col>
+                                                            <Table.Col>{this.state.product.operations[i].name}</Table.Col>
+                                                            <Table.Col>{this.state.product.operations[i].result}</Table.Col>
+                                                            <Table.Col>{this.state.product.operations[i].time}</Table.Col>
+                                                            <Table.Col>{this.state.product.operations[i].machine}</Table.Col>
+                                                            <Table.Col>{this.state.product.operations[i].taskID}</Table.Col>
+                                                        </Table.Row>
+                                                    )
+                                                }
+                                                </Table.Body>
+                                            </Table>
+                                        </Card.Body>
+                                    </Card>
+                                </Grid.Col>
+                            </Grid.Row>
+                        }
+                    </Page.Content>
+                    )
+                }}
+            </ConnectionContext.Consumer>
         )
     }
 }

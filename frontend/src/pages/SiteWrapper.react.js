@@ -7,9 +7,11 @@ import {
   Site,
   Nav,
   Button,
-  RouterContextProvider,
+  Grid,
+  List,
 } from "tabler-react";
 
+import ConnectionContext from './utilities/ConnectionContext';
 import { store } from 'react-notifications-component';
 import Misc from './utilities/Misc';
 
@@ -41,30 +43,26 @@ const navBarItems: Array<navItem> = [
     value: "Home",
     to: "/",
     icon: "home",
-    LinkComponent: withRouter(NavLink),
+    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
     useExact: true,
   },
   {
     value: "Machines",
     icon: "monitor",
-    subItems: [
-      { value: "VGR", to: "/VGR", LinkComponent: NavLink },
-      { value: "HBW", to: "/HBW", LinkComponent: NavLink },
-      { value: "MPO", to: "/MPO", LinkComponent: NavLink },
-      { value: "SLD", to: "/SLD", LinkComponent: NavLink },
-    ]
+    to: "/machine",
+    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   },
   {
     value: "Products",
     icon: "shopping-bag",
     to: "/product",
-    LinkComponent: withRouter(NavLink),
+    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   },
   {
     value: "Processes",
     icon: "server",
     to: "/process",
-    LinkComponent: withRouter(NavLink),
+    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   },
   {
     value: "Settings",
@@ -82,12 +80,11 @@ class SiteWrapper extends React.Component<Props, State> {
   }
 
   componentDidMount(){
-    const provider = this.props.provider;
-    provider.request({ method: 'eth_accounts' }).then(this.handleAccountsChanged.bind(this))
+    this.provider.request({ method: 'eth_accounts' }).then(this.handleAccountsChanged.bind(this))
     .catch((err) => {
       console.error(err);
     });
-    provider.on('accountsChanged', this.handleAccountsChanged.bind(this));
+    this.provider.on('accountsChanged', this.handleAccountsChanged.bind(this));
   }
 
   handleAccountsChanged(accounts) {
@@ -99,7 +96,7 @@ class SiteWrapper extends React.Component<Props, State> {
   }
 
   connect() {
-    this.props.provider
+    this.provider
       .request({ method: 'eth_requestAccounts' })
       .then(this.handleAccountsChanged.bind(this))
       .catch((err) => {
@@ -108,32 +105,79 @@ class SiteWrapper extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-
     return (
-      <Site.Wrapper
-        headerProps={{
-          href: "/",
-          alt: "Tabler React",
-          imageURL: "./tabler.svg",
-          navItems: (
-            <div>
-            {
-              this.state.currentAccount && <div>{"Current Account: "}{this.state.currentAccount}</div>
-            }{
-              !this.state.currentAccount &&
-              <Nav.Item type="div" className="d-none d-md-flex">
-                <Button size="sm" color="primary" onClick={this.connect.bind(this)}>Connect</Button>
+      <ConnectionContext.Consumer>
+        {(connectionContext) => {
+          const { provider} = connectionContext;
+          this.provider = provider;
+          return (
+            <Site.Wrapper
+              headerProps={{
+                href: "/",
+                alt: "Tabler React",
+                imageURL: "/tabler.svg",
+                navItems: (
+                  <div>
+                  {
+                    this.state.currentAccount && <div>{"Current Account: "}{this.state.currentAccount}</div>
+                  }{
+                    !this.state.currentAccount &&
+                    <Nav.Item type="div" className="d-none d-md-flex">
+                      <Button size="sm" color="primary" onClick={this.connect.bind(this)}>Connect</Button>
 
-              </Nav.Item>
-            }
-            </div>
+                    </Nav.Item>
+                  }
+                  </div>
+                )
+              }}
+              navProps={{ itemsObjects: navBarItems }}
+              footerProps={{
+                copyright: (
+                  <React.Fragment>
+                    Copyright © 2019
+                    <a href="."> Tabler-react</a>. Theme by
+                    <a
+                      href="https://codecalm.net"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {" "}
+                      codecalm.net
+                    </a>{" "}
+                    All rights reserved.
+                  </React.Fragment>
+                ),
+                nav: (
+                  <React.Fragment>
+                    <Grid.Col auto={true}>
+                      <List className="list-inline list-inline-dots mb-0">
+                        <List.Item className="list-inline-item">
+                          <a href="./docs/index.html">Documentation</a>
+                        </List.Item>
+                        <List.Item className="list-inline-item">
+                          <a href="./faq.html">FAQ</a>
+                        </List.Item>
+                      </List>
+                    </Grid.Col>
+                    <Grid.Col auto={true}>
+                      <Button
+                        href="https://github.com/tabler/tabler-react"
+                        size="sm"
+                        outline
+                        color="primary"
+                        RootComponent="a"
+                      >
+                        Source code
+                      </Button>
+                    </Grid.Col>
+                  </React.Fragment>
+                ),
+              }}>
+              {this.props.children}
+            </Site.Wrapper>
           )
         }}
-        navProps={{ itemsObjects: navBarItems }}
-        routerContextComponentType={withRouter(RouterContextProvider)}
-      >
-        {this.props.children}
-      </Site.Wrapper>
+      </ConnectionContext.Consumer>
     );
   }
 }
