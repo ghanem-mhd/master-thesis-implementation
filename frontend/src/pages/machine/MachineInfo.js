@@ -80,7 +80,7 @@ class MachineInfo extends React.Component {
 
     UNSAFE_componentWillReceiveProps(nextProps){
         if (this.props.machine !== nextProps.machine){
-            this.getMachineInfo("");
+            this.getMachineInfo(nextProps.machine);
         }
     }
 

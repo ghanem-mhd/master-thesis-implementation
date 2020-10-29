@@ -72,7 +72,7 @@ class MachineTasks extends React.Component {
                     <Page.Content title={this.props.match.params.machine + " Machine Digital Twin"}>
                         <Grid.Row>
                             <Grid.Col>
-                                <Card title="Machine Tasks" isCollapsible>
+                                <Card title="Machine Tasks" isCollapsible isFullscreenable>
                                     <Card.Body>
                                         <Table>
                                             <Table.Header>
