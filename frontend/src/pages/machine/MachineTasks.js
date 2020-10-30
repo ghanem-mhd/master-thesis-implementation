@@ -75,7 +75,9 @@ class MachineTasks extends React.Component {
                             <Grid.Col>
                                 <Card title="Machine Tasks" isCollapsible isFullscreenable>
                                     <Card.Body>
-                                        <Table>
+                                        {this.state.tasks.length === 0
+                                        ? <div className="emptyListStatus">{"No Tasks."}</div>
+                                        :<Table>
                                             <Table.Header>
                                                 <Table.Row>
                                                     <Table.ColHeader>Task ID</Table.ColHeader>
@@ -99,6 +101,7 @@ class MachineTasks extends React.Component {
                                             }
                                             </Table.Body>
                                         </Table>
+                                        }
                                     </Card.Body>
                                 </Card>
                             </Grid.Col>
