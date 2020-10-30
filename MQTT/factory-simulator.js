@@ -9,6 +9,7 @@ var ClientUtils = require("./client-utilities");
 class FactorySimulator {
 
     static DELAY = 5000
+    static ReadingsFreq = 5000
 
     constructor(){}
 
@@ -19,6 +20,32 @@ class FactorySimulator {
         this.mqttClient.on("connect", () => this.onMQTTConnect());
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
+
+        setInterval(this.sendEnvironmentSensorReadings.bind(this), FactorySimulator.ReadingsFreq);
+        setInterval(this.sendBrightnessSensorReadings.bind(this), FactorySimulator.ReadingsFreq);
+    }
+
+    sendEnvironmentSensorReadings() {
+        var newReading = {}
+        newReading["ts"]    = new Date().toISOString();
+        newReading["t"]     = this.getRandomFloat(20, 26);
+        newReading["rt"]    = this.getRandomFloat(20, 26);
+        newReading["h"]     = this.getRandomFloat(35, 40);
+        newReading["p"]     = this.getRandomInt(1000, 1200);
+        newReading["rh"]    = this.getRandomFloat(35, 40);
+        newReading["iaq"]   = this.getRandomInt(100, 500);
+        newReading["aq"]    = this.getRandomInt(0, 3)
+        newReading["gr"]    = this.getRandomInt(15000, 170000);
+
+        this.mqttClient.publish("i/bme680", JSON.stringify(newReading));
+    }
+
+    sendBrightnessSensorReadings() {
+        var newReading = {}
+        newReading["ts"]    = new Date().toISOString();
+        newReading["br"]    = this.getRandomInt(0, 60)
+        newReading["ldr"]   = this.getRandomInt(15000, 170000);
+        this.mqttClient.publish("i/ldr", JSON.stringify(newReading));
     }
 
     onMQTTError(error) {
@@ -103,6 +130,14 @@ class FactorySimulator {
         var outgoingMessage = incomingMassage
         Logger.logEvent(this.clientName, `Sending ack message to ${ackTopic}`, outgoingMessage);
         this.mqttClient.publish(ackTopic, JSON.stringify(outgoingMessage));
+    }
+
+    getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    getRandomFloat(min, max) {
+        return Math.random() * (max - min) + min;
     }
 }
 
