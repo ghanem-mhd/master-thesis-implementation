@@ -65,10 +65,8 @@ class App extends React.Component {
 			this.setState({errorMessage:"MetaMask is not installed.", loading:false});
 		});
 
-        const socket = socketIOClient("http://127.0.0.1:5000/");
-        socket.on("log", data => {
-			console.log(data)
-		});
+        //const socket = socketIOClient("http://127.0.0.1:5000/");
+        //socket.on("log", data => {console.log(data)});
 	}
 
 	render () {
