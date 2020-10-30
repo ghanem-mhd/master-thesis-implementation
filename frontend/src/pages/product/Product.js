@@ -155,7 +155,7 @@ class Product extends React.Component {
                         {this.state && this.state.product && this.state.product.info &&
                             <Grid.Row>
                                 <Grid.Col>
-                                    <Card title="Product Info" isCollapsible>
+                                    <Card title="Product Info" isCollapsible isFullscreenable>
                                         <Card.Body>
                                             <Table>
                                                 <Table.Header>
@@ -183,9 +183,10 @@ class Product extends React.Component {
                         {this.state && this.state.product && this.state.product.operations &&
                             <Grid.Row>
                                 <Grid.Col>
-                                    <Card title="Product Operations" isCollapsible>
+                                    <Card title="Product Operations" isCollapsible isFullscreenable>
                                         <Card.Body>
-                                            <Table>
+                                            {this.state.operations && this.state.operations !== 0
+                                            ? <Table>
                                                 <Table.Header>
                                                     <Table.Row>
                                                         <Table.ColHeader>ID</Table.ColHeader>
@@ -211,6 +212,8 @@ class Product extends React.Component {
                                                 }
                                                 </Table.Body>
                                             </Table>
+                                            :<div className="emptyListStatus">{"No Product Operations."}</div>
+                                            }
                                         </Card.Body>
                                     </Card>
                                 </Grid.Col>
