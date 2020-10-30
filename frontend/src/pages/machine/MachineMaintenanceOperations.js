@@ -52,6 +52,7 @@ class MachineMaintenanceOperations extends React.Component {
     }
 
     componentDidMount(){
+         document.title = "Machine Maintenance Operations";
         this.getMachineMaintenanceOperations(this.props.match.params.machine)
     }
 

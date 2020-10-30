@@ -13,6 +13,10 @@ import ConnectionContext from '../utilities/ConnectionContext';
 
 class ManageProduct extends React.Component {
 
+    componentDidMount() {
+        document.title = "Manage Products";
+    }
+
     render () {
         return (
             <ConnectionContext.Consumer>

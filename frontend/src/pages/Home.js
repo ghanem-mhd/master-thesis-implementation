@@ -8,12 +8,16 @@ import {
 
 class Home extends React.Component {
 
-  render () {
-    return (
-      <Page.Content title="Home">
-      </Page.Content>
-    )
-  }
+    componentDidMount() {
+        document.title = "Home";
+    }
+
+    render () {
+        return (
+            <Page.Content title="Home">
+            </Page.Content>
+        )
+    }
 }
 
 export default Home;

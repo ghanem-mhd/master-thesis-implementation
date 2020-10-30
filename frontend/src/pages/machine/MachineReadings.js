@@ -62,6 +62,7 @@ class MachineReadings extends React.Component {
     }
 
     componentDidMount(){
+        document.title = "Machine Readings";
         this.getMachineReadings(this.props.match.params.machine)
     }
 

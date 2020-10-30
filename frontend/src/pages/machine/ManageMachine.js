@@ -17,6 +17,11 @@ import SaveMaintenanceOperation from './SaveMaintenanceOperation';
 
 class ManageMachine extends React.Component {
 
+
+    componentDidMount() {
+        document.title = "Manage Machine";
+    }
+
     render () {
         return (
             <ConnectionContext.Consumer>

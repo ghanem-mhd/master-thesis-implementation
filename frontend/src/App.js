@@ -51,6 +51,7 @@ class App extends React.Component {
 	}
 
 	componentDidMount(){
+		document.title = "App";
 		detectEthereumProvider({timeout:3000, silent:false}).then( provider => {
 			if (provider == null){
 				this.setState({errorMessage:"MetaMask is not installed.", loading:false});

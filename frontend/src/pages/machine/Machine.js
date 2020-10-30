@@ -27,6 +27,10 @@ class Machine extends React.Component {
         this.setState({machine:e.target.value})
     }
 
+    componentDidMount() {
+        document.title = "Machine Digital Twin";
+    }
+
     render() {
         return (
             <ConnectionContext.Consumer>

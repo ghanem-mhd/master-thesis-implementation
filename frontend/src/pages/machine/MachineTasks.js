@@ -53,6 +53,7 @@ class MachineTasks extends React.Component {
     }
 
     componentDidMount(){
+         document.title = "Machine Tasks";
         this.getMachineTasks(this.props.match.params.machine)
     }
 

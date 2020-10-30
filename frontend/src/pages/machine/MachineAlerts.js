@@ -53,6 +53,7 @@ class MachineAlerts extends React.Component {
     }
 
     componentDidMount(){
+        document.title = "Machine Alerts";
         this.getMachineAlerts(this.props.match.params.machine)
     }
 

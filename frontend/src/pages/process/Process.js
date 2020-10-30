@@ -9,6 +9,11 @@ import {
 import StartProcess from "./StartProcess";
 
 class Process extends React.Component {
+
+    componentDidMount() {
+        document.title = "Processes";
+    }
+
     render () {
         return (
             <Page.Content title="Processes">
