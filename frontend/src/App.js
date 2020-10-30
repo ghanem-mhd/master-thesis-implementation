@@ -6,6 +6,7 @@ import { Page, Dimmer, Header, Container } from "tabler-react";
 import ReactNotification from 'react-notifications-component';
 import detectEthereumProvider from '@metamask/detect-provider';
 import Web3 from 'web3';
+import socketIOClient from "socket.io-client";
 
 
 import SiteWrapper from "./pages/SiteWrapper.react";
@@ -62,6 +63,11 @@ class App extends React.Component {
 		}).catch( error => {
 			console.log(error);
 			this.setState({errorMessage:"MetaMask is not installed.", loading:false});
+		});
+
+        const socket = socketIOClient("http://127.0.0.1:5000/");
+        socket.on("log", data => {
+			console.log(data)
 		});
 	}
 

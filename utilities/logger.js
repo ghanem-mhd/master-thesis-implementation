@@ -1,6 +1,8 @@
 require("dotenv").config()
+require('winston-socket.io');
 
 const winston = require('winston');
+
 
 const logger = winston.createLogger({
 
@@ -19,6 +21,12 @@ const logger = winston.createLogger({
                 winston.format.colorize(),
                 winston.format.simple()
             )
+        }),
+        new winston.transports.SocketIO({
+          port: process.env.NODE_PORT,
+          reconnect: true,
+          namespace: "log",
+          log_topic: "log"
         })
     ],
 });
