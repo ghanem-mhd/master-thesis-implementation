@@ -11,6 +11,7 @@ import {
 import ConnectionContext from '../utilities/ConnectionContext';
 import AuthorizeParty from './AuthorizeParty';
 import SaveMachineInfo from './SaveMachineInfo';
+import RequestReading from './RequestReading';
 
 
 class ManageMachine extends React.Component {
@@ -22,8 +23,9 @@ class ManageMachine extends React.Component {
                 const { web3, contracts } = connectionContext;
                 return (
                     <Page.Content title={"Manage " + this.props.match.params.machine}>
-                    <AuthorizeParty web3={web3} contracts={contracts} machine={this.props.match.params.machine}/>
-                    <SaveMachineInfo web3={web3} contracts={contracts} machine={this.props.match.params.machine}/>
+                        <AuthorizeParty web3={web3} contracts={contracts} machine={this.props.match.params.machine}/>
+                        <SaveMachineInfo web3={web3} contracts={contracts} machine={this.props.match.params.machine}/>
+                        <RequestReading  web3={web3} contracts={contracts} machine={this.props.match.params.machine}/>
                     </Page.Content>
                     )
                 }}

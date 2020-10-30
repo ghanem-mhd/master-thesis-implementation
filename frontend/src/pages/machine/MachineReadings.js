@@ -14,6 +14,14 @@ import ConnectionContext from '../utilities/ConnectionContext';
 
 class MachineReadings extends React.Component {
 
+    ReadingsType = {
+        "0": "Temperature",
+        "1": "Humidity",
+        "2": "Air Pressure",
+        "3": "Gas Resistance",
+        "4": "Brightness",
+    };
+
     constructor(props) {
       super(props);
       this.state = {
@@ -39,7 +47,7 @@ class MachineReadings extends React.Component {
                     reading.ID = readingID;
                     this.setState( (state, props) => {
                         var readings = this.state.readings;
-                        readings.push(readings);
+                        readings.push(reading);
                         return {
                             readings: readings
                         };
@@ -87,22 +95,22 @@ class MachineReadings extends React.Component {
                                         :<Table>
                                             <Table.Header>
                                                 <Table.Row>
-                                                    <Table.ColHeader>ID</Table.ColHeader>
-                                                    <Table.ColHeader>Type</Table.ColHeader>
-                                                    <Table.ColHeader>Value</Table.ColHeader>
+                                                    <Table.ColHeader alignContent="center">ID</Table.ColHeader>
+                                                    <Table.ColHeader alignContent="center">Type</Table.ColHeader>
+                                                    <Table.ColHeader alignContent="center">Value</Table.ColHeader>
                                                     <Table.ColHeader alignContent="center">Time of Measure</Table.ColHeader>
-                                                    <Table.ColHeader>Task ID</Table.ColHeader>
+                                                    <Table.ColHeader alignContent="center">Task ID</Table.ColHeader>
                                                 </Table.Row>
                                             </Table.Header>
                                             <Table.Body>
                                             {
                                                 this.state.readings.map((reading, i) =>
                                                     <Table.Row key={reading.ID}>
-                                                        <Table.Col>{reading.ID}</Table.Col>
-                                                        <Table.Col>{reading.type}</Table.Col>
-                                                        <Table.Col>{reading.value}</Table.Col>
+                                                        <Table.Col alignContent="center">{reading.ID}</Table.Col>
+                                                        <Table.Col alignContent="center">{this.ReadingsType[reading.type]}</Table.Col>
+                                                        <Table.Col alignContent="center">{reading.value}</Table.Col>
                                                         <Table.Col alignContent="center">{reading.time}</Table.Col>
-                                                        <Table.Col>{reading.taskID}</Table.Col>
+                                                        <Table.Col alignContent="center">{reading.taskID}</Table.Col>
                                                     </Table.Row>
                                                 )
                                             }
