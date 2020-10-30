@@ -37,12 +37,12 @@ describe("SLD_Machine", function () {
         expect(StoredProductOperation[4]).to.equal("Pink");
     });
 
-    it("should create an issue if brightness below 70 ", async function () {
+    it("should create an alert if brightness below 70 ", async function () {
         var receipt = await this.SLDContract.saveReadingSLD(0, 4, 66, {from: SLD_DID});
-        expectEvent(receipt, "NewIssue", { issueID: "1", reason: "Brightness is too low", issueType:"Major"});
-        var savedIssue = await this.SLDContract.getIssue(1);
-        expect(savedIssue[1].toString()).to.equal("1");
-        expect(savedIssue[2].toString()).to.equal("Brightness is too low");
-        expect(savedIssue[3].toString()).to.equal("Major");
+        expectEvent(receipt, "NewAlert", { alertID: "1", reason: "Brightness is too low", alertType:"Major"});
+        var savedAlert = await this.SLDContract.getAlert(1);
+        expect(savedAlert[1].toString()).to.equal("1");
+        expect(savedAlert[2].toString()).to.equal("Brightness is too low");
+        expect(savedAlert[3].toString()).to.equal("Major");
     });
 })

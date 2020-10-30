@@ -139,16 +139,16 @@ describe("Machine", function () {
         expect(savedReading[3].toString()).to.equal(currentTaskID.toString());
     });
 
-    it("should create a new issue if reading value exceeded a threshold", async function () {
+    it("should create a new alert if reading value exceeded a threshold", async function () {
         var currentTaskID = 1;
         var readingType = 0;
         var readingValue = 50;
         var receipt = await this.MockMachineContract.saveMockReading(currentTaskID, readingType, readingValue,  { from : MachineDID });
-        expectEvent(receipt, "NewIssue", { issueID: "1", reason: "critical temperature threshold exceeded", issueType: "Critical"});
-        var savedIssue = await this.MockMachineContract.getIssue(1);
-        expect(savedIssue[1].toString()).to.equal("1");
-        expect(savedIssue[2].toString()).to.equal("critical temperature threshold exceeded");
-        expect(savedIssue[3].toString()).to.equal("Critical");
+        expectEvent(receipt, "NewAlert", { alertID: "1", reason: "critical temperature threshold exceeded", alertType: "Critical"});
+        var savedAlert = await this.MockMachineContract.getAlert(1);
+        expect(savedAlert[1].toString()).to.equal("1");
+        expect(savedAlert[2].toString()).to.equal("critical temperature threshold exceeded");
+        expect(savedAlert[3].toString()).to.equal("Critical");
     });
 
     it("should create/get a new maintenance operation", async function () {

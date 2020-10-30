@@ -50,10 +50,10 @@ module.exports = {
       Logger.error(error.stack);
     });
   },
-  registerCallbackForNewIssue: function (clientName, contractName, readingRequestCallback) {
+  registerCallbackForNewAlert: function (clientName, contractName, readingRequestCallback) {
     ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
-      Contract.events.NewIssue({ fromBlock: "latest" }, readingRequestCallback);
-      Logger.logEvent(clientName, "Started listening for new issues...");
+      Contract.events.NewAlert({ fromBlock: "latest" }, readingRequestCallback);
+      Logger.logEvent(clientName, "Started listening for new alerts...");
     }).catch(error => {
       Logger.error(error.stack);
     });

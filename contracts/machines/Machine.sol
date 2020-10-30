@@ -237,7 +237,7 @@ abstract contract Machine is Ownable {
     event NewReading(ReadingType indexed readingType);
 
     // Reading Methods
-    function getNewReading(ReadingType readingType) public onlyOwner{
+    function getNewReading(ReadingType readingType) public onlyMachineOwner {
         emit NewReading(readingType);
     }
 
@@ -269,63 +269,63 @@ abstract contract Machine is Ownable {
         return readingsIds.count();
     }
 
-    enum IssueType {Minor, Major, Urgent, Critical}
+    enum AlertType {Minor, Major, Urgent, Critical}
 
-    function getIssueType(IssueType issueType) internal pure returns (string memory) {
-        require(uint8(issueType) <= 4);
-        if (IssueType.Minor == issueType) return "Minor";
-        if (IssueType.Major == issueType) return "Major";
-        if (IssueType.Urgent == issueType) return "Urgent";
-        if (IssueType.Critical == issueType) return "Critical";
+    function getAlertType(AlertType alertType) internal pure returns (string memory) {
+        require(uint8(alertType) <= 4);
+        if (AlertType.Minor == alertType) return "Minor";
+        if (AlertType.Major == alertType) return "Major";
+        if (AlertType.Urgent == alertType) return "Urgent";
+        if (AlertType.Critical == alertType) return "Critical";
     }
-    // Issues Structure
-    struct Issue{
+    // Alerts Structure
+    struct Alert{
         uint time;
         uint readingID;
         string reason;
-        string issueType;
+        string alertType;
     }
-    // counter to generate new issue id
-    Counters.Counter private issueIDCounter;
-    // to store all issues ids
-    UintSet.Set private issuesIds;
-    // map the issueID to the issue struct
-    mapping (uint => Issue) private issues;
+    // counter to generate new alert id
+    Counters.Counter private alertIDCounter;
+    // to store all alerts ids
+    UintSet.Set private alertsIds;
+    // map the alertID to the alert struct
+    mapping (uint => Alert) private alerts;
 
-    // Issue Events
-    // to notifiy someone about the new issue
-    event NewIssue(uint indexed issueID, string reason, string issueType);
+    // Alert Events
+    // to notifiy someone about the new alert
+    event NewAlert(uint indexed alertID, string reason, string alertType);
 
-    // Issue Methods
+    // Alert Methods
 
-    function saveIssue(uint readingID, string memory reason, IssueType issueType) internal onlyMachine {
-        issueIDCounter.increment();
-        uint newIssueID = issueIDCounter.current();
+    function saveAlert(uint readingID, string memory reason, AlertType alertType) internal onlyMachine {
+        alertIDCounter.increment();
+        uint newAlertID = alertIDCounter.current();
 
-        issuesIds.insert(newIssueID);
+        alertsIds.insert(newAlertID);
 
-        Issue storage issue = issues[newIssueID];
-        issue.time = now;
-        issue.readingID = readingID;
-        issue.reason = reason;
+        Alert storage alert = alerts[newAlertID];
+        alert.time = now;
+        alert.readingID = readingID;
+        alert.reason = reason;
 
-        string memory issueTypeName = getIssueType(issueType);
-        issue.issueType = issueTypeName;
+        string memory alertTypeName = getAlertType(alertType);
+        alert.alertType = alertTypeName;
 
-        emit NewIssue(newIssueID, reason, issueTypeName);
+        emit NewAlert(newAlertID, reason, alertTypeName);
     }
 
-    function getIssue(uint issueID) public view returns (uint, uint, string memory, string memory) {
-        require(issuesIds.exists(issueID), "Issue doesn't exist.");
-        return (issues[issueID].time,
-            issues[issueID].readingID,
-            issues[issueID].reason,
-            issues[issueID].issueType
+    function getAlert(uint alertID) public view returns (uint, uint, string memory, string memory) {
+        require(alertsIds.exists(alertID), "Alert doesn't exist.");
+        return (alerts[alertID].time,
+            alerts[alertID].readingID,
+            alerts[alertID].reason,
+            alerts[alertID].alertType
         );
     }
 
-    function getIssuesCount() public view returns (uint) {
-        return issuesIds.count();
+    function getAlertsCount() public view returns (uint) {
+        return alertsIds.count();
     }
 
     // Maintenance Structure

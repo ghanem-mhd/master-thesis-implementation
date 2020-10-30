@@ -27,7 +27,7 @@ contract SLD is Machine {
         uint readingID = super.saveReading(taskID, readingType, readingValue);
 
         if (readingType == ReadingType.Brightness && readingValue < 70) {
-            super.saveIssue(readingID, "Brightness is too low", IssueType.Major);
+            super.saveAlert(readingID, "Brightness is too low", AlertType.Major);
         }
     }
 }

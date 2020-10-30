@@ -17,9 +17,9 @@ module.exports = function(deployer) {
     await deployer.deploy(MockProcess, deployedProductContract.address);
     await deployer.deploy(SupplyingProcess, deployedProductContract.address);
     await deployer.deploy(ProductionProcess, deployedProductContract.address);
-    await deployer.deploy(VGR, process.env.ADMIN_ADDRESS, process.env.VGR_ADDRESS, deployedProductContract.address);
-    await deployer.deploy(HBW, process.env.ADMIN_ADDRESS, process.env.HBW_ADDRESS, deployedProductContract.address);
-    await deployer.deploy(MPO, process.env.ADMIN_ADDRESS, process.env.MPO_ADDRESS, deployedProductContract.address);
-    await deployer.deploy(SLD, process.env.ADMIN_ADDRESS, process.env.SLD_ADDRESS, deployedProductContract.address);
+    await deployer.deploy(VGR, process.env.MACHINE_OWNER_ADDRESS, process.env.VGR_ADDRESS, deployedProductContract.address);
+    await deployer.deploy(HBW, process.env.MACHINE_OWNER_ADDRESS, process.env.HBW_ADDRESS, deployedProductContract.address);
+    await deployer.deploy(MPO, process.env.MACHINE_OWNER_ADDRESS, process.env.MPO_ADDRESS, deployedProductContract.address);
+    await deployer.deploy(SLD, process.env.MACHINE_OWNER_ADDRESS, process.env.SLD_ADDRESS, deployedProductContract.address);
   });
 };

@@ -13,7 +13,7 @@ class MachineMetrics extends React.Component {
       this.state = {
         metrics: {
           tasksCount:0,
-          issuesCount:0,
+          alertsCount:0,
           readingsCount:0,
           maintenanceOperationsCount:0,
         },
@@ -57,10 +57,10 @@ class MachineMetrics extends React.Component {
           console.log(error);
       });
 
-      MachineContract.methods["getIssuesCount"]().call().then( result => {
+      MachineContract.methods["getAlertsCount"]().call().then( result => {
         this.setState( (state, props) => {
             var metrics = this.state.metrics;
-            metrics.issuesCount = result;
+            metrics.alertsCount = result;
             return {
                 metrics: metrics
             };
@@ -97,7 +97,7 @@ class MachineMetrics extends React.Component {
             </Grid.Col>
             <Grid.Col sm={6} lg={3}>
               <StampCard color="red" icon="alert-circle">
-                {this.state.metrics.issuesCount} Alerts
+                {this.state.metrics.alertsCount} Alerts
               </StampCard>
             </Grid.Col>
             <Grid.Col sm={6} lg={3}>

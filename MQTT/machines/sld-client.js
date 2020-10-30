@@ -46,7 +46,7 @@ class SLDClient {
         }
         ClientUtils.registerCallbackForNewTasks(this.clientName, "SLD", (error, event) => this.onNewTask(error, event));
         ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "SLD", (error, event) => this.onNewReadingRequest(error, event));
-        ClientUtils.registerCallbackForNewIssue(this.clientName, "SLD", (error, event) => this.onNewIssue(error, event));
+        ClientUtils.registerCallbackForNewAlert(this.clientName, "SLD", (error, event) => this.onNewAlert(error, event));
         ContractManager.getTruffleContract(this.provider, "SLD").then( Contract => {
             this.Contract = Contract;
         });
@@ -106,7 +106,7 @@ class SLDClient {
         }
     }
 
-    async onNewIssue(error, event) {
+    async onNewAlert(error, event) {
         if (error){
             Logger.error(error);
         }else{
