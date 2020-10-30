@@ -87,17 +87,17 @@ class MachineMetrics extends React.Component {
         <Grid.Row cards={true}>
             <Grid.Col sm={6} lg={3}>
               <StampCard color="blue" icon="list">
-                <Link to={"/" + this.props.machine + "/tasks"}>{this.state.metrics.tasksCount}  Tasks</Link>
+                <Link to={"/" + this.props.machine + "/tasks"}>{this.state.metrics.tasksCount} Tasks</Link>
               </StampCard>
             </Grid.Col>
             <Grid.Col sm={6} lg={3}>
               <StampCard color="green" icon="radio">
-                <Link to={"/" + this.props.machine + "/readings"}>{this.state.metrics.readingsCount}  Readings</Link>
+                <Link to={"/" + this.props.machine + "/readings"}>{this.state.metrics.readingsCount} Readings</Link>
               </StampCard>
             </Grid.Col>
             <Grid.Col sm={6} lg={3}>
               <StampCard color="red" icon="alert-circle">
-                {this.state.metrics.alertsCount} Alerts
+                <Link to={"/" + this.props.machine + "/alerts"}>{this.state.metrics.alertsCount} Alerts</Link>
               </StampCard>
             </Grid.Col>
             <Grid.Col sm={6} lg={3}>

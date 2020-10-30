@@ -19,6 +19,7 @@ import Machine from "./pages/machine/Machine";
 import MachineTasks from "./pages/machine/MachineTasks";
 import ManageMachine from "./pages/machine/ManageMachine";
 import MachineReadings from "./pages/machine/MachineReadings";
+import MachineAlerts from "./pages/machine/MachineAlerts";
 
 import ConnectionContext from "./pages/utilities/ConnectionContext";
 import ContractsLoader from "./pages/utilities/ContractsLoader";
@@ -102,6 +103,7 @@ class App extends React.Component {
 							<Route exact path="/:machine/manage"><ManageMachine/></Route>
 							<Route exact path="/:machine/tasks"><MachineTasks/></Route>
 							<Route exact path="/:machine/readings"><MachineReadings/></Route>
+							<Route exact path="/:machine/alerts"><MachineAlerts/></Route>
 							<Route exact path="/product"><Product/></Route>
 							<Route exact path="/process"><Process /></Route>
 							<Route exact path="/manageProduct"><ManageProduct /></Route>
