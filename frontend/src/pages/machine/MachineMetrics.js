@@ -102,7 +102,7 @@ class MachineMetrics extends React.Component {
             </Grid.Col>
             <Grid.Col sm={6} lg={3}>
               <StampCard color="yellow" icon="alert-circle">
-                {this.state.metrics.maintenanceOperationsCount} M. Operations
+                    <Link to={"/" + this.props.machine + "/operations"}>{this.state.metrics.maintenanceOperationsCount} M. Operations</Link>
               </StampCard>
             </Grid.Col>
         </Grid.Row>
