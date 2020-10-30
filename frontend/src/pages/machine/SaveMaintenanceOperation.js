@@ -81,7 +81,7 @@ class SaveMaintenanceOperation extends React.Component {
                     <Card title="Save Maintenance Operation" isCollapsible>
                         <Card.Body>
                             <Form.Group label="Description">
-                                <Form.Input placeholder="Text..." name="description" onChange={this.handleChange.bind(this)}/>
+                                <Form.Textarea placeholder="Text..." name="description" onChange={this.handleChange.bind(this)} rows={3}/>
                             </Form.Group>
                         </Card.Body>
                         <Card.Footer>
