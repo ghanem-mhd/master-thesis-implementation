@@ -93,7 +93,7 @@ class SLDClient {
         }else{
             var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
             var readingValue = this.readingsClient.getRecentReading(readingType);
-            this.Contract.saveReadingHBW(this.currentTaskID,
+            this.Contract.saveReadingSLD(this.currentTaskID,
                 readingTypeIndex,
                 readingValue, {
                 from:this.machineAddress,
