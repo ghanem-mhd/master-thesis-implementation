@@ -5,7 +5,7 @@ var Logger  = require("../utilities/logger");
 
 class ReadingsClient {
 
-    static LoggingEnabled       = true;
+    static LoggingEnabled       = false;
     static TOPIC_INPUT_BME680   = "i/bme680"
     static TOPIC_INPUT_LDR      = "i/ldr"
 

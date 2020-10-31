@@ -39,6 +39,7 @@ logger.logTx = function(desc, receipt){
 
 
 logger.logEvent = function(eventLocation, eventDescription, payload = null) {
+    const IO = require('./socket.js').getIO();
     var logMessage = {
         eventLocation: eventLocation,
         eventDescription: eventDescription,
@@ -54,7 +55,8 @@ logger.logEvent = function(eventLocation, eventDescription, payload = null) {
             logMessage.transactionHash = payload.tx
         }
     }
-    logger.verbose(logMessage)
+    logger.verbose(logMessage);
+    IO.in('stream_log').emit('log_event', logMessage);
     if (logMessage.transactionHash){
         logger.info(`${eventLocation} - ${eventDescription} : ${logMessage.transactionHash}`)
     }else{
