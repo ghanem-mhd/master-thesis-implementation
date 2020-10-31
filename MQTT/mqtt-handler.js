@@ -43,7 +43,6 @@ class MQTTHandler {
         vgrClient.connect();
         sldClient.connect();
         mpoClient.connect();
-        readingClient.connect();
         supplyingProcessClient.connect();
         productionProcessClient.connect();
     }

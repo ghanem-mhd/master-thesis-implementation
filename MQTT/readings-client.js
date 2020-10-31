@@ -1,17 +1,20 @@
 require("dotenv").config()
 
-const mqtt = require("mqtt");
-var Logger = require("../utilities/logger");
+const mqtt  = require("mqtt");
+var Logger  = require("../utilities/logger");
 
 class ReadingsClient {
 
-    static LoggingEnabled       = false;
+    static LoggingEnabled       = true;
     static TOPIC_INPUT_BME680   = "i/bme680"
     static TOPIC_INPUT_LDR      = "i/ldr"
 
-    constructor(){}
-
-    connect(){
+    constructor() {
+        if (ReadingsClient._instance) {
+            return ReadingsClient._instance;
+        }
+        ReadingsClient._instance = this;
+        this.clientName = this.constructor.name;
         this.mqttClient  = mqtt.connect(process.env.CURRENT_MQTT);
         this.mqttClient.on("error", (error) => this.onMQTTError(error));
         this.mqttClient.on("connect", () => this.onMQTTConnect());
@@ -45,7 +48,7 @@ class ReadingsClient {
         var message = JSON.parse(messageBuffer.toString());
 
         if (ReadingsClient.LoggingEnabled){
-            Logger.info("ReadingsClient - New reading " + JSON.stringify(message));
+            Logger.logEvent(this.clientName, "New reading", message);
         }
 
         if (topic == ReadingsClient.TOPIC_INPUT_BME680){

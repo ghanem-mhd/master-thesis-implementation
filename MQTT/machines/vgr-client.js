@@ -26,7 +26,6 @@ class VGRClient{
         this.mqttClient.on("close", () => this.onMQTTClose());
         this.mqttClient.on("message", (topic, messageBuffer) => this.onMQTTMessage(topic, messageBuffer));
         this.readingsClient = new ReadingsClient();
-        this.readingsClient.connect();
         this.currentTaskID = 0;
         this.provider = ProviderManager.getHttpProvider(process.env.NETWORK, process.env.VGR_PK);
         this.machineAddress = this.provider.addresses[0];
