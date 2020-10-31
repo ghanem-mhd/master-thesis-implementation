@@ -69,6 +69,12 @@ const navBarItems: Array<navItem> = [
     icon: "edit",
     to: "/manageProduct",
     LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
+  },
+    {
+    value: "Log",
+    icon: "settings",
+    to: "/streamLog",
+    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   }
 ];
 

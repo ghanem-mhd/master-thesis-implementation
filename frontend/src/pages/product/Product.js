@@ -48,7 +48,11 @@ class Product extends React.Component {
         ProductContract.methods["getAuthorizeManufacturer"](productDID).call().then( result => {
             this.setState( (state, props) => {
                 var product = this.state.product;
-                product.info.push({infoName:"Authorized Manufacturer", infoValue:result});
+                if (result.toString() == "0x0000000000000000000000000000000000000000"){
+                    product.info.push({infoName:"Authorized Manufacturer", infoValue:"None"});
+                }else{
+                    product.info.push({infoName:"Authorized Manufacturer", infoValue:result});
+                }
                 return {
                     product: product
                 };
@@ -185,7 +189,7 @@ class Product extends React.Component {
                                 <Grid.Col>
                                     <Card title="Product Operations" isCollapsible isFullscreenable>
                                         <Card.Body>
-                                            {this.state.operations && this.state.operations !== 0
+                                            {this.state.product.operations.length !== 0
                                             ? <Table>
                                                 <Table.Header>
                                                     <Table.Row>

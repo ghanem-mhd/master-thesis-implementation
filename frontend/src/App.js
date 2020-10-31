@@ -6,7 +6,6 @@ import { Page, Dimmer, Header, Container } from "tabler-react";
 import ReactNotification from 'react-notifications-component';
 import detectEthereumProvider from '@metamask/detect-provider';
 import Web3 from 'web3';
-import socketIOClient from "socket.io-client";
 
 
 import SiteWrapper from "./pages/SiteWrapper.react";
@@ -14,6 +13,7 @@ import HomePage from "./pages/Home";
 import Product from "./pages/product/Product";
 import Process from "./pages/process/Process";
 import ManageProduct from "./pages/product/ManageProduct";
+import StreamLog from "./pages/log/StreamLog";
 
 import Machine from "./pages/machine/Machine";
 import MachineTasks from "./pages/machine/MachineTasks";
@@ -67,9 +67,6 @@ class App extends React.Component {
 			console.log(error);
 			this.setState({errorMessage:"MetaMask is not installed.", loading:false});
 		});
-
-        //const socket = socketIOClient("http://127.0.0.1:5000/");
-        //socket.on("log", data => {console.log(data)});
 	}
 
 	render () {
@@ -110,6 +107,7 @@ class App extends React.Component {
 							<Route exact path="/product"><Product/></Route>
 							<Route exact path="/process"><Process /></Route>
 							<Route exact path="/manageProduct"><ManageProduct /></Route>
+							<Route exact path="/streamLog"><StreamLog/></Route>
 						</Switch>
 					</SiteWrapper>
 				</Router>
