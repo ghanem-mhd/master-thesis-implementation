@@ -18,7 +18,10 @@
     "task": "node ./utilities/task-generator.js task"
   },
   "nodemonConfig": {
-    "ignore": ["logs/*"]
+    "ignore": [
+      "logs/*",
+      "frontend/*"
+    ]
   },
   "author": "Mohammad Ghanem",
   "license": "ISC",
@@ -31,6 +34,7 @@
     "@truffle/hdwallet-provider": "^1.0.38",
     "body-parser": "^1.19.0",
     "chai": "^4.2.0",
+    "cors": "^2.8.5",
     "did-jwt": "^4.3.4",
     "dotenv": "^8.2.0",
     "ethereumjs-wallet": "^1.0.0",
