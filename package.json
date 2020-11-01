@@ -17,6 +17,9 @@
     "machine": "node ./utilities/run-client.js machine",
     "task": "node ./utilities/task-generator.js task"
   },
+  "nodemonConfig": {
+    "ignore": ["logs/*"]
+  },
   "author": "Mohammad Ghanem",
   "license": "ISC",
   "dependencies": {
@@ -39,6 +42,7 @@
     "lodash": "^4.17.20",
     "mocha": "^8.2.0",
     "mqtt": "4.2.1 ",
+    "nedb": "^1.8.0",
     "socket.io": "^2.3.0",
     "truffle": "^5.1.50",
     "uport-credentials": "^1.3.3",
