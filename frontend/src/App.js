@@ -13,7 +13,8 @@ import HomePage from "./pages/Home";
 import Product from "./pages/product/Product";
 import Process from "./pages/process/Process";
 import ManageProduct from "./pages/product/ManageProduct";
-import StreamLog from "./pages/log/StreamLog";
+import EventsLogStream from "./pages/log/EventsLogStream";
+import EventsLogNonStream from "./pages/log/EventsLogNonStream";
 
 import Machine from "./pages/machine/Machine";
 import MachineTasks from "./pages/machine/MachineTasks";
@@ -107,7 +108,8 @@ class App extends React.Component {
 							<Route exact path="/product"><Product/></Route>
 							<Route exact path="/process"><Process /></Route>
 							<Route exact path="/manageProduct"><ManageProduct /></Route>
-							<Route exact path="/streamLog"><StreamLog/></Route>
+							<Route exact path="/events-log-stream"><EventsLogStream/></Route>
+							<Route exact path="/events-log-non-stream"><EventsLogNonStream/></Route>
 						</Switch>
 					</SiteWrapper>
 				</Router>

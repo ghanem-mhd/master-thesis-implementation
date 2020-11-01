@@ -70,11 +70,13 @@ const navBarItems: Array<navItem> = [
     to: "/manageProduct",
     LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   },
-    {
-    value: "Log",
-    icon: "settings",
-    to: "/streamLog",
-    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
+  {
+    value: "Events Log",
+    icon: "monitor",
+    subItems: [
+      { value: "Stream", to: "/events-log-stream", LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}) },
+      { value: "Non Stream", to: "/events-log-non-stream", LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}) },
+    ],
   }
 ];
 
