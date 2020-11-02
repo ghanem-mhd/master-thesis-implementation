@@ -10,11 +10,14 @@ module.exports = {
         return db;
     },
     getEventsLogDB(){
+        if (!db) {
+            return null;
+        }
         return module.exports.getDB().events_log;
     },
     getDB: function() {
         if (!db) {
-            throw new Error("must call .init() before you can call .getDB()");
+            return null;
         }
         return db;
     }

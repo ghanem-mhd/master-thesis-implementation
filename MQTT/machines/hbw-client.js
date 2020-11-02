@@ -46,8 +46,8 @@ class HBWClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_HBW_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks(this.clientName, "HBW", (error, event) => this.onNewTask(error, event));
-        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "HBW", (error, event) => this.onNewReadingRequest(error, event));
+        ClientUtils.registerCallbackForTaskAssignedEvent(this.clientName, "HBW", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForNewReadingEvent(this.clientName, "HBW",  (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
         ContractManager.getTruffleContract(this.provider, "HBW").then( Contract => {
             this.Contract = Contract;
         });
@@ -64,63 +64,60 @@ class HBWClient {
             Logger.logEvent(this.clientName, "Received Ack message from HBW", incomingMessage);
             var {taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(incomingMessage);
             this.currentTaskID = 0;
-            ClientUtils.taskFinished(this.clientName, this.Contract, this.machineAddress, taskID);
+            ClientUtils.sendFinishTaskTransaction(this.clientName, this.Contract, this.machineAddress, taskID);
         }
     }
 
-    async onNewTask(error, event){
-        if (error){
-            Logger.error(error);
-        }else{
-           ClientUtils.getTaskWithStatus(this.clientName, event, this.Contract).then((task) => {
-                if (task.isFinished){
-                    return;
-                }
-
-                this.currentTaskID = task.taskID;
-
-                if (task.taskName == HBWClient.TASK1){
-                    this.handleFetchContainerTask(task);
-                }
-
-                if (task.taskName == HBWClient.TASK2){
-                    this.handleStoreContainerTask(task);
-                }
-
-                if (task.taskName == HBWClient.TASK3){
-                    this.handleStoreWBTask(task);
-                }
-
-                if (task.taskName == HBWClient.TASK4){
-                    this.handleFetchWBTask(task);
-                }
-            });
-        }
+    async onNewTaskAssigned(taskAssignedEvent){
+        ClientUtils.getTaskWithStatus(this.clientName, this.Contract, taskAssignedEvent).then( task => {
+            this.sendStartTaskTransaction(taskAssignedEvent);
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
     }
 
-    async onNewReadingRequest(error, event) {
-        if (error){
-            Logger.error(error);
-        }else{
-            var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
-            var readingValue = this.readingsClient.getRecentReading(readingType);
-            this.Contract.saveReadingHBW(this.currentTaskID,
-                readingTypeIndex,
-                readingValue, {
-                from:this.machineAddress,
-                gas: process.env.DEFAULT_GAS
-                }).then( receipt => {
-                    Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
-            }).catch(error => {
-                Logger.error(error.stack);
-            });
-        }
+    async sendStartTaskTransaction(taskAssignedEvent){
+        ClientUtils.sendTaskStartTransaction(this.clientName, this.Contract, this.machineAddress, taskAssignedEvent).then( task => {
+            this.currentTaskID = task.taskID;
+
+            if (task.taskName == HBWClient.TASK1){
+                this.handleFetchContainerTask(task);
+            }
+
+            if (task.taskName == HBWClient.TASK2){
+                this.handleStoreContainerTask(task);
+            }
+
+            if (task.taskName == HBWClient.TASK3){
+                this.handleStoreWBTask(task);
+            }
+
+            if (task.taskName == HBWClient.TASK4){
+                this.handleFetchWBTask(task);
+            }
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
+    }
+
+    async onNewReadingRequest(newReadingEvent) {
+        var {readingTypeIndex, readingType } = ClientUtils.getReadingType(newReadingEvent);
+        var readingValue = this.readingsClient.getRecentReading(readingType);
+        this.Contract.saveReadingHBW(this.currentTaskID,
+            readingTypeIndex,
+            readingValue, {
+            from:this.machineAddress,
+            gas: process.env.DEFAULT_GAS
+            }).then( receipt => {
+                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
+        }).catch(error => {
+            Logger.error(error.stack);
+        });
     }
 
     async handleFetchContainerTask(task){
         var taskMessage = ClientUtils.getTaskMessageObject(task, 1);
         this.sendTask(task.taskID, task.taskName, taskMessage);
-        ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
     }
 
     async handleStoreWBTask(task){
@@ -128,7 +125,6 @@ class HBWClient {
             var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
             taskMessage["workpiece"] = { type:inputValues[0], id:inputValues[1], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
-            ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
         }).catch( error => {
             Logger.error(error.stack);
         });
@@ -139,7 +135,6 @@ class HBWClient {
             var taskMessage = ClientUtils.getTaskMessageObject(task, 3);
             taskMessage["workpiece"] = { id:"", type:inputValues[0], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
-            ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
         }).catch( error => {
             Logger.error(error.stack);
         });
@@ -148,7 +143,6 @@ class HBWClient {
     async handleStoreContainerTask(task){
         var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
         this.sendTask(task.taskID, task.taskName, taskMessage);
-        ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, task.taskID);
     }
 
     sendTask(taskID, taskName, taskMessage){

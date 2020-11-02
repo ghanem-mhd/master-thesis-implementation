@@ -60,7 +60,7 @@ describe("Machine", function () {
     it("starting a task should create a TaskAssigned event", async function () {
         receipt = await this.MockMachineContract.assignTaskWithoutProduct(1, "someTaskName", {from:Manufacturer});
         receipt = await this.MockMachineContract.startTask(1, {from:MachineDID});
-        expectEvent(receipt, "TaskStarted", { taskID: "1", taskName:"someTaskName", productDID:constants.ZERO_ADDRESS, processID: "1", processContractAddress:Manufacturer });
+        expectEvent(receipt, "StartTask", { taskID: "1", taskName:"someTaskName", productDID:constants.ZERO_ADDRESS, processID: "1", processContractAddress:Manufacturer });
     });
 
     it("should get the task information", async function () {

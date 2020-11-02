@@ -43,30 +43,14 @@ class ProductionProcessClient {
     onMQTTConnect(){
         Logger.logEvent(this.clientName, "MQTT client connected");
 
-        this.mqttClient.subscribe(ProductionProcessClient.TOPIC_ORDER, {qos: 0});
+        ContractManager.getTruffleContract(this.provider, "ProductionProcess").then( contract => {
 
-        var contractsAsyncGets = [
-            ContractManager.getWeb3Contract(process.env.NETWORK, "VGR"),
-            ContractManager.getWeb3Contract(process.env.NETWORK, "HBW"),
-            ContractManager.getWeb3Contract(process.env.NETWORK, "SLD"),
-            ContractManager.getWeb3Contract(process.env.NETWORK, "MPO"),
-            ContractManager.getTruffleContract(this.provider, "ProductionProcess"),
-        ];
+            this.productionProcessContract = contract;
 
-        Promise.all(contractsAsyncGets).then( contracts => {
-            Logger.logEvent(this.clientName, "Start listening for tasks finish events...");
-
-            var VGRContract = contracts[0];
-            var HBWContract = contracts[1];
-            var SLDContract = contracts[2];
-            var MPOContract = contracts[3];
-            this.productionProcessContract = contracts[4];
-
-            VGRContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onVGRTaskFinished(error, event));
-            HBWContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onHBWTaskFinished(error, event));
-            SLDContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onSLDTaskFinished(error, event));
-            MPOContract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => this.onMPOTaskFinished(error, event));
-
+            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "VGR", (taskFinishedEvent) => this.onVGRTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "HBW", (taskFinishedEvent) => this.onHBWTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "SLD", (taskFinishedEvent) => this.onSLDTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "MPO", (taskFinishedEvent) => this.onMPOTaskFinished(taskFinishedEvent));
         }).catch( error => {
             Logger.error(error.stack);
         });
@@ -76,84 +60,54 @@ class ProductionProcessClient {
         Logger.logEvent(this.clientName, "MQTT client disconnected");
     }
 
-    onMQTTMessage(topic, messageBuffer){
-        var message = JSON.parse(messageBuffer.toString());
-        if (topic == ProductionProcessClient.TOPIC_ORDER){
-
-            this.orderColor     = message["type"];
-            var productDID      = process.env.DUMMY_PRODUCT //Wallet.default.generate().getAddressString();
-            var color           = message["type"];
-
-            this.publishOrderState("ORDERED", this.orderColor);
-
-            this.productionProcessContract.startProductionProcess(productDID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                Logger.logEvent(this.clientName, "Production process started");
+    async onHBWTaskFinished(taskFinishedEvent){
+        var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
+        if (task.taskName == HBWClient.TASK4){
+            this.productionProcessContract.step2(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.logEvent(this.clientName, "Production process step 2 started", receipt);
             }).catch(error => {
                 Logger.error(error.stack);
             });
         }
     }
 
-    async onVGRTaskFinished(error, event){
-        if (error){
-            Logger.error(error);
-        }else{
-            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
-            if (taskName == VGRClient.TASK3){
-                this.publishOrderState("IN_PROCESS", this.orderColor);
-                this.productionProcessContract.step3(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                }).catch(error => {
-                    Logger.error(error.stack);
-                });
-            }
+    async onVGRTaskFinished(taskFinishedEvent){
+        var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
+        if (task.taskName == VGRClient.TASK3){
+            this.publishOrderState("IN_PROCESS", this.orderColor);
+            this.productionProcessContract.step3(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.logEvent(this.clientName, "Production process step 3 started", receipt);
+            }).catch(error => {
+                Logger.error(error.stack);
+            });
+        }
 
-            if (taskName == VGRClient.TASK4){
-                this.publishOrderState("SHIPPED", this.orderColor);
-                setTimeout(() => this.publishOrderState("WAITING_FOR_ORDER",""), 5000);
-            }
+        if (task.taskName == VGRClient.TASK4){
+            this.publishOrderState("SHIPPED", this.orderColor);
+            setTimeout(() => this.publishOrderState("WAITING_FOR_ORDER",""), 5000);
         }
     }
 
-    async onHBWTaskFinished(error, event){
-        if (error){
-            Logger.error(error);
-        }else{
-            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
-            if (taskName == HBWClient.TASK4){
-                this.productionProcessContract.step2(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                }).catch(error => {
-                    Logger.error(error.stack);
-                });
-            }
-        }
-    }
-
-    async onMPOTaskFinished(error, event){
-        if (error){
-            Logger.error(error);
-        }else{
-            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
-            if (taskName == MPOClient.PROCESSING_TASK_NAME){
-                this.productionProcessContract.step4(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                }).catch(error => {
-                    Logger.error(error.stack);
-                });
-            }
+    async onMPOTaskFinished(taskFinishedEvent){
+        var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
+        if (task.taskName == MPOClient.PROCESSING_TASK_NAME){
+            this.productionProcessContract.step4(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.logEvent(this.clientName, "Production process step 4 started", receipt);
+            }).catch(error => {
+                Logger.error(error.stack);
+            });
         }
     }
 
 
-    async onSLDTaskFinished(error, event){
-        if (error){
-            Logger.error(error);
-        }else{
-            var {taskID, taskName, productDID, processID} = ClientUtils.getTaskInfoFromTaskAssignedEvent(event);
-            if (taskName == SLDClient.SORTING_TASK_NAME){
-                this.productionProcessContract.step5(processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
-                }).catch(error => {
-                    Logger.error(error.stack);
-                });
-            }
+    async onSLDTaskFinished(taskFinishedEvent){
+        var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
+        if (task.taskName == SLDClient.SORTING_TASK_NAME){
+            this.productionProcessContract.step5(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.logEvent(this.clientName, "Production process step 5 started", receipt);
+            }).catch(error => {
+                Logger.error(error.stack);
+            });
         }
     }
 

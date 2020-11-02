@@ -19,7 +19,7 @@ module.exports = {
     },
     getIO: function() {
         if (!io) {
-            throw new Error("must call .init(server) before you can call .getIO()");
+            return null
         }
         return io;
     }

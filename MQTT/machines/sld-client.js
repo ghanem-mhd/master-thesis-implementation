@@ -43,9 +43,9 @@ class SLDClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_SLD_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks(this.clientName, "SLD", (error, event) => this.onNewTask(error, event));
-        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "SLD", (error, event) => this.onNewReadingRequest(error, event));
-        ClientUtils.registerCallbackForNewAlert(this.clientName, "SLD", (error, event) => this.onNewAlert(error, event));
+        ClientUtils.registerCallbackForTaskAssignedEvent(this.clientName, "SLD", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForNewReadingEvent(this.clientName, "SLD", (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForNewAlertEvent(this.clientName, "SLD", (newAlertEvent) => this.onNewAlert(newAlertEvent));
         ContractManager.getTruffleContract(this.provider, "SLD").then( Contract => {
             this.Contract = Contract;
         });
@@ -57,61 +57,53 @@ class SLDClient {
             Logger.logEvent(this.clientName, "Status", incomingMessage);
         }
         if (topic == Topics.TOPIC_SLD_ACK){
-            Logger.logEvent(this.clientName, "Received Ack message from SLD", incomingMessage);
             var {taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(incomingMessage);
             if (code == 2){
+                Logger.logEvent(this.clientName, "Received Ack message from SLD", incomingMessage);
                 this.currentTaskID = 0;
                 var color = incomingMessage["type"];
                 this.sortingTaskFinished(taskID, color);
-            }else{
-                this.currentTaskID = taskID;
-                ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, taskID);
             }
         }
     }
 
-    async onNewTask(error, event){
-        if (error){
-            Logger.error(error);
-        }else{
-           ClientUtils.getTaskWithStatus("SLDClient", event, this.Contract).then((task) => {
-                if (task.isFinished){
-                    return;
-                }
-                this.currentTaskID = task.taskID;
-                if (task.taskName == SLDClient.SORTING_TASK_NAME){
-                    this.handleSortTask(task);
-                }
-            });
-        }
+    async onNewTaskAssigned(taskAssignedEvent){
+        ClientUtils.getTaskWithStatus(this.clientName, this.Contract, taskAssignedEvent).then( task => {
+            this.sendStartTaskTransaction(taskAssignedEvent);
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
     }
 
-    async onNewReadingRequest(error, event) {
-        if (error){
-            Logger.error(error);
-        }else{
-            var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
-            var readingValue = this.readingsClient.getRecentReading(readingType);
-            this.Contract.saveReadingSLD(this.currentTaskID,
-                readingTypeIndex,
-                readingValue, {
-                from:this.machineAddress,
-                gas: process.env.DEFAULT_GAS
-                }).then( receipt => {
-                    Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
-            }).catch(error => {
-                Logger.error(error.stack);
-            });
-        }
+    async sendStartTaskTransaction(taskAssignedEvent){
+        ClientUtils.sendTaskStartTransaction(this.clientName, this.Contract, this.machineAddress, taskAssignedEvent).then( task => {
+            this.currentTaskID = task.taskID;
+            if (task.taskName == SLDClient.SORTING_TASK_NAME){
+                this.handleSortTask(task);
+            }
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
     }
 
-    async onNewAlert(error, event) {
-        if (error){
-            Logger.error(error);
-        }else{
-            Logger.logEvent(this.clientName, `New alert has been saved: ${event.returnValues["reason"]}`, null);
-            this.mqttClient.publish(Topics.TOPIC_SLD_S, JSON.stringify(ClientUtils.getSoundMessage(2)));
-        }
+    async onNewReadingRequest(newReadingEvent) {
+        var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
+        var readingValue = this.readingsClient.getRecentReading(readingType);
+        this.Contract.saveReadingSLD(this.currentTaskID,
+            readingTypeIndex,
+            readingValue, {
+            from:this.machineAddress,
+            gas: process.env.DEFAULT_GAS
+            }).then( receipt => {
+                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
+        }).catch(error => {
+            Logger.error(error.stack);
+        });
+    }
+
+    async onNewAlert(newAlertEvent) {
+        Logger.logEvent(this.clientName, `New alert has been saved: ${newAlertEvent.returnValues["reason"]}`, null);
+        this.mqttClient.publish(Topics.TOPIC_SLD_S, JSON.stringify(ClientUtils.getSoundMessage(2)));
     }
 
     async handleSortTask(task){
@@ -125,10 +117,14 @@ class SLDClient {
     }
 
     sortingTaskFinished(taskID, color){
-        this.Contract.finishSorting(taskID, color, {from:this.machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
-            Logger.logEvent(this.clientName, `Sorting task ${taskID} finished`, receipt);
-            this.currentTaskID = 0;
-        }).catch(error => {
+        this.Contract.getTask(taskID).then( task => {
+            this.Contract.finishSorting(taskID, color, {from:this.machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
+                Logger.logEvent(this.clientName, `Task ${task[1]} ${taskID} is finished`, receipt);
+                this.currentTaskID = 0;
+            }).catch(error => {
+                Logger.error(error.stack);
+            });
+        }).catch( error => {
             Logger.error(error.stack);
         });
     }

@@ -8,7 +8,7 @@ var ClientUtils = require("./client-utilities");
 
 class FactorySimulator {
 
-    static DELAY = 5000
+    static DELAY = 10000
     static ReadingsFreq = 5000
 
     constructor(){}
@@ -68,7 +68,9 @@ class FactorySimulator {
     onMQTTMessage(incomingMessageTopic, messageBuffer){
         var incomingMessage = JSON.parse(messageBuffer.toString());
 
-        Logger.logEvent(this.clientName, `Received task for ${incomingMessageTopic}`, incomingMessage);
+        Logger.logEvent(this.clientName, `Received task for topic: ${incomingMessageTopic}`, incomingMessage);
+
+        Logger.logEvent(this.clientName, `Task execution started`);
 
         if (incomingMessageTopic == Topics.TOPIC_SLD_DO){
             setTimeout(() => this.sendSortingAck(incomingMessage, "1"), FactorySimulator.DELAY);

@@ -44,8 +44,8 @@ class MPOClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_MPO_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForNewTasks(this.clientName, "MPO", (error, event) => this.onNewTask(error, event));
-        ClientUtils.registerCallbackForNewReadingRequest(this.clientName, "MPO", (error, event) => this.onNewReadingRequest(error, event));
+        ClientUtils.registerCallbackForTaskAssignedEvent(this.clientName, "MPO", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForNewReadingEvent(this.clientName, "MPO", (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
         ContractManager.getTruffleContract(this.provider, "MPO").then( Contract => {
             this.Contract = Contract;
         });
@@ -63,10 +63,7 @@ class MPOClient {
             var {taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(incomingMessage);
             if (code == 2){
                 this.currentTaskID = 0;
-                ClientUtils.taskFinished(this.clientName, this.Contract, this.machineAddress, taskID);
-            }else{
-                this.currentTaskID = taskID;
-                ClientUtils.taskStarted(this.clientName, this.Contract, this.machineAddress, taskID);
+                ClientUtils.sendFinishTaskTransaction(this.clientName, this.Contract, this.machineAddress, taskID);
             }
         }
 
@@ -96,39 +93,38 @@ class MPOClient {
         }
     }
 
-    async onNewTask(error, event){
-        if (error){
-            Logger.error(error);
-        }else{
-           ClientUtils.getTaskWithStatus(this.clientName, event, this.Contract).then((task) => {
-                if (task.isFinished){
-                    return;
-                }
-                this.currentTaskID = task.taskID;
-                if (task.taskName == MPOClient.PROCESSING_TASK_NAME){
-                    this.handleProcessTask(task);
-                }
-            });
-        }
+    async onNewTaskAssigned(taskAssignedEvent){
+        ClientUtils.getTaskWithStatus(this.clientName, this.Contract, taskAssignedEvent).then( task => {
+            this.sendStartTaskTransaction(taskAssignedEvent);
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
     }
 
-    async onNewReadingRequest(error, event) {
-        if (error){
-            Logger.error(error);
-        }else{
-            var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
-            var readingValue = this.readingsClient.getRecentReading(readingType);
-            this.Contract.saveReadingMPO(this.currentTaskID,
-                readingTypeIndex,
-                readingValue, {
-                from:this.machineAddress,
-                gas: process.env.DEFAULT_GAS
-                }).then( receipt => {
-                    Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
-            }).catch(error => {
-                Logger.error(error.stack);
-            });
-        }
+    async sendStartTaskTransaction(taskAssignedEvent){
+        ClientUtils.sendTaskStartTransaction(this.clientName, this.Contract, this.machineAddress, taskAssignedEvent).then( task => {
+            this.currentTaskID = task.taskID;
+            if (task.taskName == MPOClient.PROCESSING_TASK_NAME){
+                this.handleProcessTask(task);
+            }
+        }).catch( error => {
+            Logger.error(error.stack);
+        });
+    }
+
+    async onNewReadingRequest(newReadingEvent) {
+        var {readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
+        var readingValue = this.readingsClient.getRecentReading(readingType);
+        this.Contract.saveReadingMPO(this.currentTaskID,
+            readingTypeIndex,
+            readingValue, {
+            from:this.machineAddress,
+            gas: process.env.DEFAULT_GAS
+            }).then( receipt => {
+                Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
+        }).catch(error => {
+            Logger.error(error.stack);
+        });
     }
 
     async handleProcessTask(task){

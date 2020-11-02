@@ -39,8 +39,6 @@ logger.logTx = function(desc, receipt){
 
 
 logger.logEvent = function(eventLocation, eventDescription, payload = null) {
-    const IO = require('./socket.js').getIO();
-    const DB = require('./db.js').getEventsLogDB();
     var logMessage = {
         location: eventLocation,
         description: eventDescription,
@@ -57,17 +55,23 @@ logger.logEvent = function(eventLocation, eventDescription, payload = null) {
         }
     }
     logger.verbose(logMessage);
-    DB.insert(logMessage, function (err, newDoc) {
-        if (err){
-            logger.error(err)
-        }else{
-            IO.in('stream_log').emit('event_log', newDoc);
-        }
-    });
     if (logMessage.transactionHash){
         logger.info(`${eventLocation} - ${eventDescription} : ${logMessage.transactionHash}`)
     }else{
         logger.info(`${eventLocation} - ${eventDescription}`);
+    }
+    const IO = require('./socket.js').getIO();
+    const DB = require('./db.js').getEventsLogDB();
+    if (DB){
+        DB.insert(logMessage, function (err, newDoc) {
+            if (err){
+                logger.error(err)
+            }else{
+                if (IO){
+                    IO.in('stream_log').emit('event_log', newDoc);
+                }
+            }
+        });
     }
 }
 
