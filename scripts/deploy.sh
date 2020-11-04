@@ -11,7 +11,7 @@ truffle migrate --network $NETWORK # deploy main contracts
 
 cd ethr-did-registry
 
-#truffle migrate --network $NETWORK # deploy EthereumDIDRegistry contract
+truffle migrate --network $NETWORK # deploy EthereumDIDRegistry contract
 
 cd ..
 
