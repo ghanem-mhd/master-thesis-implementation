@@ -33,8 +33,8 @@ class SupplyingProcessClient {
         Logger.logEvent(this.clientName, "MQTT client connected");
         ContractManager.getTruffleContract(this.provider, "SupplyingProcess").then( contract => {
             this.supplyingProcessContract = contract;
-            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "VGR", (taskFinishedEvent) => this.onVGRTaskFinished(taskFinishedEvent));
-            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "HBW", (taskFinishedEvent) => this.onHBWTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForEvent(this.clientName, "VGR", "TaskFinished", (taskFinishedEvent) => this.onVGRTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForEvent(this.clientName, "HBW", "TaskFinished",(taskFinishedEvent) => this.onHBWTaskFinished(taskFinishedEvent));
         }).catch( error => {
             Logger.error(error.stack);
         });

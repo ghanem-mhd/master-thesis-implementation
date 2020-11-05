@@ -46,8 +46,8 @@ class VGRClient{
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_VGR_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForTaskAssignedEvent(this.clientName, "VGR", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
-        ClientUtils.registerCallbackForNewReadingEvent(this.clientName, "VGR", (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "VGR", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "VGR", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
         ContractManager.getTruffleContract(this.provider, "VGR").then( Contract => {
             this.Contract = Contract;
         });

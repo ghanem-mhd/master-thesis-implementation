@@ -47,10 +47,10 @@ class ProductionProcessClient {
 
             this.productionProcessContract = contract;
 
-            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "VGR", (taskFinishedEvent) => this.onVGRTaskFinished(taskFinishedEvent));
-            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "HBW", (taskFinishedEvent) => this.onHBWTaskFinished(taskFinishedEvent));
-            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "SLD", (taskFinishedEvent) => this.onSLDTaskFinished(taskFinishedEvent));
-            ClientUtils.registerCallbackForTaskFinishedEvent(this.clientName, "MPO", (taskFinishedEvent) => this.onMPOTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForEvent(this.clientName, "VGR", "TaskFinished", (taskFinishedEvent) => this.onVGRTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForEvent(this.clientName, "HBW", "TaskFinished",(taskFinishedEvent) => this.onHBWTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "TaskFinished",(taskFinishedEvent) => this.onSLDTaskFinished(taskFinishedEvent));
+            ClientUtils.registerCallbackForEvent(this.clientName, "MPO", "TaskFinished",(taskFinishedEvent) => this.onMPOTaskFinished(taskFinishedEvent));
         }).catch( error => {
             Logger.error(error.stack);
         });

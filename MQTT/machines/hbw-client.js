@@ -46,8 +46,8 @@ class HBWClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_HBW_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForTaskAssignedEvent(this.clientName, "HBW", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
-        ClientUtils.registerCallbackForNewReadingEvent(this.clientName, "HBW",  (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "HBW", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "HBW", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
         ContractManager.getTruffleContract(this.provider, "HBW").then( Contract => {
             this.Contract = Contract;
         });

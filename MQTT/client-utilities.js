@@ -35,72 +35,16 @@ module.exports = {
         });
         return Promise.all(requests);
     },
-    registerCallbackForTaskAssignedEvent: function (clientName, contractName, callback) {
+    registerCallbackForEvent(clientName, contractName, eventName, callback){
         ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
-            Contract.events.TaskAssigned({ fromBlock: "latest" }, (error, event) => {
+            Contract.events[eventName]({ fromBlock: "latest" }, (error, event) => {
                 if (error){
                     Logger.error(error.stack);
                 }else{
                     callback(event);
                 }
             });
-            Logger.logEvent(clientName, `Started listening for Start Task Assigned for contract ${contractName}`);
-        }).catch(error => {
-            Logger.error(error.stack)
-        });
-    },
-    registerCallbackForStartTaskEvent: function (clientName, contractName, callback) {
-        ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
-            Contract.events.StartTask({ fromBlock: "latest" }, (error, event) => {
-                if (error){
-                    Logger.error(error.stack);
-                }else{
-                    callback(event);
-                }
-            });
-            Logger.logEvent(clientName, `Started listening for Start Task event for contract ${contractName}`);
-        }).catch(error => {
-            Logger.error(error.stack)
-        });
-    },
-    registerCallbackForNewReadingEvent: function (clientName, contractName, callback) {
-        ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
-            Contract.events.NewReading({ fromBlock: "latest" }, (error, event) => {
-                if (error){
-                    Logger.error(error.stack);
-                }else{
-                    callback(event);
-                }
-            });
-            Logger.logEvent(clientName, `Started listening for New Reading event for contract ${contractName}`);
-        }).catch(error => {
-            Logger.error(error.stack);
-        });
-    },
-    registerCallbackForNewAlertEvent: function (clientName, contractName, callback) {
-        ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
-            Contract.events.NewAlert({ fromBlock: "latest" }, (error, event) => {
-                if (error){
-                    Logger.error(error.stack);
-                }else{
-                    callback(event);
-                }
-            });
-            Logger.logEvent(clientName, `Started listening for New Alert event for contract ${contractName}`);
-        }).catch(error => {
-            Logger.error(error.stack);
-        });
-    },
-    registerCallbackForTaskFinishedEvent: function (clientName, contractName, callback) {
-        ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
-            Contract.events.TaskFinished({ fromBlock: "latest" }, (error, event) => {
-                if (error){
-                    Logger.error(error.stack);
-                }else{
-                    callback(event);
-                }
-            });
-            Logger.logEvent(clientName, `Started listening for Task Finished event for contract ${contractName}`);
+            Logger.logEvent(clientName, `Started listening for ${eventName} event in contract ${contractName}`);
         }).catch(error => {
             Logger.error(error.stack);
         });

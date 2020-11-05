@@ -43,9 +43,9 @@ class SLDClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_SLD_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForTaskAssignedEvent(this.clientName, "SLD", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
-        ClientUtils.registerCallbackForNewReadingEvent(this.clientName, "SLD", (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
-        ClientUtils.registerCallbackForNewAlertEvent(this.clientName, "SLD", (newAlertEvent) => this.onNewAlert(newAlertEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "NewAlert" ,(newAlertEvent) => this.onNewAlert(newAlertEvent));
         ContractManager.getTruffleContract(this.provider, "SLD").then( Contract => {
             this.Contract = Contract;
         });

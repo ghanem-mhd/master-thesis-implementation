@@ -44,8 +44,8 @@ class MPOClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_MPO_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForTaskAssignedEvent(this.clientName, "MPO", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
-        ClientUtils.registerCallbackForNewReadingEvent(this.clientName, "MPO", (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "MPO", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "MPO", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
         ContractManager.getTruffleContract(this.provider, "MPO").then( Contract => {
             this.Contract = Contract;
         });
