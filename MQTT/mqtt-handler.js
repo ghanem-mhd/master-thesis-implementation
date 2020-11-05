@@ -24,7 +24,7 @@ class MQTTHandler {
 
     onMQTTError(error) {
         Logger.error(`Can't connect to MQTT broker ${process.env.CURRENT_MQTT}`)
-        Logger.error(error.stack);
+        Logger.logError(error);
         this.mqttClient.end();
     }
 

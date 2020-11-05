@@ -25,7 +25,7 @@ class SupplyingProcessClient {
     }
 
     onMQTTError(error) {
-        Logger.error(error.stack);
+        Logger.logError(error);
         this.mqttClient.end();
     }
 
@@ -36,7 +36,7 @@ class SupplyingProcessClient {
             ClientUtils.registerCallbackForEvent(this.clientName, "VGR", "TaskFinished", (taskFinishedEvent) => this.onVGRTaskFinished(taskFinishedEvent));
             ClientUtils.registerCallbackForEvent(this.clientName, "HBW", "TaskFinished",(taskFinishedEvent) => this.onHBWTaskFinished(taskFinishedEvent));
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -50,14 +50,14 @@ class SupplyingProcessClient {
             this.supplyingProcessContract.step2(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Supplying process step 2 started", receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }
         if (task.taskName == VGRClient.TASK2){
             this.supplyingProcessContract.step4(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Supplying process step 4 started", receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }
     }
@@ -68,7 +68,7 @@ class SupplyingProcessClient {
             this.supplyingProcessContract.step3(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Supplying process step 3 started", receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }
     }

@@ -136,7 +136,7 @@ Promise.all(contractsAsyncGets).then( async contracts => {
         finish()
     }
 }).catch( error => {
-    Logger.error(error.stack);
+    Logger.logError(error);
     process.exit(0);
 });
 

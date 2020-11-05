@@ -49,7 +49,7 @@ Promise.all(contractsAsyncGets).then( async contracts => {
         receipt = await web3.eth.sendTransaction({from:adminProvider.addresses[0], to: process.env.MACHINE_OWNER_ADDRESS , value:web3.utils.toWei("100","ether")});
         Logger.info("Fund Machines Owner " + receipt.transactionHash);
     } catch (error) {
-        Logger.error(error.stack);
+        Logger.logError(error);
     } finally {
         Logger.info("Funding accounts finished");
     }
@@ -111,6 +111,6 @@ Promise.all(contractsAsyncGets).then( async contracts => {
     }
     process.exit(0);
 }).catch( error => {
-    Logger.error(error.stack);
+    Logger.logError(error);
     process.exit(0);
 });

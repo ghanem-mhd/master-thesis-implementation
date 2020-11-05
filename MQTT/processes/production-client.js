@@ -36,7 +36,7 @@ class ProductionProcessClient {
     }
 
     onMQTTError(error) {
-        Logger.error(error.stack);
+        Logger.logError(error);
         this.mqttClient.end();
     }
 
@@ -52,7 +52,7 @@ class ProductionProcessClient {
             ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "TaskFinished",(taskFinishedEvent) => this.onSLDTaskFinished(taskFinishedEvent));
             ClientUtils.registerCallbackForEvent(this.clientName, "MPO", "TaskFinished",(taskFinishedEvent) => this.onMPOTaskFinished(taskFinishedEvent));
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -66,7 +66,7 @@ class ProductionProcessClient {
             this.productionProcessContract.step2(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Production process step 2 started", receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }
     }
@@ -78,7 +78,7 @@ class ProductionProcessClient {
             this.productionProcessContract.step3(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Production process step 3 started", receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }
 
@@ -94,7 +94,7 @@ class ProductionProcessClient {
             this.productionProcessContract.step4(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Production process step 4 started", receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }
     }
@@ -106,7 +106,7 @@ class ProductionProcessClient {
             this.productionProcessContract.step5(task.processID, {from:this.address, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(this.clientName, "Production process step 5 started", receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }
     }

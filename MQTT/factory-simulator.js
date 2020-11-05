@@ -8,7 +8,7 @@ var ClientUtils = require("./client-utilities");
 
 class FactorySimulator {
 
-    static DELAY = 10000
+    static DELAY = 1000
     static ReadingsFreq = 5000
 
     constructor(){}
@@ -49,7 +49,7 @@ class FactorySimulator {
     }
 
     onMQTTError(error) {
-        Logger.error(error.stack);
+        Logger.logError(error);
         this.mqttClient.end();
     }
 
