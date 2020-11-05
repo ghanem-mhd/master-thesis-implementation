@@ -37,6 +37,11 @@ logger.logTx = function(desc, receipt){
     logger.verbose({desc,receipt})
 }
 
+logger.logError = function(error){
+    logger.error(error)
+    logger.error(error.stack)
+}
+
 
 logger.logEvent = function(eventLocation, eventDescription, payload = null) {
     var logMessage = {
