@@ -37,13 +37,13 @@ describe("VGR_Machine", function () {
         expect(StoredProductOperations[1].toString()).to.equal("2");
 
         StoredProductOperation1 = await this.VGRContract.getProductOperation(1);
-        expect(StoredProductOperation1[0]).to.equal(this.VGRContract.address);
+        expect(StoredProductOperation1[0]).to.equal(MachineDID);
         expect(StoredProductOperation1[1].toString()).to.equal("1");
         expect(StoredProductOperation1[3]).to.equal("NFCTagReading");
         expect(StoredProductOperation1[4]).to.equal("123");
 
         StoredProductOperation2 = await this.VGRContract.getProductOperation(2);
-        expect(StoredProductOperation2[0]).to.equal(this.VGRContract.address);
+        expect(StoredProductOperation2[0]).to.equal(MachineDID);
         expect(StoredProductOperation2[1].toString()).to.equal("1");
         expect(StoredProductOperation2[3]).to.equal("ColorDetection");
         expect(StoredProductOperation2[4]).to.equal("White");

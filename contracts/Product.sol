@@ -116,7 +116,7 @@ contract Product is Ownable {
         operationsIds.insert(opeationID);
         Operation storage operation = operations[opeationID];
         operation.time              = now;
-        operation.machineDID        = _msgSender();
+        operation.machineDID        = tx.origin;
         operation.taskID            = taskID;
         operation.name              = name;
         operation.result            = result;
