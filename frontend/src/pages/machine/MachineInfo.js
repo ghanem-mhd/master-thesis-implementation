@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+
 import {
   Table,
   Grid,
@@ -28,7 +30,7 @@ class MachineInfo extends React.Component {
             this.setState( (state, props) => {
                 var info = this.state.info;
                 var fullMachineDID = "did:ethr:" + result;
-                info.push({infoName:"Machine DID", infoValue:fullMachineDID});
+                info.push({infoName:"Machine DID", infoValue:fullMachineDID, link:"/did-resolver/" + result});
                 return {
                     info: info
                 };
@@ -105,7 +107,14 @@ class MachineInfo extends React.Component {
                                         this.state.info.map((object, i) =>
                                             <Table.Row key={this.state.info[i].infoName}>
                                                 <Table.Col>{this.state.info[i].infoName}</Table.Col>
-                                                <Table.Col>{this.state.info[i].infoValue}</Table.Col>
+                                                {
+                                                    this.state.info[i].link &&
+                                                    <Table.Col><Link to={this.state.info[i].link} target="_blank">{this.state.info[i].infoValue}</Link></Table.Col>
+                                                }
+                                                {
+                                                    !this.state.info[i].link &&
+                                                    <Table.Col>{this.state.info[i].infoValue}</Table.Col>
+                                                }
                                             </Table.Row>
                                         )
                                     }

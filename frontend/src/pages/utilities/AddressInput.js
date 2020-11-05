@@ -12,13 +12,20 @@ class AddressInput extends React.Component {
         super(props)
         this.state = {
             addressInputState: {
-                value: null,
+                value: "",
                 invalid: false,
                 valid: false,
                 feedback: ""
             }
         }
         this.initialState = this.state;
+    }
+
+    componentDidMount(){
+        if (this.props.value && this.props.value.empty !== ""){
+            var event = {target: {value: this.props.value}}
+            this.handleChange(event)
+        }
     }
 
     resetInput(){
@@ -49,13 +56,12 @@ class AddressInput extends React.Component {
             this.props.onAddressValidityChanged(false)
             addressInputState.invalid = true;
             addressInputState.feedback = errorMessage;
-            addressInputState.value=null
         }else{
             this.props.onAddressValidityChanged(true)
             addressInputState.invalid = false;
             addressInputState.feedback = "";
-            addressInputState.value = value
         }
+        addressInputState.value = value
         addressInputState.valid = !addressInputState.invalid;
         this.setState({addressInputState})
     }
@@ -71,6 +77,7 @@ class AddressInput extends React.Component {
                         </Form.InputGroupPrepend>
                     }
                     <Form.Input
+                        value={this.state.addressInputState.value}
                         invalid={this.state.addressInputState.invalid}
                         cross={this.state.addressInputState.invalid}
                         valid={this.state.addressInputState.valid}

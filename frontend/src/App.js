@@ -16,6 +16,8 @@ import ManageProduct from "./pages/product/ManageProduct";
 import EventsLogStream from "./pages/log/EventsLogStream";
 import EventsLogNonStream from "./pages/log/EventsLogNonStream";
 
+import DIDResolver from "./pages/DID/DIDResolver";
+
 import Machine from "./pages/machine/Machine";
 import MachineTasks from "./pages/machine/MachineTasks";
 import ManageMachine from "./pages/machine/ManageMachine";
@@ -110,6 +112,7 @@ class App extends React.Component {
 							<Route exact path="/manageProduct"><ManageProduct /></Route>
 							<Route exact path="/events-log-stream"><EventsLogStream/></Route>
 							<Route exact path="/events-log-non-stream"><EventsLogNonStream/></Route>
+							<Route exact path="/did-resolver/:address?"><DIDResolver/></Route>
 						</Switch>
 					</SiteWrapper>
 				</Router>

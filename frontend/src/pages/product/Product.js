@@ -1,6 +1,7 @@
 // @flow
 
 import * as React from "react";
+import { Link } from "react-router-dom";
 
 import {
   Page,
@@ -128,7 +129,7 @@ class Product extends React.Component {
             newState.product.operations     = [];
 
             var fullProductDID = "did:ethr:" + productDID;
-            newState.product.info.push({infoName:"Product DID", infoValue:fullProductDID});
+            newState.product.info.push({infoName:"Product DID", infoValue:fullProductDID , link:"/did-resolver/" + productDID});
             newState.product.info.push({infoName:"Product Owner", infoValue:result});
             this.setState(newState);
             this.getProductData(productDID);
@@ -173,7 +174,14 @@ class Product extends React.Component {
                                                     this.state.product.info.map((object, i) =>
                                                         <Table.Row key={this.state.product.info[i].infoName}>
                                                             <Table.Col>{this.state.product.info[i].infoName}</Table.Col>
-                                                            <Table.Col>{this.state.product.info[i].infoValue}</Table.Col>
+                                                            {
+                                                                this.state.product.info[i].link &&
+                                                                <Table.Col><Link to={this.state.product.info[i].link} target="_blank">{this.state.product.info[i].infoValue}</Link></Table.Col>
+                                                            }
+                                                            {
+                                                                !this.state.product.info[i].link &&
+                                                                <Table.Col>{this.state.product.info[i].infoValue}</Table.Col>
+                                                            }
                                                         </Table.Row>
                                                     )
                                                 }

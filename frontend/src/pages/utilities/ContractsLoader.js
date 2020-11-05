@@ -6,8 +6,9 @@ import MPO from '../../contracts/MPO.json'
 import Product from '../../contracts/Product.json'
 import ProductionProcess from '../../contracts/ProductionProcess.json'
 import SupplyingProcess from '../../contracts/SupplyingProcess.json'
+import EthereumDIDRegistry from '../../contracts/EthereumDIDRegistry.json'
 
-const ContractsArtifactsList = [VGR, HBW, SLD, MPO, Product, SupplyingProcess, ProductionProcess];
+const ContractsArtifactsList = [VGR, HBW, SLD, MPO, Product, SupplyingProcess, ProductionProcess, EthereumDIDRegistry];
 
 
 const ContractsLoader = {

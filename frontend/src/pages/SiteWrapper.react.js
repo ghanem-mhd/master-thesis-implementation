@@ -47,13 +47,13 @@ const navBarItems: Array<navItem> = [
     useExact: true,
   },
   {
-    value: "Machine Digital Twin",
+    value: "Machine",
     icon: "monitor",
     to: "/machine",
     LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   },
   {
-    value: "Product Digital Twin",
+    value: "Product",
     icon: "shopping-bag",
     to: "/product",
     LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
@@ -71,12 +71,18 @@ const navBarItems: Array<navItem> = [
     LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   },
   {
-    value: "Events Log",
+    value: "Log",
     icon: "monitor",
     subItems: [
       { value: "Stream", to: "/events-log-stream", LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}) },
       { value: "Non Stream", to: "/events-log-non-stream", LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}) },
     ],
+  },
+  {
+    value: "DID",
+    icon: "user",
+    to: "/did-resolver",
+    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
   }
 ];
 
