@@ -27,7 +27,10 @@ describe("VGR_Machine", function () {
     it("should save the operation of the GetInfo task", async function () {
         receipt = await this.VGRContract.assignGetInfoTask(1, ProductDID, {from:Manufacturer});
         await this.VGRContract.startTask(1, {from: MachineDID});
-        await this.VGRContract.finishGetInfoTask(1, "123", "White", {from: MachineDID});
+        receipt = await this.VGRContract.finishGetInfoTask(1, "123", "White", {from: MachineDID});
+
+        expectEvent(receipt, "ProductOperationSaved", { taskID: "1", productDID:ProductDID, operationName: "ColorDetection", operationResult:"White" });
+        expectEvent(receipt, "ProductOperationSaved", { taskID: "1", productDID:ProductDID, operationName: "NFCTagReading", operationResult:"123" });
 
         StoredProductOperations = await this.VGRContract.getProductOperations(ProductDID);
         expect(StoredProductOperations[0].toString()).to.equal("1");

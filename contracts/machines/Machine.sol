@@ -199,10 +199,12 @@ abstract contract Machine is Ownable {
     mapping (address => bytes32[]) operationsNames;
 
     // Product Methods
+    event ProductOperationSaved(uint indexed taskID, address indexed productDID, string operationName, string operationResult);
 
     function saveProductOperation(uint taskID, string memory operationName, string memory operationResult) public taskExists(taskID) onlyMachine {
         address productDID = tasks[taskID].productDID;
         productContract.saveProductOperation(productDID, taskID, operationName, operationResult);
+        emit ProductOperationSaved(taskID, productDID, operationName, operationResult);
     }
 
     function getProductOperation(uint opeationID) public view returns (address, uint, uint, string memory, string memory) {

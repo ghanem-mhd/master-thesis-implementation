@@ -27,7 +27,9 @@ describe("SLD_Machine", function () {
     it("should save the operations of the Sorting task", async function () {
         await this.SLDContract.assignSortingTask(1, ProductDID, {from:Manufacturer});
         await this.SLDContract.startTask(1, {from: SLD_DID});
-        await this.SLDContract.finishSorting(1, "Pink", {from: SLD_DID});
+        receipt = await this.SLDContract.finishSorting(1, "Pink", {from: SLD_DID});
+        expectEvent(receipt, "ProductOperationSaved", { taskID: "1", productDID:ProductDID, operationName: "Sorting", operationResult:"Pink" });
+        expectEvent(receipt, "TaskFinished", { taskID: "1", taskName:"Sorting", productDID:ProductDID, processID: "1", processContractAddress:Manufacturer });
         StoredProductOperations = await this.SLDContract.getProductOperations(ProductDID);
         expect(StoredProductOperations[0].toString()).to.equal("1");
         StoredProductOperation = await this.SLDContract.getProductOperation(1);
