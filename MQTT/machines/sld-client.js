@@ -29,7 +29,7 @@ class SLDClient {
     }
 
     onMQTTError(error) {
-        Logger.error(error.stack);
+        Logger.logError(error);
         this.mqttClient.end();
     }
 
@@ -43,9 +43,15 @@ class SLDClient {
         if(process.env.MACHINE_CLIENTS_STATE == true){
             this.mqttClient.subscribe(Topics.TOPIC_SLD_STATE, {qos: 0});
         }
-        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
-        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
-        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "NewAlert" ,(newAlertEvent) => this.onNewAlert(newAlertEvent));
+
+        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "TaskAssigned", (taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "NewReading", (newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName, "SLD", "NewAlert", (newAlertEvent) => this.onNewAlert(newAlertEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName,
+            "SLD",
+            "ProductOperationSaved",
+            (productOperationSavedEvent) => this.onProductOperationSaved(productOperationSavedEvent));
+
         ContractManager.getTruffleContract(this.provider, "SLD").then( Contract => {
             this.Contract = Contract;
         });
@@ -71,7 +77,7 @@ class SLDClient {
         ClientUtils.getTaskWithStatus(this.clientName, this.Contract, taskAssignedEvent).then( task => {
             this.sendStartTaskTransaction(taskAssignedEvent);
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -82,7 +88,7 @@ class SLDClient {
                 this.handleSortTask(task);
             }
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -97,7 +103,7 @@ class SLDClient {
             }).then( receipt => {
                 Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
         }).catch(error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -122,11 +128,15 @@ class SLDClient {
                 Logger.logEvent(this.clientName, `Task ${task[1]} ${taskID} is finished`, receipt);
                 this.currentTaskID = 0;
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
+    }
+
+    onProductOperationSaved(productOperationSavedEvent){
+        ClientUtils.createProductOperationCredentials(this.clientName, productOperationSavedEvent, process.env.SLD_ADDRESS, process.env.SLD_PK);
     }
 }
 

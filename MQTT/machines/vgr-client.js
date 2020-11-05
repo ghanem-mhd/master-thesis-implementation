@@ -48,6 +48,10 @@ class VGRClient{
         }
         ClientUtils.registerCallbackForEvent(this.clientName, "VGR", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
         ClientUtils.registerCallbackForEvent(this.clientName, "VGR", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName,
+            "VGR",
+            "ProductOperationSaved",
+            (productOperationSavedEvent) => this.onProductOperationSaved(productOperationSavedEvent));
         ContractManager.getTruffleContract(this.provider, "VGR").then( Contract => {
             this.Contract = Contract;
         });
@@ -82,7 +86,7 @@ class VGRClient{
         ClientUtils.getTaskWithStatus(this.clientName, this.Contract, taskAssignedEvent).then( task => {
             this.sendStartTaskTransaction(taskAssignedEvent);
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -105,7 +109,7 @@ class VGRClient{
                 this.handlePickSortedTask(task);
             }
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -120,7 +124,7 @@ class VGRClient{
             }).then( receipt => {
                 Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
         }).catch(error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -145,7 +149,7 @@ class VGRClient{
             taskMessage["type"] = inputValues[0];
             this.sendTask(task.taskID, task.taskName, taskMessage);
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -160,11 +164,15 @@ class VGRClient{
                 Logger.logEvent(this.clientName, `Task ${task[1]} ${taskID} is finished`, receipt);
                 this.currentTaskID = 0;
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
+    }
+
+    onProductOperationSaved(productOperationSavedEvent){
+        ClientUtils.createProductOperationCredentials(this.clientName, productOperationSavedEvent, process.env.VGR_ADDRESS, process.env.VGR_PK);
     }
 }
 

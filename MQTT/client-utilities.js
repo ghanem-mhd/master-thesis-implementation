@@ -1,13 +1,16 @@
 require("dotenv").config();
 
-var ContractManager = require("../utilities/contracts-manager");
-var ProvidersManager = require("../utilities/providers-manager");
-var Helper = require("../utilities/helper");
-var Logger = require("../utilities/logger");
+const EthrDID   = require('ethr-did');
+const JWT       = require('did-jwt-vc');
+const Web3      = require('web3');
+const ethers    = require('ethers');
 
-var JWT = require("did-jwt");
-var Web3 = require('web3');
-var ethers = require('ethers');
+
+const ContractManager   = require("../utilities/contracts-manager");
+const ProvidersManager  = require("../utilities/providers-manager");
+const Helper            = require("../utilities/helper");
+const Logger            = require("../utilities/logger");
+var DB                  = require('../utilities/db.js');
 
 module.exports = {
     getTaskInfoFromTaskAssignedEvent: function (event) {
@@ -18,6 +21,15 @@ module.exports = {
         task.processID               = event.returnValues["processID"];
         task.processContractAddress  = event.returnValues["processContractAddress"];
         return task;
+    },
+    getProductOperationFromEvent: function (event) {
+        var productOperation = {}
+        productOperation.operationID        = event.returnValues["operationID"];
+        productOperation.taskID             = event.returnValues["taskID"];
+        productOperation.productDID         = event.returnValues["productDID"];
+        productOperation.operationName      = event.returnValues["operationName"];
+        productOperation.operationResult    = event.returnValues["operationResult"];
+        return productOperation;
     },
     getReadingType: function (event) {
         var ReadingTypeMapping = ["t", "h", "p", "gr", "br"];
@@ -39,14 +51,14 @@ module.exports = {
         ContractManager.getWeb3Contract(process.env.NETWORK, contractName).then(Contract => {
             Contract.events[eventName]({ fromBlock: "latest" }, (error, event) => {
                 if (error){
-                    Logger.error(error.stack);
+                    Logger.logError(error);
                 }else{
                     callback(event);
                 }
             });
             Logger.logEvent(clientName, `Started listening for ${eventName} event in contract ${contractName}`);
         }).catch(error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     },
     getTaskWithStatus(clientName, contract, taskAssignedEvent) {
@@ -81,19 +93,7 @@ module.exports = {
     },
     createCredential(keyIndex, productID, operationName, operationResult) {
         var key = ethers.Wallet.fromMnemonic(process.env.ADMIN_MNEMONIC, "m/44'/60'/0'/0/" + keyIndex);
-        var signer = JWT.SimpleSigner(key.privateKey);
 
-        var productDID = "did:ethr:" + productID;
-        var machineDID = "did:ethr:" + key.address;
-
-
-        var jwtPayload = { aud: productDID }
-        jwtPayload["operationName"] = operationName;
-        jwtPayload["operationResult"] = operationResult;
-
-        var jwtOptions = { alg: 'ES256K', issuer: machineDID, signer }
-
-        return JWT.createJWT(jwtPayload, jwtOptions);
     },
     storeCredential(clientName, productID, encodedCredential, operationName, operationResult) {
         var doc = {}
@@ -124,10 +124,10 @@ module.exports = {
             contract.finishTask(taskID, {from:machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
                 Logger.logEvent(clientName, `Task ${task[1]} ${taskID} is finished`, receipt);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
         }).catch(error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         })
     },
     sendTaskStartTransaction(clientName, contract, machineAddress, taskAssignedEvent){
@@ -139,6 +139,47 @@ module.exports = {
             }).catch(error => {
                 reject(error);
             });
+        });
+    },
+    createProductOperationCredentials(clientName, productOperationSavedEvent, machineAddress, machinePrivateKey){
+        const issuer = new EthrDID({ address: machineAddress, privateKey: machinePrivateKey});
+
+        var productOperation = module.exports.getProductOperationFromEvent(productOperationSavedEvent)
+
+        var productDID = "did:ethr:" + productOperation.productDID;
+        var machineDID = "did:ethr:" + machineDID;
+
+        const vcPayload = {
+            sub: productDID,
+            iss: new Date(),
+            vc: {
+                '@context': ['https://www.w3.org/2018/credentials/v1'],
+                type: ['VerifiableCredential'],
+                credentialSubject: {
+                    productOperation: {
+                        operationName: productOperation.operationName,
+                        operationResult: productOperation.operationName,
+                        taskID: productOperation.taskID,
+                        operationID: productOperation.operationID
+                    }
+                }
+            }
+        }
+        var credentialsDB = DB.getCredentialsDB();
+        if (!credentialsDB){
+            DB.init();
+            credentialsDB = DB.getCredentialsDB();
+        }
+        JWT.createVerifiableCredentialJwt(vcPayload, issuer).then( result => {
+            credentialsDB.insert({id: productOperation.operationID, vc:result}, function (err, newDoc) {
+                if (err){
+                    Logger.error(err)
+                }else{
+                    Logger.logEvent(clientName, `New verifiable credential created`, result);
+                }
+            });
+        }).catch( error => {
+            Logger.logError(error);
         });
     }
 }

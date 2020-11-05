@@ -29,7 +29,7 @@ class MPOClient {
     }
 
     onMQTTError(error) {
-        Logger.error(error.stack);
+        Logger.logError(error);
         this.mqttClient.end();
     }
 
@@ -46,6 +46,10 @@ class MPOClient {
         }
         ClientUtils.registerCallbackForEvent(this.clientName, "MPO", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
         ClientUtils.registerCallbackForEvent(this.clientName, "MPO", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName,
+            "MPO",
+            "ProductOperationSaved",
+            (productOperationSavedEvent) => this.onProductOperationSaved(productOperationSavedEvent));
         ContractManager.getTruffleContract(this.provider, "MPO").then( Contract => {
             this.Contract = Contract;
         });
@@ -81,14 +85,14 @@ class MPOClient {
             ClientUtils.createCredential(3, productID, operationName, operationResult).then( encodedCredential => {
                 ClientUtils.storeCredential(this.clientName, productID, encodedCredential, operationName, operationResult);
             }).catch(error => {
-                Logger.error(error.stack);
+                Logger.logError(error);
             });
             try {
                 this.Contract.saveProductOperation(productID, Helper.toHex(operationName), operationResult, {from:this.machineAddress, gas: process.env.DEFAULT_GAS}).then( receipt => {
                     Logger.info("MPOClient - operation has been saved in smart contract");
                 });
             } catch (error) {
-                Logger.error(error.stack);
+                Logger.logError(error);
             }
         }
     }
@@ -97,7 +101,7 @@ class MPOClient {
         ClientUtils.getTaskWithStatus(this.clientName, this.Contract, taskAssignedEvent).then( task => {
             this.sendStartTaskTransaction(taskAssignedEvent);
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -108,7 +112,7 @@ class MPOClient {
                 this.handleProcessTask(task);
             }
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -123,7 +127,7 @@ class MPOClient {
             }).then( receipt => {
                 Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
         }).catch(error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -135,6 +139,10 @@ class MPOClient {
     sendTask(taskID, taskName, taskMessage,){
         Logger.logEvent(this.clientName, `Sending ${taskName} task ${taskID} to MPO`, taskMessage);
         this.mqttClient.publish(Topics.TOPIC_MPO_DO, JSON.stringify(taskMessage));
+    }
+
+    onProductOperationSaved(productOperationSavedEvent){
+        ClientUtils.createProductOperationCredentials(this.clientName, productOperationSavedEvent, process.env.MPO_ADDRESS, process.env.MPO_PK);
     }
 }
 

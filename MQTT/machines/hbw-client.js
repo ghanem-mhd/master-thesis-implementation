@@ -32,7 +32,7 @@ class HBWClient {
     }
 
     onMQTTError(error) {
-        Logger.error(error.stack);
+        Logger.logError(error);
         this.mqttClient.end();
     }
 
@@ -48,6 +48,10 @@ class HBWClient {
         }
         ClientUtils.registerCallbackForEvent(this.clientName, "HBW", "TaskAssigned" ,(taskAssignedEvent) => this.onNewTaskAssigned(taskAssignedEvent));
         ClientUtils.registerCallbackForEvent(this.clientName, "HBW", "NewReading" ,(newReadingEvent) => this.onNewReadingRequest(newReadingEvent));
+        ClientUtils.registerCallbackForEvent(this.clientName,
+            "HBW",
+            "ProductOperationSaved",
+            (productOperationSavedEvent) => this.onProductOperationSaved(productOperationSavedEvent));
         ContractManager.getTruffleContract(this.provider, "HBW").then( Contract => {
             this.Contract = Contract;
         });
@@ -72,7 +76,7 @@ class HBWClient {
         ClientUtils.getTaskWithStatus(this.clientName, this.Contract, taskAssignedEvent).then( task => {
             this.sendStartTaskTransaction(taskAssignedEvent);
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -96,7 +100,7 @@ class HBWClient {
                 this.handleFetchWBTask(task);
             }
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -111,7 +115,7 @@ class HBWClient {
             }).then( receipt => {
                 Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
         }).catch(error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -126,7 +130,7 @@ class HBWClient {
             taskMessage["workpiece"] = { type:inputValues[0], id:inputValues[1], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -136,7 +140,7 @@ class HBWClient {
             taskMessage["workpiece"] = { id:"", type:inputValues[0], status:"RAW" }
             this.sendTask(task.taskID, task.taskName, taskMessage);
         }).catch( error => {
-            Logger.error(error.stack);
+            Logger.logError(error);
         });
     }
 
@@ -148,6 +152,10 @@ class HBWClient {
     sendTask(taskID, taskName, taskMessage){
         Logger.logEvent(this.clientName, `Sending ${taskName} task ${taskID} to HBW`, taskMessage);
         this.mqttClient.publish(Topics.TOPIC_HBW_DO, JSON.stringify(taskMessage));
+    }
+
+    onProductOperationSaved(productOperationSavedEvent){
+        ClientUtils.createProductOperationCredentials(this.clientName, productOperationSavedEvent, process.env.HBW_ADDRESS, process.env.HBW_PK);
     }
 }
 
