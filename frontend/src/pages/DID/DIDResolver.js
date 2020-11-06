@@ -15,7 +15,6 @@ import ConnectionContext from '../utilities/ConnectionContext';
 import DIDInput from './DIDInput';
 import ReactJson from 'react-json-view';
 
-import didJWT from 'did-jwt';
 import {Resolver}  from 'did-resolver';
 import {getResolver} from 'ethr-did-resolver';
 

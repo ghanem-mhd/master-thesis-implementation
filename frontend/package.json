@@ -8,6 +8,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "did-jwt": "^4.6.2",
+    "did-jwt-vc": "^1.0.6",
     "did-resolver": "^2.1.1",
     "ethr-did": "^1.1.0",
     "ethr-did-resolver": "^3.0.0",

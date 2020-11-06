@@ -17,6 +17,8 @@ import EventsLogStream from "./pages/log/EventsLogStream";
 import EventsLogNonStream from "./pages/log/EventsLogNonStream";
 
 import DIDResolver from "./pages/DID/DIDResolver";
+import VCResolver from "./pages/DID/VCResolver";
+
 
 import Machine from "./pages/machine/Machine";
 import MachineTasks from "./pages/machine/MachineTasks";
@@ -113,6 +115,7 @@ class App extends React.Component {
 							<Route exact path="/events-log-stream"><EventsLogStream/></Route>
 							<Route exact path="/events-log-non-stream"><EventsLogNonStream/></Route>
 							<Route exact path="/did-resolver/:address?"><DIDResolver/></Route>
+							<Route exact path="/vc-resolver/:credential?"><VCResolver/></Route>
 						</Switch>
 					</SiteWrapper>
 				</Router>
