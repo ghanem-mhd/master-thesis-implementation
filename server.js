@@ -57,6 +57,21 @@ app.get('/events/:eventID', function(req, res) {
     });
 });
 
+app.get('/operation-vc/:operationID', function(req, res) {
+    let operationID = req.params.operationID;
+    DB.credentials.find({operationID:operationID}).exec(function (err, docs) {
+        if (err){
+            next(err);
+        }else{
+            if (docs.length >= 1){
+                return res.json(docs[0]);
+            }else{
+                return res.json({});
+            }
+        }
+    });
+});
+
 server.listen(port,() => Logger.info(`Express Listening on port ${port}`));
 
 mqttHandler.connect();

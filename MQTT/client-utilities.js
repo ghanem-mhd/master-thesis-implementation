@@ -167,7 +167,7 @@ module.exports = {
             credentialsDB = DB.getCredentialsDB();
         }
         JWT.createJWT(vcPayload, {alg: 'ES256K', issuer: machineDID, signer}).then( result => {
-           credentialsDB.insert({id: productOperation.operationID, vc:result}, function (err, newDoc) {
+           credentialsDB.insert({operationID: productOperation.operationID, vc:result}, function (err, newDoc) {
                 if (err){
                     Logger.error(err)
                 }else{
