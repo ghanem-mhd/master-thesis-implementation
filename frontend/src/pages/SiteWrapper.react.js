@@ -3,22 +3,15 @@
 import * as React from "react";
 import { NavLink, withRouter } from "react-router-dom";
 
-import {
-  Site,
-  Nav,
-  Button,
-  Grid,
-  List,
-} from "tabler-react";
+import { Site, Nav, Button, Grid, List } from "tabler-react";
 
-import ConnectionContext from './utilities/ConnectionContext';
-import { store } from 'react-notifications-component';
-import Misc from './utilities/Misc';
+import ConnectionContext from "./utilities/ConnectionContext";
+import { store } from "react-notifications-component";
+import Misc from "./utilities/Misc";
 
 type Props = {|
   +children: React.Node,
 |};
-
 
 type subNavItem = {|
   +value: string,
@@ -43,77 +36,102 @@ const navBarItems: Array<navItem> = [
     value: "Home",
     to: "/",
     icon: "home",
-    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
     useExact: true,
   },
   {
     value: "Machine",
     icon: "monitor",
     to: "/machine",
-    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
   },
   {
     value: "Product",
     icon: "shopping-bag",
     to: "/product",
-    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
   },
   {
     value: "Processes",
     icon: "server",
     to: "/process",
-    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
   },
   {
     value: "Manage Products",
     icon: "edit",
     to: "/manageProduct",
-    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
   },
   {
     value: "Log",
     icon: "monitor",
     subItems: [
-      { value: "Stream", to: "/events-log-stream", LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}) },
-      { value: "Non Stream", to: "/events-log-non-stream", LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}) },
+      {
+        value: "Stream",
+        to: "/events-log-stream",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+      {
+        value: "Non Stream",
+        to: "/events-log-non-stream",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
     ],
   },
   {
     value: "DID",
     icon: "user",
     to: "/did-resolver",
-    LinkComponent: withRouter(({staticContext, ...props}) => { return <NavLink {...props}/>}),
-  }
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
+  },
 ];
 
 class SiteWrapper extends React.Component<Props, State> {
-
   constructor(props) {
     super(props);
     this.state = {
       currentAccount: null,
-    }
+    };
   }
 
-  componentDidMount(){
-    this.provider.request({ method: 'eth_accounts' }).then(this.handleAccountsChanged.bind(this))
-    .catch((err) => {
-      console.error(err);
-    });
-    this.provider.on('accountsChanged', this.handleAccountsChanged.bind(this));
+  componentDidMount() {
+    this.provider
+      .request({ method: "eth_accounts" })
+      .then(this.handleAccountsChanged.bind(this))
+      .catch((err) => {
+        console.error(err);
+      });
+    this.provider.on("accountsChanged", this.handleAccountsChanged.bind(this));
   }
 
   handleAccountsChanged(accounts) {
     if (accounts.length === 0) {
       Misc.showAccountNotConnectedNotification(store);
-    } else{
-      this.setState({currentAccount: accounts[0]});
+    } else {
+      this.setState({ currentAccount: accounts[0] });
     }
   }
 
   connect() {
     this.provider
-      .request({ method: 'eth_requestAccounts' })
+      .request({ method: "eth_requestAccounts" })
       .then(this.handleAccountsChanged.bind(this))
       .catch((err) => {
         console.error(err);
@@ -124,7 +142,7 @@ class SiteWrapper extends React.Component<Props, State> {
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
-          const { provider} = connectionContext;
+          const { provider } = connectionContext;
           this.provider = provider;
           return (
             <Site.Wrapper
@@ -134,17 +152,25 @@ class SiteWrapper extends React.Component<Props, State> {
                 imageURL: "/tabler.svg",
                 navItems: (
                   <div>
-                  {
-                    this.state.currentAccount && <div>{"Current Account: "}{this.state.currentAccount}</div>
-                  }{
-                    !this.state.currentAccount &&
-                    <Nav.Item type="div" className="d-none d-md-flex">
-                      <Button size="sm" color="primary" onClick={this.connect.bind(this)}>Connect</Button>
-
-                    </Nav.Item>
-                  }
+                    {this.state.currentAccount && (
+                      <div>
+                        {"Current Account: "}
+                        {this.state.currentAccount}
+                      </div>
+                    )}
+                    {!this.state.currentAccount && (
+                      <Nav.Item type="div" className="d-none d-md-flex">
+                        <Button
+                          size="sm"
+                          color="primary"
+                          onClick={this.connect.bind(this)}
+                        >
+                          Connect
+                        </Button>
+                      </Nav.Item>
+                    )}
                   </div>
-                )
+                ),
               }}
               navProps={{ itemsObjects: navBarItems }}
               footerProps={{
@@ -188,10 +214,11 @@ class SiteWrapper extends React.Component<Props, State> {
                     </Grid.Col>
                   </React.Fragment>
                 ),
-              }}>
+              }}
+            >
               {this.props.children}
             </Site.Wrapper>
-          )
+          );
         }}
       </ConnectionContext.Consumer>
     );

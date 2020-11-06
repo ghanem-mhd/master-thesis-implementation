@@ -40,11 +40,11 @@ class VCResolver extends React.Component {
       })
     );
     if (this.props.match.params.operationID) {
-      this.setState({loading:true})
+      this.setState({ loading: true });
       fetch(VC_URL + this.props.match.params.operationID)
         .then((response) => response.json())
         .then((response) => {
-          console.log(response)
+          console.log(response);
           this.resolve(response.vc);
         })
         .catch((error) => {
@@ -59,9 +59,9 @@ class VCResolver extends React.Component {
         this.setState({
           verificationResult: 1,
           decodeOutput: result,
-          decodeError:null,
+          decodeError: null,
           encodedInput: encodedCredential,
-          loading: false
+          loading: false,
         });
       })
       .catch((error) => {
@@ -72,7 +72,7 @@ class VCResolver extends React.Component {
             decodeOutput: decodedCredential,
             decodeError: null,
             verificationResult: 2,
-            loading: false
+            loading: false,
           });
         } catch (error) {
           this.setState({
@@ -80,7 +80,7 @@ class VCResolver extends React.Component {
             decodeOutput: null,
             decodeError: error.message,
             verificationResult: null,
-            loading: false
+            loading: false,
           });
         }
       });
