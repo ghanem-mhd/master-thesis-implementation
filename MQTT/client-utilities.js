@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const EthrDID   = require('ethr-did');
-const JWT       = require('did-jwt-vc');
+const JWT       = require('did-jwt');
 const Web3      = require('web3');
 const ethers    = require('ethers');
 
@@ -142,23 +142,19 @@ module.exports = {
         });
     },
     createProductOperationCredentials(clientName, productOperationSavedEvent, machineAddress, machinePrivateKey){
-        const issuer = new EthrDID({ address: machineAddress, privateKey: machinePrivateKey});
-
-        var productOperation = module.exports.getProductOperationFromEvent(productOperationSavedEvent)
-
+        var signer              = JWT.SimpleSigner(machinePrivateKey);
+        var productOperation    = module.exports.getProductOperationFromEvent(productOperationSavedEvent)
         var productDID = "did:ethr:" + productOperation.productDID;
-        var machineDID = "did:ethr:" + machineDID;
-
+        var machineDID = "did:ethr:" + machineAddress;
         const vcPayload = {
             sub: productDID,
-            iss: new Date(),
             vc: {
                 '@context': ['https://www.w3.org/2018/credentials/v1'],
                 type: ['VerifiableCredential'],
                 credentialSubject: {
                     productOperation: {
                         operationName: productOperation.operationName,
-                        operationResult: productOperation.operationName,
+                        operationResult: productOperation.operationResult,
                         taskID: productOperation.taskID,
                         operationID: productOperation.operationID
                     }
@@ -170,8 +166,8 @@ module.exports = {
             DB.init();
             credentialsDB = DB.getCredentialsDB();
         }
-        JWT.createVerifiableCredentialJwt(vcPayload, issuer).then( result => {
-            credentialsDB.insert({id: productOperation.operationID, vc:result}, function (err, newDoc) {
+        JWT.createJWT(vcPayload, {alg: 'ES256K', issuer: machineDID, signer}).then( result => {
+           credentialsDB.insert({id: productOperation.operationID, vc:result}, function (err, newDoc) {
                 if (err){
                     Logger.error(err)
                 }else{
