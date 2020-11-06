@@ -1,0 +1,12 @@
+node_modules/
+yarn.lock
+package-lock.json
+.idea/
+build/
+logs/
+.openzeppelin/.session
+.openzeppelin/dev-*.json
+.env
+.vscode
+frontend/src/contracts
+ethr-did-registry/
