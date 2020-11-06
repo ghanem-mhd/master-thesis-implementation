@@ -125,7 +125,9 @@ class SiteWrapper extends React.Component<Props, State> {
     if (accounts.length === 0) {
       Misc.showAccountNotConnectedNotification(store);
     } else {
-      this.setState({ currentAccount: accounts[0] });
+      this.setState({
+        currentAccount: this.web3.utils.toChecksumAddress(accounts[0]),
+      });
     }
   }
 
@@ -142,8 +144,9 @@ class SiteWrapper extends React.Component<Props, State> {
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
-          const { provider } = connectionContext;
+          const { provider, web3 } = connectionContext;
           this.provider = provider;
+          this.web3 = web3;
           return (
             <Site.Wrapper
               headerProps={{
@@ -153,10 +156,16 @@ class SiteWrapper extends React.Component<Props, State> {
                 navItems: (
                   <div>
                     {this.state.currentAccount && (
-                      <div>
-                        {"Current Account: "}
-                        {this.state.currentAccount}
-                      </div>
+                      <React.Fragment>
+                        <span className="ml-2 d-none d-lg-block">
+                          <span className="text-default">
+                            {Misc.getAccountName(this.state.currentAccount)}
+                          </span>
+                          <small className="text-muted d-block mt-1">
+                            {this.state.currentAccount}
+                          </small>
+                        </span>
+                      </React.Fragment>
                     )}
                     {!this.state.currentAccount && (
                       <Nav.Item type="div" className="d-none d-md-flex">
