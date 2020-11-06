@@ -13,13 +13,14 @@ import {
 
 import ConnectionContext from '../utilities/ConnectionContext';
 import ProductDIDInput from './ProductDIDInput';
+import ProductOperations from './ProductOperations';
 import Misc from '../utilities/Misc';
 
 class Product extends React.Component {
 
     componentDidMount(){
         document.title = "Products";
-        //this.initiateGetProductData('0xbc437717e7bfc77fbd26d94ef9fc3901291e2482');
+        this.initiateGetProductData('0xbc437717e7bfc77fbd26d94ef9fc3901291e2482');
     }
 
     showErrorMessage(message){
@@ -33,23 +34,12 @@ class Product extends React.Component {
         });
     }
 
-    getOperationObject(operationResult){
-        var operation       = {};
-        operation.machine   = operationResult[0];
-        operation.taskID    = operationResult[1];
-        operation.time      = Misc.formatTimestamp(operationResult[2]);
-        operation.name      = operationResult[3];
-        operation.result    = operationResult[4];
-        return operation;
-    }
-
-
     getProductData(productDID){
         var ProductContract = this.contracts["Product"];
         ProductContract.methods["getAuthorizeManufacturer"](productDID).call().then( result => {
             this.setState( (state, props) => {
                 var product = this.state.product;
-                if (result.toString() == "0x0000000000000000000000000000000000000000"){
+                if (result.toString() === "0x0000000000000000000000000000000000000000"){
                     product.info.push({infoName:"Authorized Manufacturer", infoValue:"None"});
                 }else{
                     product.info.push({infoName:"Authorized Manufacturer", infoValue:result});
@@ -95,34 +85,13 @@ class Product extends React.Component {
         }).catch( error => {
             console.log(error);
         });
-
-        ProductContract.methods["getProductOperations"](productDID).call().then( operationsIDSList => {
-            if (operationsIDSList.length > 0){
-                for (const operationID of operationsIDSList){
-                    ProductContract.methods["getProductOperation"](operationID).call().then( operationResult => {
-                        var operation = this.getOperationObject(operationResult);
-                        operation.ID = operationID;
-                        this.setState( (state, props) => {
-                            var product = this.state.product;
-                            product.operations.push(operation);
-                            return {
-                                product: product
-                            };
-                        });
-                    }).catch( error => {
-                        console.log(error);
-                    });
-                }
-            }
-        }).catch( error => {
-            console.log(error);
-        });
     }
 
     initiateGetProductData(productDID){
         var ProductContract = this.contracts["Product"];
         ProductContract.methods["getProductOwner"](productDID).call().then( result => {
             var newState                    = {};
+            newState.productDID             = productDID;
             newState.error                  = null;
             newState.product                = {};
             newState.product.info           = [];
@@ -192,44 +161,8 @@ class Product extends React.Component {
                                 </Grid.Col>
                             </Grid.Row>
                         }
-                        {this.state && this.state.product && this.state.product.operations &&
-                            <Grid.Row>
-                                <Grid.Col>
-                                    <Card title="Product Operations" isCollapsible isFullscreenable>
-                                        <Card.Body>
-                                            {this.state.product.operations.length !== 0
-                                            ? <Table>
-                                                <Table.Header>
-                                                    <Table.Row>
-                                                        <Table.ColHeader>ID</Table.ColHeader>
-                                                        <Table.ColHeader>Name</Table.ColHeader>
-                                                        <Table.ColHeader>Result</Table.ColHeader>
-                                                        <Table.ColHeader>Time</Table.ColHeader>
-                                                        <Table.ColHeader>Machine ID</Table.ColHeader>
-                                                        <Table.ColHeader>Task ID</Table.ColHeader>
-                                                    </Table.Row>
-                                                </Table.Header>
-                                                <Table.Body>
-                                                {
-                                                    this.state.product.operations.map((object, i) =>
-                                                        <Table.Row key={this.state.product.operations.ID}>
-                                                            <Table.Col>{this.state.product.operations[i].ID}</Table.Col>
-                                                            <Table.Col>{this.state.product.operations[i].name}</Table.Col>
-                                                            <Table.Col>{this.state.product.operations[i].result}</Table.Col>
-                                                            <Table.Col>{this.state.product.operations[i].time}</Table.Col>
-                                                            <Table.Col>{this.state.product.operations[i].machine}</Table.Col>
-                                                            <Table.Col>{this.state.product.operations[i].taskID}</Table.Col>
-                                                        </Table.Row>
-                                                    )
-                                                }
-                                                </Table.Body>
-                                            </Table>
-                                            :<div className="emptyListStatus">{"No Product Operations."}</div>
-                                            }
-                                        </Card.Body>
-                                    </Card>
-                                </Grid.Col>
-                            </Grid.Row>
+                        {this.state && this.state.productDID &&
+                        <ProductOperations contracts={this.contracts} productDID={this.state.productDID}/>
                         }
                     </Page.Content>
                     )

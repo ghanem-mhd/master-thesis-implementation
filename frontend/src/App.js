@@ -115,7 +115,7 @@ class App extends React.Component {
 							<Route exact path="/events-log-stream"><EventsLogStream/></Route>
 							<Route exact path="/events-log-non-stream"><EventsLogNonStream/></Route>
 							<Route exact path="/did-resolver/:address?"><DIDResolver/></Route>
-							<Route exact path="/vc-resolver/:credential?"><VCResolver/></Route>
+							<Route exact path="/operation-vc-resolver/:operationID?"><VCResolver/></Route>
 						</Switch>
 					</SiteWrapper>
 				</Router>
