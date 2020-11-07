@@ -12,49 +12,49 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ProductionProcess is Process {
 
-    VGR private VGRContract;
-    HBW private HBWContract;
-    SLD private SLDContract;
-    MPO private MPOContract;
+    VGR public VGRContract;
+    HBW public HBWContract;
+    SLD public SLDContract;
+    MPO public MPOContract;
 
-    constructor(address _productContractAddress) Process(_productContractAddress) public {}
+    constructor(address _processOwner, address _productContractAddress) Process(_processOwner, _productContractAddress) public {}
 
-    function setVGRContractAddress(address VGRContractAddress) public {
+    function setVGRContractAddress(address VGRContractAddress) public onlyProcessOwner {
        VGRContract = VGR(VGRContractAddress);
     }
 
-    function setHBWContractAddress(address HBWContractAddress) public {
+    function setHBWContractAddress(address HBWContractAddress) public onlyProcessOwner {
        HBWContract = HBW(HBWContractAddress);
     }
 
-    function setSLDContractAddress(address SLDContractAddress) public {
+    function setSLDContractAddress(address SLDContractAddress) public onlyProcessOwner {
        SLDContract = SLD(SLDContractAddress);
     }
 
-    function setMPOContractAddress(address MPOContractAddress) public {
+    function setMPOContractAddress(address MPOContractAddress) public onlyProcessOwner {
         MPOContract = MPO(MPOContractAddress);
     }
 
-    function startProductionProcess(address productDID) public {
+    function startProductionProcess(address productDID) public onlyProcessOwner {
         uint processID = super.startProcess(productDID);
         step1(processID);
     }
 
-    function step1(uint processID) public {
+    function step1(uint processID) public onlyProcessOwner {
         address HBWDID      = HBWContract.getMachineID();
         address productDID  = super.getProductDID(processID);
         super.authorizeMachine(HBWDID, productDID);
         HBWContract.assignFetchProductTask(processID, productDID);
     }
 
-    function step2(uint processID) public {
+    function step2(uint processID) public onlyProcessOwner {
         address VGRDID     = VGRContract.getMachineID();
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(VGRDID, productDID);
         VGRContract.assignMoveHBW2MPOTask(processID, productDID);
     }
 
-    function step3(uint processID) public {
+    function step3(uint processID) public onlyProcessOwner {
         address MPODID      = MPOContract.getMachineID();
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(MPODID, productDID);
@@ -62,14 +62,14 @@ contract ProductionProcess is Process {
         MPOContract.assignProcessingTask(processID, productDID);
     }
 
-    function step4(uint processID) public {
+    function step4(uint processID) public onlyProcessOwner {
         address SLDDID     = SLDContract.getMachineID();
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(SLDDID, productDID);
         SLDContract.assignSortingTask(processID, productDID);
     }
 
-    function step5(uint processID) public {
+    function step5(uint processID) public onlyProcessOwner {
         address VGRDID      = VGRContract.getMachineID();
         address productDID  = super.getProductDID(processID);
         string memory color = super.getProductOperationResult(productDID, "Sorting");

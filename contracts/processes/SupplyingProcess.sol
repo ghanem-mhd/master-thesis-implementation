@@ -10,45 +10,45 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SupplyingProcess is Process {
 
-    constructor(address _productContractAddress) Process(_productContractAddress) public {}
+    constructor(address _processOwner, address _productContractAddress) Process(_processOwner, _productContractAddress) public {}
 
-    VGR private VGRContract;
-    HBW private HBWContract;
+    VGR public VGRContract;
+    HBW public HBWContract;
 
-    function setVGRContractAddress(address VGRContractAddress) public {
+    function setVGRContractAddress(address VGRContractAddress) public onlyProcessOwner {
         VGRContract = VGR(VGRContractAddress);
     }
 
-    function setHBWContractAddress(address HBWContractAddress) public {
+    function setHBWContractAddress(address HBWContractAddress) public onlyProcessOwner {
         HBWContract = HBW(HBWContractAddress);
     }
 
-    function startSupplyingProcess(address productDID) public {
+    function startSupplyingProcess(address productDID) public onlyProcessOwner {
         uint processID = super.startProcess(productDID);
         step1(processID);
     }
 
-    function step1(uint processID) public {
+    function step1(uint processID) public onlyProcessOwner {
         address VGRDID     = VGRContract.getMachineID();
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(VGRDID, productDID);
         VGRContract.assignGetInfoTask(processID, productDID);
     }
 
-    function step2(uint processID) public {
+    function step2(uint processID) public onlyProcessOwner {
         address productDID = super.getProductDID(processID);
         super.unauthorizeCurrentMachine(productDID);
         HBWContract.assignFetchContainerTask(processID);
     }
 
-    function step3(uint processID) public {
+    function step3(uint processID) public onlyProcessOwner {
         address VGRDID     = VGRContract.getMachineID();
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(VGRDID, productDID);
         VGRContract.assignDropToHBWTask(processID, productDID);
     }
 
-    function step4(uint processID) public {
+    function step4(uint processID) public onlyProcessOwner {
         address HBWDID      = HBWContract.getMachineID();
         address productDID  = super.getProductDID(processID);
         string memory NFCID = super.getProductOperationResult(productDID, "NFCTagReading");

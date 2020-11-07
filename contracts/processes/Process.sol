@@ -13,8 +13,20 @@ abstract contract Process is Ownable {
     using UintSet for UintSet.Set;
     using Counters for Counters.Counter;
 
-    constructor(address _productContractAddress) public {
+    constructor(address _processOwner, address _productContractAddress) public {
+        processOwner = _processOwner;
         productContract = Product(_productContractAddress);
+    }
+
+    address public processOwner;
+
+    modifier onlyProcessOwner(){
+        require(_msgSender() == processOwner, "Only process owner can call this function.");
+        _;
+    }
+
+    function getProcessOwner() public view returns(address) {
+        return processOwner;
     }
 
     Counters.Counter private processesCounter;

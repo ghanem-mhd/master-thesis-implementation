@@ -19,13 +19,21 @@ var machineOwnerProvider = ProviderManager.getHttpProvider(
   process.env.MACHINE_OWNER_PK
 );
 
+var manufacturerProvider = ProviderManager.getHttpProvider(
+  process.env.NETWORK,
+  process.env.MANUFACTURER_PK
+);
+
 var contractsAsyncGets = [
   ContractsManager.getTruffleContract(machineOwnerProvider, "VGR"),
   ContractsManager.getTruffleContract(machineOwnerProvider, "HBW"),
   ContractsManager.getTruffleContract(machineOwnerProvider, "MPO"),
   ContractsManager.getTruffleContract(machineOwnerProvider, "SLD"),
-  ContractsManager.getTruffleContract(adminProvider, "SupplyingProcess"),
-  ContractsManager.getTruffleContract(adminProvider, "ProductionProcess"),
+  ContractsManager.getTruffleContract(manufacturerProvider, "SupplyingProcess"),
+  ContractsManager.getTruffleContract(
+    manufacturerProvider,
+    "ProductionProcess"
+  ),
   ContractsManager.getTruffleContract(productOwnerProvider, "Product"),
 ];
 
@@ -122,13 +130,13 @@ Promise.all(contractsAsyncGets)
       Logger.info("SupplyingProcess seeding started");
       receipt = await Helper.sendTransaction(
         supplyingProcessContract.setVGRContractAddress(VGRContract.address, {
-          from: adminProvider.addresses[0],
+          from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setVGRContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         supplyingProcessContract.setHBWContractAddress(HBWContract.address, {
-          from: adminProvider.addresses[0],
+          from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setHBWContractAddress " + receipt.transactionHash);
@@ -154,25 +162,25 @@ Promise.all(contractsAsyncGets)
       Logger.info("ProductionProcess seeding started");
       receipt = await Helper.sendTransaction(
         productionProcessContract.setVGRContractAddress(VGRContract.address, {
-          from: adminProvider.addresses[0],
+          from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setVGRContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         productionProcessContract.setHBWContractAddress(HBWContract.address, {
-          from: adminProvider.addresses[0],
+          from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setHBWContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         productionProcessContract.setMPOContractAddress(MPOContract.address, {
-          from: adminProvider.addresses[0],
+          from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setMPOContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         productionProcessContract.setSLDContractAddress(SLDContract.address, {
-          from: adminProvider.addresses[0],
+          from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setSLDContractAddress " + receipt.transactionHash);

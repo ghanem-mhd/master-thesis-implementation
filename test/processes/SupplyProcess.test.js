@@ -17,7 +17,7 @@ const SupplyingProcessArtifact = contract.fromArtifact("SupplyingProcess");
 describe("SupplyingProcess", function () {
   const [
     Admin,
-    ManufacturerDID,
+    Manufacturer,
     VGR_DID,
     HBW_DID,
     ProductDID,
@@ -30,11 +30,9 @@ describe("SupplyingProcess", function () {
     await this.ProductContract.createProduct(ProductDID, {
       from: ProductOwner,
     });
-    await this.ProductContract.authorizeManufacturer(
-      ManufacturerDID,
-      ProductDID,
-      { from: ProductOwner }
-    );
+    await this.ProductContract.authorizeManufacturer(Manufacturer, ProductDID, {
+      from: ProductOwner,
+    });
 
     this.VGRContract = await VGRArtifact.new(
       Admin,
@@ -49,30 +47,31 @@ describe("SupplyingProcess", function () {
       { from: Admin }
     );
     this.SupplyingProcessContract = await SupplyingProcessArtifact.new(
+      Manufacturer,
       this.ProductContract.address,
       { from: Admin }
     );
 
     this.ProcessContractAddress = this.SupplyingProcessContract.address;
-    await this.VGRContract.authorizeManufacturer(ManufacturerDID, {
+    await this.VGRContract.authorizeManufacturer(Manufacturer, {
       from: Admin,
     });
-    await this.HBWContract.authorizeManufacturer(ManufacturerDID, {
+    await this.HBWContract.authorizeManufacturer(Manufacturer, {
       from: Admin,
     });
     await this.SupplyingProcessContract.setVGRContractAddress(
       this.VGRContract.address,
-      { from: Admin }
+      { from: Manufacturer }
     );
     await this.SupplyingProcessContract.setHBWContractAddress(
       this.HBWContract.address,
-      { from: Admin }
+      { from: Manufacturer }
     );
   });
 
   it("should authorize VGR when starting the supplying process", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
@@ -82,9 +81,9 @@ describe("SupplyingProcess", function () {
 
   it("should authorize none when executing step 2", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
-    await this.SupplyingProcessContract.step2(1, { from: ManufacturerDID });
+    await this.SupplyingProcessContract.step2(1, { from: Manufacturer });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -93,9 +92,9 @@ describe("SupplyingProcess", function () {
 
   it("should authorize VGR when executing step 3", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
-    await this.SupplyingProcessContract.step3(1, { from: ManufacturerDID });
+    await this.SupplyingProcessContract.step3(1, { from: Manufacturer });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -104,12 +103,12 @@ describe("SupplyingProcess", function () {
 
   it("should authorize HBW when executing step 4 and check get info operations", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
     await this.VGRContract.finishGetInfoTask(1, "1234", "white", {
       from: VGR_DID,
     });
-    await this.SupplyingProcessContract.step4(1, { from: ManufacturerDID });
+    await this.SupplyingProcessContract.step4(1, { from: Manufacturer });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );

@@ -26,9 +26,15 @@ describe("MockProcess", function () {
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     this.MockProcessContract = await MockProcessArtifact.new(
+      Owner,
       this.ProductContract.address,
-      { from: Owner }
+      { from: Admin }
     );
+  });
+
+  it("should get the owner address", async function () {
+    receipt = await this.MockProcessContract.getProcessOwner();
+    expect(receipt).to.equal(Owner);
   });
 
   it("should increment process ID", async function () {

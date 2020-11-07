@@ -24,7 +24,7 @@ describe("ProductionProcess", function () {
     SLD_DID,
     MPO_DID,
     ProductDID,
-    ManufacturerDID,
+    Manufacturer,
     ProductOwner,
   ] = accounts;
 
@@ -33,11 +33,9 @@ describe("ProductionProcess", function () {
     await this.ProductContract.createProduct(ProductDID, {
       from: ProductOwner,
     });
-    await this.ProductContract.authorizeManufacturer(
-      ManufacturerDID,
-      ProductDID,
-      { from: ProductOwner }
-    );
+    await this.ProductContract.authorizeManufacturer(Manufacturer, ProductDID, {
+      from: ProductOwner,
+    });
 
     this.VGRContract = await VGRArtifact.new(
       Admin,
@@ -65,43 +63,44 @@ describe("ProductionProcess", function () {
     );
 
     this.ProductionProcessContract = await ProductionProcessArtifact.new(
+      Manufacturer,
       this.ProductContract.address,
       { from: Admin }
     );
 
-    await this.VGRContract.authorizeManufacturer(ManufacturerDID, {
+    await this.VGRContract.authorizeManufacturer(Manufacturer, {
       from: Admin,
     });
-    await this.HBWContract.authorizeManufacturer(ManufacturerDID, {
+    await this.HBWContract.authorizeManufacturer(Manufacturer, {
       from: Admin,
     });
-    await this.MPOContract.authorizeManufacturer(ManufacturerDID, {
+    await this.MPOContract.authorizeManufacturer(Manufacturer, {
       from: Admin,
     });
-    await this.SLDContract.authorizeManufacturer(ManufacturerDID, {
+    await this.SLDContract.authorizeManufacturer(Manufacturer, {
       from: Admin,
     });
     await this.ProductionProcessContract.setVGRContractAddress(
       this.VGRContract.address,
-      { from: Admin }
+      { from: Manufacturer }
     );
     await this.ProductionProcessContract.setHBWContractAddress(
       this.HBWContract.address,
-      { from: Admin }
+      { from: Manufacturer }
     );
     await this.ProductionProcessContract.setMPOContractAddress(
       this.MPOContract.address,
-      { from: Admin }
+      { from: Manufacturer }
     );
     await this.ProductionProcessContract.setSLDContractAddress(
       this.SLDContract.address,
-      { from: Admin }
+      { from: Manufacturer }
     );
   });
 
   it("should authorize HBW when starting the production process", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
@@ -111,9 +110,9 @@ describe("ProductionProcess", function () {
 
   it("should authorize VGR when executing step 2", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
-    await this.ProductionProcessContract.step2(1, { from: ManufacturerDID });
+    await this.ProductionProcessContract.step2(1, { from: Manufacturer });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -122,9 +121,9 @@ describe("ProductionProcess", function () {
 
   it("should authorize MPO when executing step 3", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
-    await this.ProductionProcessContract.step3(1, { from: ManufacturerDID });
+    await this.ProductionProcessContract.step3(1, { from: Manufacturer });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -133,9 +132,9 @@ describe("ProductionProcess", function () {
 
   it("should authorize SLD when executing step 4", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
-    await this.ProductionProcessContract.step4(1, { from: ManufacturerDID });
+    await this.ProductionProcessContract.step4(1, { from: Manufacturer });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -144,14 +143,19 @@ describe("ProductionProcess", function () {
 
   it("should authorize VGR when executing step 5", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: ManufacturerDID,
+      from: Manufacturer,
     });
-    await this.ProductionProcessContract.step4(1, { from: ManufacturerDID });
+    await this.ProductionProcessContract.step4(1, { from: Manufacturer });
     await this.SLDContract.finishSorting(1, "white", { from: SLD_DID });
-    await this.ProductionProcessContract.step5(1, { from: ManufacturerDID });
+    await this.ProductionProcessContract.step5(1, { from: Manufacturer });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
     expect(AuthorizedMachine).to.equal(VGR_DID);
+  });
+
+  it("should get the VGR address", async function () {
+    receipt = await this.ProductionProcessContract.VGRContract();
+    expect(receipt).to.equal(this.VGRContract.address);
   });
 });
