@@ -40,20 +40,16 @@ class StartProcess extends React.Component {
             gasPrice: process.env.REACT_APP_GAS_PRICE,
           })
           .on("transactionHash", (hash) => {
-            Misc.showTransactionHashMessage(store, hash);
+            this.notificationID = Misc.showTransactionHashMessage(store, hash);
             this.resetInput();
           })
           .on("confirmation", (confirmationNumber, receipt) => {
-            console.log(confirmationNumber);
-            if (
-              confirmationNumber === process.env.REACT_APP_CONFIRMATION_COUNT
-            ) {
-              Misc.showTransactionConfirmed(store, receipt);
-            }
+            store.removeNotification(this.notificationID);
           })
           .on("error", (error) => {
-            console.log(error);
+            store.removeNotification(this.notificationID);
             Misc.showErrorMessage(store, error.message);
+            console.log(error);
           });
       }
     });

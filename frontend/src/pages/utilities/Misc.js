@@ -32,14 +32,16 @@ const Misc = {
   },
   showTransactionHashMessage: function (store, transactionHash) {
     return store.addNotification({
-      title: "Transaction has been sent",
+      title: "Transaction is being mined",
       message: transactionHash,
       type: "info",
-      insert: "top",
       container: "bottom-right",
       dismiss: {
-        duration: 0,
+        duration: parseInt(
+          process.env.REACT_APP_TRANSACTION_NOTIFICATION_TIMEOUT
+        ),
         click: false,
+        onScreen: true,
         showIcon: true,
       },
     });
