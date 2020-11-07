@@ -7,7 +7,6 @@ import { Grid, Card, Button } from "tabler-react";
 import AddressInput from "../utilities/AddressInput";
 import { store } from "react-notifications-component";
 import Misc from "../utilities/Misc";
-import ConnectionContext from "../utilities/ConnectionContext";
 
 class StartProcess extends React.Component {
   addressInputRef = React.createRef();
@@ -27,13 +26,11 @@ class StartProcess extends React.Component {
   onStartClicked(e) {
     var addressInput = this.addressInputRef.current;
     var productDID = addressInput.state.addressInputState.value;
-    Misc.getCurrentAccount(this.web3, (error, account) => {
+    Misc.getCurrentAccount(this.props.web3, (error, account) => {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        this.contracts[this.props.contractName].methods[this.props.methodName](
-          productDID
-        )
+        this.props.contract.methods[this.props.methodName](productDID)
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,
@@ -61,42 +58,34 @@ class StartProcess extends React.Component {
 
   render() {
     return (
-      <ConnectionContext.Consumer>
-        {(connectionContext) => {
-          this.web3 = connectionContext.web3;
-          this.contracts = connectionContext.contracts;
-          return (
-            <Grid.Row>
-              <Grid.Col md={12} xl={12}>
-                <Card title={this.props.title} isCollapsible>
-                  <Card.Body>
-                    <AddressInput
-                      label="Product DID"
-                      showDIDMethod={true}
-                      web3={this.web3}
-                      onAddressValidityChanged={this.onAddressValidityChanged.bind(
-                        this
-                      )}
-                      ref={this.addressInputRef}
-                    />
-                  </Card.Body>
-                  <Card.Footer>
-                    <div align="right">
-                      <Button
-                        disabled={this.state.startDisabled}
-                        onClick={this.onStartClicked.bind(this)}
-                        color="primary"
-                      >
-                        Start
-                      </Button>
-                    </div>
-                  </Card.Footer>
-                </Card>
-              </Grid.Col>
-            </Grid.Row>
-          );
-        }}
-      </ConnectionContext.Consumer>
+      <Grid.Row>
+        <Grid.Col>
+          <Card title="Start Process" isCollapsible>
+            <Card.Body>
+              <AddressInput
+                label="Product DID"
+                showDIDMethod={true}
+                web3={this.props.web3}
+                onAddressValidityChanged={this.onAddressValidityChanged.bind(
+                  this
+                )}
+                ref={this.addressInputRef}
+              />
+            </Card.Body>
+            <Card.Footer>
+              <div align="right">
+                <Button
+                  disabled={this.state.startDisabled}
+                  onClick={this.onStartClicked.bind(this)}
+                  color="primary"
+                >
+                  Start
+                </Button>
+              </div>
+            </Card.Footer>
+          </Card>
+        </Grid.Col>
+      </Grid.Row>
     );
   }
 }

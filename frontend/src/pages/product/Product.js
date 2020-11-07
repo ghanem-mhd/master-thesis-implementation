@@ -13,7 +13,7 @@ import Misc from "../utilities/Misc";
 class Product extends React.Component {
   componentDidMount() {
     document.title = "Products";
-    this.initiateGetProductData("0xbc437717e7bfc77fbd26d94ef9fc3901291e2482");
+    //this.initiateGetProductData("0xbc437717e7bfc77fbd26d94ef9fc3901291e2482");
   }
 
   showErrorMessage(message) {

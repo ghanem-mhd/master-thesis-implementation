@@ -9,7 +9,10 @@ import Web3 from "web3";
 import SiteWrapper from "./pages/SiteWrapper.react";
 import HomePage from "./pages/Home";
 import Product from "./pages/product/Product";
-import Process from "./pages/process/Process";
+
+import SupplyingProcess from "./pages/process/SupplyingProcess";
+import ProductionProcess from "./pages/process/ProductionProcess";
+
 import ManageProduct from "./pages/product/ManageProduct";
 import EventsLogStream from "./pages/log/EventsLogStream";
 import EventsLogNonStream from "./pages/log/EventsLogNonStream";
@@ -146,8 +149,11 @@ class App extends React.Component {
               <Route exact path="/product">
                 <Product />
               </Route>
-              <Route exact path="/process">
-                <Process />
+              <Route exact path="/supplying-process">
+                <SupplyingProcess />
+              </Route>
+              <Route exact path="/production-process">
+                <ProductionProcess />
               </Route>
               <Route exact path="/manageProduct">
                 <ManageProduct />
