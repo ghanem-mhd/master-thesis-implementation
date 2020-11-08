@@ -8,15 +8,7 @@ import ProcessInfo from "./ProcessInfo";
 import StartProcess from "./StartProcess";
 import ProcessStepper from "./ProcessStepper";
 import ConnectionContext from "../utilities/ConnectionContext";
-
-function getSteps() {
-  return [
-    { taskName: "Get Info Task", machineName: "VGR" },
-    { taskName: "Fetch Container Task", machineName: "HBW" },
-    { taskName: "Drop to Container Task", machineName: "VGR" },
-    { taskName: "Store Container Task", machineName: "HBW" },
-  ];
-}
+import Misc from "../utilities/Misc";
 
 function getContractDynamicInfo() {
   return [
@@ -49,7 +41,11 @@ class SupplyingProcess extends React.Component {
           ];
           return (
             <Page.Content title="Supplying Process">
-              <ProcessStepper steps={getSteps()} activeStep={-1} />
+              <ProcessStepper
+                title="Process Steps"
+                steps={Misc.getSupplyingSteps()}
+                activeStep={-1}
+              />
               <ProcessInfo
                 dynamicInfo={getContractDynamicInfo()}
                 staticInfo={staticInfo}

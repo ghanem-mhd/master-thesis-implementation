@@ -96,6 +96,31 @@ const Misc = {
       return "Unknown Account";
     }
   },
+  getSupplyingSteps() {
+    return [
+      { taskName: "Get Info Task", machineName: "VGR" },
+      { taskName: "Fetch Container Task", machineName: "HBW" },
+      { taskName: "Drop to Container Task", machineName: "VGR" },
+      { taskName: "Store Container Task", machineName: "HBW" },
+    ];
+  },
+  getProductionSteps() {
+    return [
+      { taskName: "Fetch Product", machineName: "HBW" },
+      { taskName: "Move Product", machineName: "VGR" },
+      { taskName: "Process Product", machineName: "MPO" },
+      { taskName: "Sort Product", machineName: "SLD" },
+      { taskName: "Deliver Product", machineName: "VGR" },
+    ];
+  },
+  getMachines() {
+    return {
+      VGR: "Vacuum Gripper Robot",
+      HBW: "High-Bay Warehouse",
+      MPO: "Multi-Processing Station with Oven",
+      SLD: "Sorting Line with Color Detection",
+    };
+  },
 };
 
 module.exports = Misc;

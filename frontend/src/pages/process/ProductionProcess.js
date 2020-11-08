@@ -8,16 +8,7 @@ import ProcessInfo from "./ProcessInfo";
 import StartProcess from "./StartProcess";
 import ProcessStepper from "./ProcessStepper";
 import ConnectionContext from "../utilities/ConnectionContext";
-
-function getSteps() {
-  return [
-    { taskName: "Fetch Product", machineName: "HBW" },
-    { taskName: "Move Product", machineName: "VGR" },
-    { taskName: "Process Product", machineName: "MPO" },
-    { taskName: "Sort Product", machineName: "SLD" },
-    { taskName: "Deliver Product", machineName: "VGR" },
-  ];
-}
+import Misc from "../utilities/Misc";
 
 function getContractDynamicInfo() {
   return [
@@ -52,7 +43,11 @@ class ProductionProcess extends React.Component {
           ];
           return (
             <Page.Content title="Production Process">
-              <ProcessStepper steps={getSteps()} activeStep={-1} />
+              <ProcessStepper
+                title="Process Steps"
+                steps={Misc.getProductionSteps()}
+                activeStep={-1}
+              />
               <ProcessInfo
                 dynamicInfo={getContractDynamicInfo()}
                 staticInfo={staticInfo}

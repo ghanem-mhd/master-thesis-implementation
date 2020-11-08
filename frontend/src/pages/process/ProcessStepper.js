@@ -12,7 +12,7 @@ class ProcessStepper extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Process Steps" isCollapsible>
+          <Card title={this.props.title} isCollapsible>
             <Card.Body>
               <Stepper activeStep={this.props.activeStep} alternativeLabel>
                 {this.props.steps.map((step, index) => {
