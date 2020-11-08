@@ -45,7 +45,7 @@ class SupplyingProcess extends React.Component {
           var staticInfo = [
             { infoName: "Contract Address", infoValue: this.contract._address },
             { infoName: "Number of Machines", infoValue: "2 Machines" },
-            { infoName: "Number of Steps", infoValue: "2 Steps" },
+            { infoName: "Number of Steps", infoValue: "4 Steps" },
           ];
           return (
             <Page.Content title="Supplying Process">
