@@ -33,7 +33,7 @@ type navItem = {|
 
 const navBarItems: Array<navItem> = [
   {
-    value: "Home",
+    value: "Dashboard",
     to: "/",
     icon: "home",
     LinkComponent: withRouter(({ staticContext, ...props }) => {

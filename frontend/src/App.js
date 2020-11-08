@@ -7,7 +7,7 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import Web3 from "web3";
 
 import SiteWrapper from "./pages/SiteWrapper.react";
-import HomePage from "./pages/Home";
+import Dashboard from "./pages/dashboard/Dashboard";
 import Product from "./pages/product/Product";
 
 import SupplyingProcess from "./pages/process/SupplyingProcess";
@@ -126,7 +126,7 @@ class App extends React.Component {
           <SiteWrapper>
             <Switch>
               <Route exact path="/">
-                <HomePage />
+                <Dashboard />
               </Route>
               <Route exact path="/machine">
                 <Machine />
