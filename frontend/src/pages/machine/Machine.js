@@ -1,8 +1,8 @@
 // @flow
 
 import * as React from "react";
-import { Link, withRouter } from "react-router-dom";
-import { Page, Form, Grid, Button, Alert } from "tabler-react";
+import { withRouter } from "react-router-dom";
+import { Page } from "tabler-react";
 
 import ConnectionContext from "../utilities/ConnectionContext";
 import MachineInfo from "./MachineInfo";

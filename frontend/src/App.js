@@ -30,8 +30,12 @@ import MachineMaintenanceOperations from "./pages/machine/MachineMaintenanceOper
 import ConnectionContext from "./pages/utilities/ConnectionContext";
 import ContractsLoader from "./pages/utilities/ContractsLoader";
 
+import socketIOClient from "socket.io-client";
+
 import "tabler-react/dist/Tabler.css";
 import "react-notifications-component/dist/theme.css";
+
+const socket = socketIOClient(process.env.REACT_APP_BACKEND_BASE_URL);
 
 class App extends React.Component {
   constructor(props) {
@@ -119,6 +123,7 @@ class App extends React.Component {
           provider: this.state.provider,
           web3: this.state.web3,
           contracts: this.state.contracts,
+          socket: socket,
         }}
       >
         <Router>

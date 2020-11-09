@@ -1,10 +1,9 @@
 // @flow
 
 import * as React from "react";
-import socketIOClient from "socket.io-client";
 
 import { Grid, Card } from "tabler-react";
-
+import ConnectionContext from "../utilities/ConnectionContext";
 import EventsTable from "./EventsTable";
 
 class EventsLogStreamTable extends React.Component {
@@ -16,7 +15,6 @@ class EventsLogStreamTable extends React.Component {
   }
 
   componentDidMount() {
-    this.socket = socketIOClient(process.env.REACT_APP_BACKEND_BASE_URL);
     this.socket.on("event_log", (log_event) => {
       this.setState((state, props) => {
         return {
@@ -26,19 +24,22 @@ class EventsLogStreamTable extends React.Component {
     });
   }
 
-  componentWillUnmount() {
-    this.socket.disconnect();
-  }
-
   render() {
     return (
-      <Grid.Row>
-        <Grid.Col>
-          <Card title={this.props.title} isCollapsible isFullscreenable>
-            <EventsTable data={this.state.data} />
-          </Card>
-        </Grid.Col>
-      </Grid.Row>
+      <ConnectionContext.Consumer>
+        {(connectionContext) => {
+          this.socket = connectionContext.socket;
+          return (
+            <Grid.Row>
+              <Grid.Col>
+                <Card title={this.props.title} isCollapsible isFullscreenable>
+                  <EventsTable data={this.state.data} />
+                </Card>
+              </Grid.Col>
+            </Grid.Row>
+          );
+        }}
+      </ConnectionContext.Consumer>
     );
   }
 }
