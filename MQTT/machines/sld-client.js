@@ -30,6 +30,7 @@ class SLDClient {
       process.env.SLD_PK
     );
     this.machineAddress = this.provider.addresses[0];
+    this.IO = require("../../utilities/socket.js").getIO();
   }
 
   onMQTTError(error) {
@@ -79,6 +80,7 @@ class SLDClient {
         this.Contract = Contract;
       }
     );
+    setInterval(this.sendState.bind(this), process.env.STATE_INTERVAL);
   }
 
   onMQTTMessage(topic, messageBuffer) {
@@ -215,6 +217,13 @@ class SLDClient {
       process.env.SLD_ADDRESS,
       process.env.SLD_PK
     );
+  }
+
+  sendState() {
+    if (this.IO) {
+      var state = this.currentTaskID == 0 ? 0 : 1;
+      this.IO.in("machines_state").emit("SLD_state", state);
+    }
   }
 }
 

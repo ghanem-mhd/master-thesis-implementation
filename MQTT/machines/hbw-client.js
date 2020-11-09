@@ -33,6 +33,7 @@ class HBWClient {
       process.env.HBW_PK
     );
     this.machineAddress = this.provider.addresses[0];
+    this.IO = require("../../utilities/socket.js").getIO();
   }
 
   onMQTTError(error) {
@@ -74,6 +75,7 @@ class HBWClient {
         this.Contract = Contract;
       }
     );
+    setInterval(this.sendState.bind(this), process.env.STATE_INTERVAL);
   }
 
   onMQTTMessage(topic, messageBuffer) {
@@ -230,6 +232,13 @@ class HBWClient {
       process.env.HBW_ADDRESS,
       process.env.HBW_PK
     );
+  }
+
+  sendState() {
+    if (this.IO) {
+      var state = this.currentTaskID == 0 ? 0 : 1;
+      this.IO.in("machines_state").emit("HBW_state", state);
+    }
   }
 }
 
