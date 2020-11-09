@@ -44,10 +44,36 @@ const navBarItems: Array<navItem> = [
   {
     value: "Machine",
     icon: "monitor",
-    to: "/machine",
-    LinkComponent: withRouter(({ staticContext, ...props }) => {
-      return <NavLink {...props} />;
-    }),
+    subItems: [
+      {
+        value: "VGR",
+        to: "/machine/VGR",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+      {
+        value: "HBW",
+        to: "/machine/HBW",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+      {
+        value: "MPO",
+        to: "/machine/MPO",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+      {
+        value: "SLD",
+        to: "/machine/SLD",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+    ],
   },
   {
     value: "Product",

@@ -128,7 +128,7 @@ class App extends React.Component {
               <Route exact path="/">
                 <Dashboard />
               </Route>
-              <Route exact path="/machine">
+              <Route exact path="/machine/:machine?">
                 <Machine />
               </Route>
               <Route exact path="/:machine/manage">

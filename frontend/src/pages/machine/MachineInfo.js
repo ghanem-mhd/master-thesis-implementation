@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import { Table, Grid, Card, Dimmer } from "tabler-react";
+import { Table, Grid, Card, Dimmer, Button } from "tabler-react";
 import Misc from "../utilities/Misc";
 
 class MachineInfo extends React.Component {
@@ -105,8 +105,23 @@ class MachineInfo extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Machine Info" isCollapsible>
+          <Card>
             <Dimmer active={false} loader>
+              <Card.Header>
+                <Card.Title>Machine Info</Card.Title>
+                <Card.Options>
+                  <Link to={"/" + this.state.machine + "/manage"}>
+                    <Button
+                      color="success"
+                      icon="edit"
+                      size="sm"
+                      outline={true}
+                    >
+                      Manage
+                    </Button>
+                  </Link>
+                </Card.Options>
+              </Card.Header>
               <Card.Body>
                 {this.state.info.length === 0 ? (
                   <div className="emptyListStatus">{"No Machine Info."}</div>
