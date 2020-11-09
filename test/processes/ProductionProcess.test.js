@@ -99,8 +99,16 @@ describe("ProductionProcess", function () {
   });
 
   it("should authorize HBW when starting the production process", async function () {
-    await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: Manufacturer,
+    receipt = await this.ProductionProcessContract.startProductionProcess(
+      ProductDID,
+      {
+        from: Manufacturer,
+      }
+    );
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "1",
     });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
@@ -112,7 +120,14 @@ describe("ProductionProcess", function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: Manufacturer,
     });
-    await this.ProductionProcessContract.step2(1, { from: Manufacturer });
+    receipt = await this.ProductionProcessContract.step2(1, {
+      from: Manufacturer,
+    });
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "2",
+    });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -123,7 +138,14 @@ describe("ProductionProcess", function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: Manufacturer,
     });
-    await this.ProductionProcessContract.step3(1, { from: Manufacturer });
+    receipt = await this.ProductionProcessContract.step3(1, {
+      from: Manufacturer,
+    });
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "3",
+    });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -134,10 +156,17 @@ describe("ProductionProcess", function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: Manufacturer,
     });
-    await this.ProductionProcessContract.step4(1, { from: Manufacturer });
+    receipt = await this.ProductionProcessContract.step4(1, {
+      from: Manufacturer,
+    });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "4",
+    });
     expect(AuthorizedMachine).to.equal(SLD_DID);
   });
 
@@ -147,7 +176,14 @@ describe("ProductionProcess", function () {
     });
     await this.ProductionProcessContract.step4(1, { from: Manufacturer });
     await this.SLDContract.finishSorting(1, "white", { from: SLD_DID });
-    await this.ProductionProcessContract.step5(1, { from: Manufacturer });
+    receipt = await this.ProductionProcessContract.step5(1, {
+      from: Manufacturer,
+    });
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "5",
+    });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );

@@ -33,12 +33,14 @@ contract SupplyingProcess is Process {
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(VGRDID, productDID);
         VGRContract.assignGetInfoTask(processID, productDID);
+        emit ProcessStepStarted(processID, productDID, 1);
     }
 
     function step2(uint processID) public onlyProcessOwner {
         address productDID = super.getProductDID(processID);
         super.unauthorizeCurrentMachine(productDID);
         HBWContract.assignFetchContainerTask(processID);
+        emit ProcessStepStarted(processID, address(0), 2);
     }
 
     function step3(uint processID) public onlyProcessOwner {
@@ -46,6 +48,7 @@ contract SupplyingProcess is Process {
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(VGRDID, productDID);
         VGRContract.assignDropToHBWTask(processID, productDID);
+        emit ProcessStepStarted(processID, productDID, 3);
     }
 
     function step4(uint processID) public onlyProcessOwner {
@@ -55,5 +58,6 @@ contract SupplyingProcess is Process {
         string memory color = super.getProductOperationResult(productDID, "ColorDetection");
         super.authorizeMachine(HBWDID, productDID);
         HBWContract.assignStoreProductTask(processID, productDID, NFCID, color);
+        emit ProcessStepStarted(processID, productDID, 4);
     }
 }

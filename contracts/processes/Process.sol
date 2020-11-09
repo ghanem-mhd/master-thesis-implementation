@@ -78,4 +78,6 @@ abstract contract Process is Ownable {
     function getProductOperationResult(address productDID, string memory operationName) public view returns (string memory) {
         return productContract.getProductOperationResult(productDID, operationName);
     }
+
+    event ProcessStepStarted(uint indexed processID, address indexed productDID, uint step);
 }

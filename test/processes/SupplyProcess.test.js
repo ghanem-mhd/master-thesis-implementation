@@ -70,8 +70,16 @@ describe("SupplyingProcess", function () {
   });
 
   it("should authorize VGR when starting the supplying process", async function () {
-    await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
-      from: Manufacturer,
+    receipt = await this.SupplyingProcessContract.startSupplyingProcess(
+      ProductDID,
+      {
+        from: Manufacturer,
+      }
+    );
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "1",
     });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
@@ -83,7 +91,14 @@ describe("SupplyingProcess", function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
       from: Manufacturer,
     });
-    await this.SupplyingProcessContract.step2(1, { from: Manufacturer });
+    receipt = await this.SupplyingProcessContract.step2(1, {
+      from: Manufacturer,
+    });
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: constants.ZERO_ADDRESS,
+      step: "2",
+    });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -94,7 +109,14 @@ describe("SupplyingProcess", function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
       from: Manufacturer,
     });
-    await this.SupplyingProcessContract.step3(1, { from: Manufacturer });
+    receipt = await this.SupplyingProcessContract.step3(1, {
+      from: Manufacturer,
+    });
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "3",
+    });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
@@ -108,7 +130,14 @@ describe("SupplyingProcess", function () {
     await this.VGRContract.finishGetInfoTask(1, "1234", "white", {
       from: VGR_DID,
     });
-    await this.SupplyingProcessContract.step4(1, { from: Manufacturer });
+    receipt = await this.SupplyingProcessContract.step4(1, {
+      from: Manufacturer,
+    });
+    expectEvent(receipt, "ProcessStepStarted", {
+      processID: "1",
+      productDID: ProductDID,
+      step: "4",
+    });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
