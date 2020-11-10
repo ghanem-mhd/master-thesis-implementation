@@ -55,7 +55,8 @@ class App extends React.Component {
           this.setState({
             web3: web3,
             provider: this.state.provider,
-            contracts: contracts,
+            contracts: contracts.metamaskProvider,
+            wsContracts: contracts.wsProvider,
             loading: false,
             errorMessage: null,
           });
@@ -77,7 +78,7 @@ class App extends React.Component {
           });
         } else {
           provider.autoRefreshOnNetworkChange = false;
-          var web3 = new Web3(provider || "ws://localhost:23000");
+          var web3 = new Web3(provider || process.env.REACT_APP_WS_NETWORK);
           web3.eth.handleRevert = true;
           this.setState({ provider: provider, loading: true, web3: web3 });
           provider.on("chainChanged", this.handleChainChanged.bind(this));
@@ -123,6 +124,7 @@ class App extends React.Component {
           provider: this.state.provider,
           web3: this.state.web3,
           contracts: this.state.contracts,
+          wsContracts: this.state.wsContracts,
           socket: socket,
         }}
       >
