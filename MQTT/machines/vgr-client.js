@@ -127,7 +127,7 @@ class VGRClient {
         this.sendStartTaskTransaction(taskAssignedEvent);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -157,7 +157,7 @@ class VGRClient {
         }
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -177,7 +177,7 @@ class VGRClient {
         Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -204,7 +204,7 @@ class VGRClient {
         this.sendTask(task.taskID, task.taskName, taskMessage);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -233,11 +233,11 @@ class VGRClient {
             this.currentTaskID = 0;
           })
           .catch((error) => {
-            Logger.logError(error);
+            Logger.logError(error, this.clientName);
           });
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 

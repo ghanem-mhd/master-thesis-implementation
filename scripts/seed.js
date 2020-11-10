@@ -99,7 +99,7 @@ Promise.all(contractsAsyncGets)
       });
       Logger.info("Fund Machines Owner " + receipt.transactionHash);
     } catch (error) {
-      Logger.logError(error);
+      Logger.logError(error, "Seed");
     } finally {
       Logger.info("Funding accounts finished");
     }
@@ -228,6 +228,6 @@ Promise.all(contractsAsyncGets)
     process.exit(0);
   })
   .catch((error) => {
-    Logger.logError(error);
+    Logger.logError(error, "Seed");
     process.exit(0);
   });

@@ -34,7 +34,7 @@ class MPOClient {
   }
 
   onMQTTError(error) {
-    Logger.logError(error);
+    Logger.logError(error, this.clientName);
     this.mqttClient.end();
   }
 
@@ -131,7 +131,7 @@ class MPOClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
       try {
         this.Contract.saveProductOperation(
@@ -143,7 +143,7 @@ class MPOClient {
           Logger.info("MPOClient - operation has been saved in smart contract");
         });
       } catch (error) {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       }
     }
   }
@@ -158,7 +158,7 @@ class MPOClient {
         this.sendStartTaskTransaction(taskAssignedEvent);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -176,7 +176,7 @@ class MPOClient {
         }
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -196,7 +196,7 @@ class MPOClient {
         Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 

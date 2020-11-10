@@ -34,7 +34,7 @@ class SLDClient {
   }
 
   onMQTTError(error) {
-    Logger.logError(error);
+    Logger.logError(error, this.clientName);
     this.mqttClient.end();
   }
 
@@ -118,7 +118,7 @@ class SLDClient {
         this.sendStartTaskTransaction(taskAssignedEvent);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -136,7 +136,7 @@ class SLDClient {
         }
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -156,7 +156,7 @@ class SLDClient {
         Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -202,11 +202,11 @@ class SLDClient {
             this.currentTaskID = 0;
           })
           .catch((error) => {
-            Logger.logError(error);
+            Logger.logError(error, this.clientName);
           });
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 

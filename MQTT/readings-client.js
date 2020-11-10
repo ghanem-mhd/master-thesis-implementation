@@ -27,7 +27,7 @@ class ReadingsClient {
   }
 
   onMQTTError(error) {
-    Logger.logError(error);
+    Logger.logError(error, this.clientName);
     this.mqttClient.end();
   }
 

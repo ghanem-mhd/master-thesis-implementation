@@ -37,7 +37,7 @@ class HBWClient {
   }
 
   onMQTTError(error) {
-    Logger.logError(error);
+    Logger.logError(error, this.clientName);
     this.mqttClient.end();
   }
 
@@ -117,7 +117,7 @@ class HBWClient {
         this.sendStartTaskTransaction(taskAssignedEvent);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -148,7 +148,7 @@ class HBWClient {
         }
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -170,7 +170,7 @@ class HBWClient {
         Logger.logEvent(this.clientName, `New reading has been saved`, receipt);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -191,7 +191,7 @@ class HBWClient {
         this.sendTask(task.taskID, task.taskName, taskMessage);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -207,7 +207,7 @@ class HBWClient {
         this.sendTask(task.taskID, task.taskName, taskMessage);
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 

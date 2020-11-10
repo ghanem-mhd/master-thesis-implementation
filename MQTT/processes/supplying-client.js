@@ -29,7 +29,7 @@ class SupplyingProcessClient {
   }
 
   onMQTTError(error) {
-    Logger.logError(error);
+    Logger.logError(error, this.clientName);
     this.mqttClient.end();
   }
 
@@ -52,7 +52,7 @@ class SupplyingProcessClient {
         );
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -76,7 +76,7 @@ class SupplyingProcessClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
     }
     if (task.taskName == VGRClient.TASK2) {
@@ -93,7 +93,7 @@ class SupplyingProcessClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
     }
   }
@@ -114,7 +114,7 @@ class SupplyingProcessClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
     }
   }

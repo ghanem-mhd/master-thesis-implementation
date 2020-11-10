@@ -33,7 +33,8 @@ logger.logTx = function (desc, receipt) {
   logger.verbose({ desc, receipt });
 };
 
-logger.logError = function (error) {
+logger.logError = function (error, errorLocation = "Not specified") {
+  logger.error(`Error in ${errorLocation}`);
   logger.error(error);
   logger.error(error.stack);
 };

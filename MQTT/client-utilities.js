@@ -53,7 +53,7 @@ module.exports = {
       .then((Contract) => {
         Contract.events[eventName]({ fromBlock: "latest" }, (error, event) => {
           if (error) {
-            Logger.logError(error);
+            Logger.logError(error, clientName);
           } else {
             callback(event);
           }
@@ -64,7 +64,7 @@ module.exports = {
         );
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, clientName);
       });
   },
   getTaskWithStatus(clientName, contract, taskAssignedEvent) {
@@ -159,11 +159,11 @@ module.exports = {
             );
           })
           .catch((error) => {
-            Logger.logError(error);
+            Logger.logError(error, clientName);
           });
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, clientName);
       });
   },
   sendTaskStartTransaction(
@@ -244,7 +244,7 @@ module.exports = {
         );
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, clientName);
       });
   },
 };

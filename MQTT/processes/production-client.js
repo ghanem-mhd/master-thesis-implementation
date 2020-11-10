@@ -40,7 +40,7 @@ class ProductionProcessClient {
   }
 
   onMQTTError(error) {
-    Logger.logError(error);
+    Logger.logError(error, this.clientName);
     this.mqttClient.end();
   }
 
@@ -77,7 +77,7 @@ class ProductionProcessClient {
         );
       })
       .catch((error) => {
-        Logger.logError(error);
+        Logger.logError(error, this.clientName);
       });
   }
 
@@ -101,7 +101,7 @@ class ProductionProcessClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
     }
   }
@@ -123,7 +123,7 @@ class ProductionProcessClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
     }
 
@@ -149,7 +149,7 @@ class ProductionProcessClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
     }
   }
@@ -170,7 +170,7 @@ class ProductionProcessClient {
           );
         })
         .catch((error) => {
-          Logger.logError(error);
+          Logger.logError(error, this.clientName);
         });
     }
   }

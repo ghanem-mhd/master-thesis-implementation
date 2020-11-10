@@ -219,6 +219,6 @@ Promise.all(contractsAsyncGets)
     }
   })
   .catch((error) => {
-    Logger.logError(error);
+    Logger.logError(error, "Task Generator");
     process.exit(0);
   });
