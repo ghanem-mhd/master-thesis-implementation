@@ -15,12 +15,38 @@ class EventsLogStreamTable extends React.Component {
   }
 
   componentDidMount() {
-    this.socket.on("event_log", (log_event) => {
-      this.setState((state, props) => {
-        return {
-          data: [...this.state.data, log_event],
-        };
-      });
+    ["VGR", "HBW", "SLD", "MPO"].forEach((machine) => {
+      this.contracts[machine].events.TaskStarted(
+        { fromBlock: "latest" },
+        (error, event) => {
+          this.onNewEvent(machine, error, event);
+        }
+      );
+
+      this.contracts[machine].events.TaskFinished(
+        { fromBlock: "latest" },
+        (error, event) => {
+          this.onNewEvent(machine, error, event);
+        }
+      );
+    });
+  }
+
+  onNewEvent(contractName, error, ethereumEvent) {
+    let row = {
+      contractName: contractName,
+    };
+    if (error) {
+      row.payload = error;
+      row.eventName = "Error";
+    } else {
+      row.payload = ethereumEvent;
+      row.eventName = ethereumEvent.event;
+    }
+    this.setState((state, props) => {
+      return {
+        rows: [...this.state.data, row],
+      };
     });
   }
 
@@ -28,12 +54,12 @@ class EventsLogStreamTable extends React.Component {
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
-          this.socket = connectionContext.socket;
+          this.contracts = connectionContext.wsContracts;
           return (
             <Grid.Row>
               <Grid.Col>
                 <Card title={this.props.title} isCollapsible isFullscreenable>
-                  <EventsTable data={this.state.data} />
+                  <EventsTable rows={this.state.rows} />
                 </Card>
               </Grid.Col>
             </Grid.Row>

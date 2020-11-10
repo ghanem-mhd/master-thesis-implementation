@@ -5,17 +5,12 @@ import EventLogDetails from "./EventLogDetails";
 
 const columns = [
   {
-    name: "Location",
-    selector: "location",
+    name: "Contract Name",
+    selector: "contractName",
   },
   {
-    name: "Description",
-    selector: "description",
-  },
-  {
-    name: "Timestamp",
-    selector: "timestamp",
-    format: (row) => `${new Date(row.timestamp).toLocaleString()}`,
+    name: "Event Name",
+    selector: "eventName",
   },
 ];
 
@@ -25,7 +20,7 @@ class EventsTable extends React.Component {
       <DataTable
         keyField="_id"
         columns={columns}
-        data={this.props.data}
+        data={this.props.rows}
         pagination={true}
         paginationPerPage={10}
         expandableRows

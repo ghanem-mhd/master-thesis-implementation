@@ -48,6 +48,7 @@ class Dashboard extends React.Component {
                 title="Production Process Status"
                 steps={Misc.getProductionSteps()}
               />
+              <EventsLogStreamTable title="Events Log" />
             </Page.Content>
           );
         }}
