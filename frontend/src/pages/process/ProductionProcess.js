@@ -36,6 +36,7 @@ class ProductionProcess extends React.Component {
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
           this.contract = connectionContext.contracts["ProductionProcess"];
+          this.wsContract = connectionContext.wsContracts["ProductionProcess"];
           var staticInfo = [
             { infoName: "Contract Address", infoValue: this.contract._address },
             { infoName: "Number of Machines", infoValue: "4 Machines" },
@@ -43,15 +44,15 @@ class ProductionProcess extends React.Component {
           ];
           return (
             <Page.Content title="Production Process">
-              <ProcessStepper
-                title="Process Steps"
-                steps={Misc.getProductionSteps()}
-                activeStep={-1}
-              />
               <ProcessInfo
                 dynamicInfo={getContractDynamicInfo()}
                 staticInfo={staticInfo}
                 contract={this.contract}
+              />
+              <ProcessStepper
+                contract={this.wsContract}
+                title="Process Steps"
+                steps={Misc.getProductionSteps()}
               />
               <StartProcess
                 web3={this.web3}
