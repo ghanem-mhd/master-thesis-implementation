@@ -188,8 +188,8 @@ class SiteWrapper extends React.Component<Props, State> {
             <Site.Wrapper
               headerProps={{
                 href: "/",
-                alt: "Tabler React",
-                imageURL: "/tabler.svg",
+                alt: "Fraunhofer FIT",
+                imageURL: "/fit.svg",
                 navItems: (
                   <div>
                     {this.state.currentAccount && (
