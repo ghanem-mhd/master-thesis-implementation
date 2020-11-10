@@ -9,22 +9,18 @@ import ConnectionContext from "../utilities/ConnectionContext";
 import ProductDIDInput from "./ProductDIDInput";
 import ProductOperations from "./ProductOperations";
 import Misc from "../utilities/Misc";
+import AuthorizeManufacturer from "./AuthorizeManufacturer";
+import SaveProductInfo from "./SaveProductInfo";
 
 class Product extends React.Component {
+  // eslint-disable-next-line
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
   componentDidMount() {
     document.title = "Products";
     //this.initiateGetProductData("0xbc437717e7bfc77fbd26d94ef9fc3901291e2482");
-  }
-
-  showErrorMessage(message) {
-    const notification = this.notificationSystem.current;
-    notification.addNotification({
-      title: "Error",
-      message: message,
-      level: "error",
-      position: "br",
-      autoDismiss: 5,
-    });
   }
 
   getProductData(productDID) {
@@ -142,6 +138,8 @@ class Product extends React.Component {
       });
   }
 
+  updateCallback() {}
+
   render() {
     return (
       <ConnectionContext.Consumer>
@@ -154,14 +152,16 @@ class Product extends React.Component {
                 onFindButtonClicked={this.initiateGetProductData.bind(this)}
                 web3={this.web3}
               />
-              {this.state && this.state.error && (
+
+              {this.state.error && (
                 <Grid.Row className="justify-content-center">
                   <Grid.Col sm={12} lg={6}>
                     <Alert type="danger">{this.state.error}</Alert>
                   </Grid.Col>
                 </Grid.Row>
               )}
-              {this.state && this.state.product && this.state.product.info && (
+
+              {this.state.product && this.state.product.info && (
                 <Grid.Row>
                   <Grid.Col>
                     <Card title="Product Info" isCollapsible isFullscreenable>
@@ -205,11 +205,25 @@ class Product extends React.Component {
                   </Grid.Col>
                 </Grid.Row>
               )}
-              {this.state && this.state.productDID && (
-                <ProductOperations
-                  contracts={this.contracts}
-                  productDID={this.state.productDID}
-                />
+              {this.state.productDID && (
+                <div>
+                  <ProductOperations
+                    contracts={this.contracts}
+                    productDID={this.state.productDID}
+                  />
+                  <AuthorizeManufacturer
+                    contracts={this.contracts}
+                    web3={this.web3}
+                    productDID={this.state.productDID}
+                    updateCallback={this.updateCallback.bind(this)}
+                  />
+                  <SaveProductInfo
+                    contracts={this.contracts}
+                    web3={this.web3}
+                    productDID={this.state.productDID}
+                    updateCallback={this.updateCallback.bind(this)}
+                  />
+                </div>
               )}
             </Page.Content>
           );

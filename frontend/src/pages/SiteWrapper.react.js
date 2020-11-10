@@ -88,6 +88,13 @@ const navBarItems: Array<navItem> = [
     icon: "server",
     subItems: [
       {
+        value: "Create Product",
+        to: "/create-product",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+      {
         value: "Supplying",
         to: "/supplying-process",
         LinkComponent: withRouter(({ staticContext, ...props }) => {
@@ -102,14 +109,6 @@ const navBarItems: Array<navItem> = [
         }),
       },
     ],
-  },
-  {
-    value: "Manage Products",
-    icon: "edit",
-    to: "/manageProduct",
-    LinkComponent: withRouter(({ staticContext, ...props }) => {
-      return <NavLink {...props} />;
-    }),
   },
   {
     value: "Log",

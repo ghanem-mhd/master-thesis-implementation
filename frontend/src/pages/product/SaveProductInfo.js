@@ -4,36 +4,28 @@ import * as React from "react";
 
 import { Grid, Card, Button } from "tabler-react";
 
-import AddressInput from "../utilities/AddressInput";
 import InfoInput from "../utilities/InfoInput";
 import { store } from "react-notifications-component";
 import Misc from "../utilities/Misc";
 
 class SaveProductInfo extends React.Component {
-  productDIDInputRef = React.createRef();
   infoInputRef = React.createRef();
 
   constructor(props) {
     super(props);
     this.state = {
-      inputValidity: {
-        productDID: false,
-        info: false,
-      },
+      inputValidity: false,
     };
-    this.initialState = this.state;
   }
 
   resetInputs() {
-    this.productDIDInputRef.current.resetInput();
     this.infoInputRef.current.resetInput();
     this.setState(this.initialState);
   }
 
   onSaveButtonClicked(e) {
-    var productDIDInput = this.productDIDInputRef.current;
     var infoInput = this.infoInputRef.current;
-    var productDID = productDIDInput.state.addressInputState.value;
+    var productDID = this.props.productDID;
     var infoName = Misc.toHex(
       this.props.web3,
       infoInput.state.inputValues.infoName
@@ -62,6 +54,7 @@ class SaveProductInfo extends React.Component {
           })
           .on("confirmation", (confirmationNumber, receipt) => {
             store.removeNotification(this.notificationID);
+            this.props.updateCallback();
           })
           .on("error", (error) => {
             store.removeNotification(this.notificationID);
@@ -72,18 +65,8 @@ class SaveProductInfo extends React.Component {
     });
   }
 
-  onProductDIDValidityChanged(valid) {
-    var inputValidity = {};
-    inputValidity.productDID = valid;
-    inputValidity.info = this.state.inputValidity.info;
-    this.setState({ inputValidity });
-  }
-
   onInfoValidityChanged(valid) {
-    var inputValidity = {};
-    inputValidity.info = valid;
-    inputValidity.productDID = this.state.inputValidity.productDID;
-    this.setState({ inputValidity });
+    this.setState({ inputValidity: valid });
   }
 
   render() {
@@ -92,15 +75,6 @@ class SaveProductInfo extends React.Component {
         <Grid.Col>
           <Card title="Save Product Info" isCollapsible>
             <Card.Body>
-              <AddressInput
-                label="Product DID"
-                showDIDMethod={true}
-                web3={this.props.web3}
-                onAddressValidityChanged={this.onProductDIDValidityChanged.bind(
-                  this
-                )}
-                ref={this.productDIDInputRef}
-              />
               <InfoInput
                 onInfoValidityChanged={this.onInfoValidityChanged.bind(this)}
                 ref={this.infoInputRef}
@@ -109,10 +83,7 @@ class SaveProductInfo extends React.Component {
             <Card.Footer>
               <div align="right">
                 <Button
-                  disabled={
-                    !this.state.inputValidity.productDID ||
-                    !this.state.inputValidity.info
-                  }
+                  disabled={!this.state.inputValidity}
                   onClick={this.onSaveButtonClicked.bind(this)}
                   color="primary"
                 >

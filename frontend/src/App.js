@@ -13,7 +13,7 @@ import Product from "./pages/product/Product";
 import SupplyingProcess from "./pages/process/SupplyingProcess";
 import ProductionProcess from "./pages/process/ProductionProcess";
 
-import ManageProduct from "./pages/product/ManageProduct";
+import CreateProduct from "./pages/product/CreateProduct";
 import EventsLogStream from "./pages/log/EventsLogStream";
 import EventsLogNonStream from "./pages/log/EventsLogNonStream";
 
@@ -162,8 +162,8 @@ class App extends React.Component {
               <Route exact path="/production-process">
                 <ProductionProcess />
               </Route>
-              <Route exact path="/manageProduct">
-                <ManageProduct />
+              <Route exact path="/create-product">
+                <CreateProduct />
               </Route>
               <Route exact path="/events-log-stream">
                 <EventsLogStream />

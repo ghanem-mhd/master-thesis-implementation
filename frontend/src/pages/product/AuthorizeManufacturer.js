@@ -9,35 +9,27 @@ import { store } from "react-notifications-component";
 import Misc from "../utilities/Misc";
 
 class AuthorizeManufacturer extends React.Component {
-  productDIDInputRef = React.createRef();
   manufacturerAddressInputRef = React.createRef();
 
   constructor(props) {
     super(props);
     this.state = {
-      inputValidity: {
-        productDID: false,
-        manufacturerAddress: false,
-      },
+      inputValidity: false,
     };
     this.initialState = this.state;
   }
 
   resetInputs() {
-    var productDIDInput = this.productDIDInputRef.current;
     var manufacturerAddressInput = this.manufacturerAddressInputRef.current;
-    productDIDInput.resetInput();
     manufacturerAddressInput.resetInput();
     this.setState(this.initialState);
   }
 
   onAuthorizeButtonClicked(e) {
-    var productDIDInput = this.productDIDInputRef.current;
     var manufacturerAddressInput = this.manufacturerAddressInputRef.current;
-    var productDID = productDIDInput.state.addressInputState.value;
+    var productDID = this.props.productDID;
     var manufacturerAddress =
       manufacturerAddressInput.state.addressInputState.value;
-
     Misc.getCurrentAccount(this.props.web3, (error, account) => {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
@@ -67,18 +59,8 @@ class AuthorizeManufacturer extends React.Component {
     });
   }
 
-  onProductDIDValidityChanged(valid) {
-    var inputValidity = {};
-    inputValidity.productDID = valid;
-    inputValidity.manufacturerAddress = this.state.inputValidity.manufacturerAddress;
-    this.setState({ inputValidity });
-  }
-
   onManufacturerAddressValidityChanged(valid) {
-    var inputValidity = {};
-    inputValidity.manufacturerAddress = valid;
-    inputValidity.productDID = this.state.inputValidity.productDID;
-    this.setState({ inputValidity });
+    this.setState({ inputValidity: valid });
   }
 
   render() {
@@ -87,15 +69,6 @@ class AuthorizeManufacturer extends React.Component {
         <Grid.Col>
           <Card title="Authorize Manufacturer" isCollapsible>
             <Card.Body>
-              <AddressInput
-                label="Product DID"
-                showDIDMethod={true}
-                web3={this.props.web3}
-                onAddressValidityChanged={this.onProductDIDValidityChanged.bind(
-                  this
-                )}
-                ref={this.productDIDInputRef}
-              />
               <AddressInput
                 label="Manufacturer Address"
                 showDIDMethod={false}
@@ -109,10 +82,7 @@ class AuthorizeManufacturer extends React.Component {
             <Card.Footer>
               <div align="right">
                 <Button
-                  disabled={
-                    !this.state.inputValidity.productDID ||
-                    !this.state.inputValidity.manufacturerAddress
-                  }
+                  disabled={!this.state.inputValidity}
                   onClick={this.onAuthorizeButtonClicked.bind(this)}
                   color="primary"
                 >
