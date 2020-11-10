@@ -110,9 +110,9 @@ abstract contract Machine is Ownable {
         uint processID,
         address processContractAddress,
         address manufacturer);
-    // To noifiy the machine to start the task
-    event StartTask(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
-    // to notifiy others that a task has been finished
+    // To notifiy others that a task has been finished
+    event TaskStarted(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
+    // To notifiy others that a task has been finished
     event TaskFinished(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
 
     // Tasks Methods
@@ -138,7 +138,7 @@ abstract contract Machine is Ownable {
 
         tasks[taskID].startTimestamp = now;
 
-        emit StartTask(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
+        emit TaskStarted(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
     }
 
     function finishTask(uint taskID) public taskExists(taskID) onlyMachine {

@@ -129,7 +129,7 @@ describe("Machine", function () {
       { from: Manufacturer }
     );
     receipt = await this.MockMachineContract.startTask(1, { from: MachineDID });
-    expectEvent(receipt, "StartTask", {
+    expectEvent(receipt, "TaskStarted", {
       taskID: "1",
       taskName: "someTaskName",
       productDID: constants.ZERO_ADDRESS,
