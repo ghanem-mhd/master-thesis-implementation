@@ -157,7 +157,7 @@ class ProductionProcessClient {
 
     if (task.taskName == VGRClient.TASK4) {
       this.productionProcessContract
-        .finishProcess(task.processID, {
+        .finishProcess(task.processID, 1, {
           from: this.address,
           gas: process.env.DEFAULT_GAS,
         })

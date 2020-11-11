@@ -101,7 +101,8 @@ class MPOClient {
           this.clientName,
           this.Contract,
           this.machineAddress,
-          taskID
+          taskID,
+          2
         );
       }
     }

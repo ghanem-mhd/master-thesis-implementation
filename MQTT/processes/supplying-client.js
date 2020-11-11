@@ -149,7 +149,7 @@ class SupplyingProcessClient {
 
     if (task.taskName == HBWClient.TASK3) {
       this.supplyingProcessContract
-        .finishProcess(task.processID, {
+        .finishProcess(task.processID, 1, {
           from: this.address,
           gas: process.env.DEFAULT_GAS,
         })

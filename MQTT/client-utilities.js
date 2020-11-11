@@ -148,12 +148,18 @@ module.exports = {
     var code = incomingAckMessage["code"];
     return { taskID, productDID, processID, code };
   },
-  sendFinishTaskTransaction(clientName, contract, machineAddress, taskID) {
+  sendFinishTaskTransaction(
+    clientName,
+    contract,
+    machineAddress,
+    taskID,
+    status
+  ) {
     contract
       .getTask(taskID)
       .then((task) => {
         contract
-          .finishTask(taskID, {
+          .finishTask(taskID, status, {
             from: machineAddress,
             gas: process.env.DEFAULT_GAS,
           })

@@ -111,7 +111,8 @@ class VGRClient {
           this.clientName,
           this.Contract,
           this.machineAddress,
-          taskID
+          taskID,
+          2
         );
       }
     }
