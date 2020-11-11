@@ -114,11 +114,20 @@ describe("ProductionProcess", function () {
       ProductDID
     );
     expect(AuthorizedMachine).to.equal(HBW_DID);
+    processInstance = await this.ProductionProcessContract.getProcessInstance(
+      1
+    );
+    expect(processInstance[0]).to.equal(ProductDID);
+    expect(processInstance[3].toString()).to.equal("0");
+    expect(processInstance[4].toString()).to.equal("1");
   });
 
   it("should authorize VGR when executing step 2", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: ProductOwner,
+    });
+    await this.ProductionProcessContract.step1(1, {
+      from: Manufacturer,
     });
     receipt = await this.ProductionProcessContract.step2(1, {
       from: Manufacturer,
@@ -132,11 +141,23 @@ describe("ProductionProcess", function () {
       ProductDID
     );
     expect(AuthorizedMachine).to.equal(VGR_DID);
+    processInstance = await this.ProductionProcessContract.getProcessInstance(
+      1
+    );
+    expect(processInstance[0]).to.equal(ProductDID);
+    expect(processInstance[3].toString()).to.equal("0");
+    expect(processInstance[4].toString()).to.equal("2");
   });
 
   it("should authorize MPO when executing step 3", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: ProductOwner,
+    });
+    await this.ProductionProcessContract.step1(1, {
+      from: Manufacturer,
+    });
+    await this.ProductionProcessContract.step2(1, {
+      from: Manufacturer,
     });
     receipt = await this.ProductionProcessContract.step3(1, {
       from: Manufacturer,
@@ -150,11 +171,26 @@ describe("ProductionProcess", function () {
       ProductDID
     );
     expect(AuthorizedMachine).to.equal(MPO_DID);
+    processInstance = await this.ProductionProcessContract.getProcessInstance(
+      1
+    );
+    expect(processInstance[0]).to.equal(ProductDID);
+    expect(processInstance[3].toString()).to.equal("0");
+    expect(processInstance[4].toString()).to.equal("3");
   });
 
   it("should authorize SLD when executing step 4", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: ProductOwner,
+    });
+    await this.ProductionProcessContract.step1(1, {
+      from: Manufacturer,
+    });
+    await this.ProductionProcessContract.step2(1, {
+      from: Manufacturer,
+    });
+    await this.ProductionProcessContract.step3(1, {
+      from: Manufacturer,
     });
     receipt = await this.ProductionProcessContract.step4(1, {
       from: Manufacturer,
@@ -168,11 +204,26 @@ describe("ProductionProcess", function () {
       step: "4",
     });
     expect(AuthorizedMachine).to.equal(SLD_DID);
+    processInstance = await this.ProductionProcessContract.getProcessInstance(
+      1
+    );
+    expect(processInstance[0]).to.equal(ProductDID);
+    expect(processInstance[3].toString()).to.equal("0");
+    expect(processInstance[4].toString()).to.equal("4");
   });
 
   it("should authorize VGR when executing step 5", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: ProductOwner,
+    });
+    await this.ProductionProcessContract.step1(1, {
+      from: Manufacturer,
+    });
+    await this.ProductionProcessContract.step2(1, {
+      from: Manufacturer,
+    });
+    await this.ProductionProcessContract.step3(1, {
+      from: Manufacturer,
     });
     await this.ProductionProcessContract.step4(1, { from: Manufacturer });
     await this.SLDContract.finishSorting(1, "white", { from: SLD_DID });
@@ -188,6 +239,12 @@ describe("ProductionProcess", function () {
       ProductDID
     );
     expect(AuthorizedMachine).to.equal(VGR_DID);
+    processInstance = await this.ProductionProcessContract.getProcessInstance(
+      1
+    );
+    expect(processInstance[0]).to.equal(ProductDID);
+    expect(processInstance[3].toString()).to.equal("0");
+    expect(processInstance[4].toString()).to.equal("5");
   });
 
   it("should get the VGR address", async function () {

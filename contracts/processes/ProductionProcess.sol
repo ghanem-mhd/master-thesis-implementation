@@ -44,7 +44,7 @@ contract ProductionProcess is Process {
         address productDID  = super.getProductDID(processID);
         super.authorizeMachine(HBWDID, productDID);
         HBWContract.assignFetchProductTask(processID, productDID);
-        emit ProcessStepStarted(processID, productDID, 1);
+        super.startStep(processID, productDID, 1);
     }
 
     function step2(uint processID) public onlyProcessOwner {
@@ -52,7 +52,7 @@ contract ProductionProcess is Process {
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(VGRDID, productDID);
         VGRContract.assignMoveHBW2MPOTask(processID, productDID);
-        emit ProcessStepStarted(processID, productDID, 2);
+        super.startStep(processID, productDID, 2);
     }
 
     function step3(uint processID) public onlyProcessOwner {
@@ -61,7 +61,7 @@ contract ProductionProcess is Process {
         super.authorizeMachine(MPODID, productDID);
         HBWContract.assignStoreContainerTask(processID);
         MPOContract.assignProcessingTask(processID, productDID);
-        emit ProcessStepStarted(processID, productDID, 3);
+        super.startStep(processID, productDID, 3);
     }
 
     function step4(uint processID) public onlyProcessOwner {
@@ -69,7 +69,7 @@ contract ProductionProcess is Process {
         address productDID = super.getProductDID(processID);
         super.authorizeMachine(SLDDID, productDID);
         SLDContract.assignSortingTask(processID, productDID);
-        emit ProcessStepStarted(processID, productDID, 4);
+        super.startStep(processID, productDID, 4);
     }
 
     function step5(uint processID) public onlyProcessOwner {
@@ -78,6 +78,6 @@ contract ProductionProcess is Process {
         string memory color = super.getProductOperationResult(productDID, "Sorting");
         super.authorizeMachine(VGRDID, productDID);
         VGRContract.assignPickSortedTask(processID, productDID, color);
-        emit ProcessStepStarted(processID, productDID, 5);
+        super.startStep(processID, productDID, 5);
     }
 }

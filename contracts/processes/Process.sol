@@ -41,7 +41,8 @@ abstract contract Process is Ownable {
         address productDID;
         uint startingTime;
         uint finishingTime;
-        uint status;
+        ProcessStatus status;
+        uint currentStep;
     }
     mapping (uint => ProcessInstance) private instances;
 
@@ -58,14 +59,22 @@ abstract contract Process is Ownable {
         ProcessInstance storage instance = instances[processID];
         instance.startingTime = now;
         instance.productDID = productDID;
-        instance.status = 0;
+        instance.status = ProcessStatus.Started;
+        instance.currentStep = 0;
 
         emit ProcessStarted(processID, productDID);
 
         return processID;
     }
 
-    function finishProcess(uint processID, uint status) public processInstanceExists(processID) onlyProcessOwner() {
+    function startStep(uint processID, address productDID, uint nextStep) public processInstanceExists(processID) onlyProcessOwner() {
+        uint currentStep = instances[processID].currentStep;
+        require(currentStep == nextStep - 1, "Step can't be started in wrong order.");
+        instances[processID].currentStep = nextStep;
+        emit ProcessStepStarted(processID, productDID, nextStep);
+    }
+
+    function finishProcess(uint processID, ProcessStatus status) public processInstanceExists(processID) onlyProcessOwner() {
         require(instances[processID].finishingTime == 0, "Process already finished.");
         instances[processID].finishingTime = now;
         instances[processID].status = status;
@@ -75,16 +84,16 @@ abstract contract Process is Ownable {
     function killProcess(uint processID) public processInstanceExists(processID) onlyProcessOwner() {
         require(instances[processID].finishingTime == 0, "Process already finished.");
         instances[processID].finishingTime = now;
-        instances[processID].status = 3;
+        instances[processID].status = ProcessStatus.Killed;
         emit ProcessKilled(processID, instances[processID].productDID);
     }
 
-
-    function getProcessInstance(uint processID) public view processInstanceExists(processID) returns (address, uint, uint, uint) {
+    function getProcessInstance(uint processID) public view processInstanceExists(processID) returns (address, uint, uint, ProcessStatus, uint) {
         return (instances[processID].productDID,
             instances[processID].startingTime,
             instances[processID].finishingTime,
-            instances[processID].status
+            instances[processID].status,
+            instances[processID].currentStep
         );
     }
 

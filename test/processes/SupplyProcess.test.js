@@ -91,6 +91,9 @@ describe("SupplyingProcess", function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
       from: ProductOwner,
     });
+    await this.SupplyingProcessContract.step1(1, {
+      from: Manufacturer,
+    });
     receipt = await this.SupplyingProcessContract.step2(1, {
       from: Manufacturer,
     });
@@ -108,6 +111,12 @@ describe("SupplyingProcess", function () {
   it("should authorize VGR when executing step 3", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
       from: ProductOwner,
+    });
+    await this.SupplyingProcessContract.step1(1, {
+      from: Manufacturer,
+    });
+    await this.SupplyingProcessContract.step2(1, {
+      from: Manufacturer,
     });
     receipt = await this.SupplyingProcessContract.step3(1, {
       from: Manufacturer,
@@ -132,6 +141,12 @@ describe("SupplyingProcess", function () {
     });
     await this.VGRContract.finishGetInfoTask(1, "1234", "white", {
       from: VGR_DID,
+    });
+    await this.SupplyingProcessContract.step2(1, {
+      from: Manufacturer,
+    });
+    await this.SupplyingProcessContract.step3(1, {
+      from: Manufacturer,
     });
     receipt = await this.SupplyingProcessContract.step4(1, {
       from: Manufacturer,
