@@ -110,7 +110,7 @@ class MachineInfo extends React.Component {
               <Card.Header>
                 <Card.Title>Machine Info</Card.Title>
                 <Card.Options>
-                  <Link to={"/" + this.state.machine + "/manage"}>
+                  <Link to={"/" + this.props.machine + "/manage"}>
                     <Button
                       color="success"
                       icon="edit"
