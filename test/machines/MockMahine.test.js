@@ -10,7 +10,7 @@ const Helper = require("../../utilities/helper");
 
 const MockMachineArtifact = contract.fromArtifact("MockMachine");
 
-describe("Machine", function () {
+describe("MockMachine", function () {
   const [
     MachineOwner,
     MachineDID,
@@ -148,6 +148,7 @@ describe("Machine", function () {
     expect(savedTask[0]).to.equal(constants.ZERO_ADDRESS);
     expect(savedTask[1]).to.equal("task1");
     expect(savedTask[4]).to.deep.equal([Helper.toHex("taskInput")]);
+    expect(savedTask[5].toString()).to.equal("0");
 
     receipt = await this.MockMachineContract.assignTaskWithProduct(
       1,
@@ -159,6 +160,7 @@ describe("Machine", function () {
     expect(savedTask[0]).to.equal(product);
     expect(savedTask[1]).to.equal("task2");
     expect(savedTask[4]).to.deep.equal([]);
+    expect(savedTask[5].toString()).to.equal("0");
   });
 
   it("should save task input", async function () {
@@ -190,13 +192,14 @@ describe("Machine", function () {
     await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
       from: Manufacturer,
     });
-    taskFinishedEvent = await this.MockMachineContract.finishTask(1, {
+    taskFinishedEvent = await this.MockMachineContract.finishTask(1, 2, {
       from: MachineDID,
     });
     expectEvent(taskFinishedEvent, "TaskFinished", {
       taskID: "1",
       taskName: "task1",
       productDID: constants.ZERO_ADDRESS,
+      status: "2",
     });
   });
 
@@ -204,34 +207,53 @@ describe("Machine", function () {
     await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
       from: Manufacturer,
     });
-    receipt = this.MockMachineContract.finishTask(1, { from: anyone });
+    receipt = this.MockMachineContract.finishTask(1, 2, { from: anyone });
     await expectRevert(receipt, "Only machine can call this function.");
   });
 
-  it("should give task status", async function () {
-    await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
-      from: Manufacturer,
-    });
-    isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
-    expect(isTaskFinished).to.equal(false);
-    taskFinishedEvent = await this.MockMachineContract.finishTask(1, {
+  it("should get task status - Assigned/Started/FinishedSuccessfully", async function () {
+    taskStatus = await this.MockMachineContract.assignTaskWithoutProduct(
+      1,
+      "task1",
+      {
+        from: Manufacturer,
+      }
+    );
+    taskStatus = await this.MockMachineContract.getTaskStatus(1);
+    expect(taskStatus.toString()).to.equal("0");
+    await this.MockMachineContract.startTask(1, {
       from: MachineDID,
     });
-    isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
-    expect(isTaskFinished).to.equal(true);
+    taskStatus = await this.MockMachineContract.getTaskStatus(1);
+    expect(taskStatus.toString()).to.equal("1");
+    await this.MockMachineContract.finishTask(1, 2, {
+      from: MachineDID,
+    });
+    taskStatus = await this.MockMachineContract.getTaskStatus(1);
+    expect(taskStatus.toString()).to.equal("2");
   });
 
-  it("killing a task will make it finished", async function () {
-    await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
-      from: Manufacturer,
+  it("should get task status - Assigned/Started/FinishedUnSuccessfully", async function () {
+    taskStatus = await this.MockMachineContract.assignTaskWithoutProduct(
+      1,
+      "task1",
+      {
+        from: Manufacturer,
+      }
+    );
+    taskStatus = await this.MockMachineContract.getTaskStatus(1);
+    expect(taskStatus.toString()).to.equal("0");
+    await this.MockMachineContract.startTask(1, {
+      from: MachineDID,
     });
-    isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
-    expect(isTaskFinished).to.equal(false);
-    taskFinishedEvent = await this.MockMachineContract.killTask(1, {
-      from: MachineOwner,
+    taskStatus = await this.MockMachineContract.getTaskStatus(1);
+    expect(taskStatus.toString()).to.equal("1");
+
+    await this.MockMachineContract.finishTask(1, 3, {
+      from: MachineDID,
     });
-    isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
-    expect(isTaskFinished).to.equal(true);
+    taskStatus = await this.MockMachineContract.getTaskStatus(1);
+    expect(taskStatus.toString()).to.equal("3");
   });
 
   it("calling getNewReading should emit NewReading event", async function () {

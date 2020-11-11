@@ -82,6 +82,8 @@ abstract contract Machine is Ownable {
     }
 
     // Task Structure
+    enum TaskStatus {Assinged, Started, FinishedSuccessfully, FinishedUnsuccessfully, Killed }
+
     struct Task{
         address productDID;
         string taskName;
@@ -92,6 +94,7 @@ abstract contract Machine is Ownable {
         uint processID;
         address processContractAddress;
         address manufacturer;
+        TaskStatus status;
     }
     // counter to generate new task id
     Counters.Counter private taskIDCounter;
@@ -110,10 +113,12 @@ abstract contract Machine is Ownable {
         uint processID,
         address processContractAddress,
         address manufacturer);
-    // To notifiy others that a task has been finished
+    // To notifiy others that a task has been started
     event TaskStarted(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
     // To notifiy others that a task has been finished
-    event TaskFinished(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
+    event TaskFinished(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress, TaskStatus status);
+    // To notifiy others that a task has been killed
+    event TaskKilled(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
 
     // Tasks Methods
     function assignTask(uint processID, address productDID, string memory taskName) internal onlyManufacturer returns (uint){
@@ -126,6 +131,7 @@ abstract contract Machine is Ownable {
         task.processID              = processID;
         task.manufacturer           = tx.origin;
         task.processContractAddress = _msgSender();
+        task.status                 = TaskStatus.Assinged;
         if(productDID != address(0)){
             productsTasks[productDID].push(newtaskID);
         }
@@ -136,36 +142,33 @@ abstract contract Machine is Ownable {
     function startTask(uint taskID) public taskExists(taskID) onlyMachine {
         require(tasks[taskID].startTimestamp == 0, "Task already started.");
 
+        tasks[taskID].status = TaskStatus.Started;
         tasks[taskID].startTimestamp = now;
 
         emit TaskStarted(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
     }
 
-    function finishTask(uint taskID) public taskExists(taskID) onlyMachine {
+    function finishTask(uint taskID, TaskStatus status) public taskExists(taskID) onlyMachine {
         require(tasks[taskID].finishTimestamp == 0, "Task already finished.");
 
+        tasks[taskID].status = status;
         tasks[taskID].finishTimestamp = now;
 
-        emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
+        emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress, status);
     }
 
     function killTask(uint taskID) public taskExists(taskID) onlyMachineOwner {
         require(tasks[taskID].finishTimestamp == 0, "Task already finished.");
 
-        tasks[taskID].finishTimestamp = 1;
+        tasks[taskID].status = TaskStatus.Killed;
+        tasks[taskID].finishTimestamp = now;
+
+        emit TaskKilled(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
     }
 
     function saveTaskParam(uint taskID, bytes32 inputName, string memory inputValue) public taskExists(taskID) onlyManufacturer {
         tasks[taskID].params[inputName] = inputValue;
         tasks[taskID].paramsNames.push(inputName);
-    }
-
-    function isTaskFinished(uint taskID) public taskExists(taskID) view returns(bool){
-        if (tasks[taskID].finishTimestamp != 0 || tasks[taskID].finishTimestamp == 1){
-            return true;
-        }else{
-            return false;
-        }
     }
 
     function getTaskName(uint taskID) public taskExists(taskID) view returns (string memory) {
@@ -176,13 +179,26 @@ abstract contract Machine is Ownable {
         return (tasks[taskID].params[inputName]);
     }
 
-    function getTask(uint taskID) public taskExists(taskID) view returns(address, string memory, uint, uint, bytes32 [] memory){
+    function getTask(uint taskID) public taskExists(taskID) view returns(address, string memory, uint, uint, bytes32 [] memory, TaskStatus){
         return (tasks[taskID].productDID,
             tasks[taskID].taskName,
             tasks[taskID].startTimestamp,
             tasks[taskID].finishTimestamp,
-            tasks[taskID].paramsNames
+            tasks[taskID].paramsNames,
+            tasks[taskID].status
         );
+    }
+
+    function getTaskStatus(uint taskID) public taskExists(taskID) view returns(TaskStatus) {
+        return tasks[taskID].status;
+    }
+
+    function isTaskFinished(uint taskID) public taskExists(taskID) view returns(bool) {
+      if (tasks[taskID].status == TaskStatus.FinishedSuccessfully || tasks[taskID].status == TaskStatus.FinishedUnsuccessfully ){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     function getTasksCount() public view returns (uint) {

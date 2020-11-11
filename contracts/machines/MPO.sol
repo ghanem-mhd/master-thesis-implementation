@@ -18,10 +18,6 @@ contract MPO is Machine {
         super.assignTask(processID, productDID, getTaskName(TasksNames.Processing));
     }
 
-    function finishProcessing(uint taskID) public {
-        super.finishTask(taskID);
-    }
-
     function saveReadingMPO(uint taskID, ReadingType readingType, int readingValue) public {
         super.saveReading(taskID, readingType, readingValue);
     }

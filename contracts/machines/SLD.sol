@@ -20,7 +20,7 @@ contract SLD is Machine {
 
     function finishSorting(uint taskID, string memory color) public {
         super.saveProductOperation(taskID, "Sorting", color);
-        super.finishTask(taskID);
+        super.finishTask(taskID, TaskStatus.FinishedSuccessfully);
     }
 
     function saveReadingSLD(uint taskID, ReadingType readingType, int readingValue) public {
