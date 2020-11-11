@@ -96,4 +96,41 @@ describe("MockProcess", function () {
     receipt = this.MockProcessContract.getProductDID(0);
     await expectRevert(receipt, "Process doesn't exists.");
   });
+
+  it("should create process instance when starting the process with the right status", async function () {
+    receipt = await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    expectEvent(receipt, "ProcessStarted", {
+      processID: "1",
+      productDID: ProductDID1,
+    });
+    processInstance = await this.MockProcessContract.getProcessInstance(1);
+    expect(processInstance[0]).to.equal(ProductDID1);
+    expect(processInstance[3].toString()).to.equal("0");
+  });
+
+  it("should emit ProcessFinished event when finish a process", async function () {
+    await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.finishProcess(1, 1, {
+      from: Owner,
+    });
+    processInstance = await this.MockProcessContract.getProcessInstance(1);
+    expect(processInstance[0]).to.equal(ProductDID1);
+    expect(processInstance[3].toString()).to.equal("1");
+  });
+
+  it("should emit ProcessKilled event when kill a process", async function () {
+    await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.killProcess(1, {
+      from: Owner,
+    });
+    processInstance = await this.MockProcessContract.getProcessInstance(1);
+    expect(processInstance[0]).to.equal(ProductDID1);
+    expect(processInstance[3].toString()).to.equal("3");
+  });
 });

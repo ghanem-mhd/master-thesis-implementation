@@ -98,19 +98,6 @@ describe("ProductionProcess", function () {
     );
   });
 
-  it("should emit event when starting the production process", async function () {
-    receipt = await this.ProductionProcessContract.startProductionProcess(
-      ProductDID,
-      {
-        from: ProductOwner,
-      }
-    );
-    expectEvent(receipt, "ProcessStarted", {
-      processID: "1",
-      productDID: ProductDID,
-    });
-  });
-
   it("should authorize HBW when executing step 1", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
       from: ProductOwner,

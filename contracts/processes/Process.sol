@@ -25,13 +25,28 @@ abstract contract Process is Ownable {
         _;
     }
 
+    modifier processInstanceExists(uint processID){
+        require(processID != 0, "Process doesn't exists.");
+        require(processesCounter.current() >= processID, "Process doesn't exists.");
+        _;
+    }
+
     function getProcessOwner() public view returns(address) {
         return processOwner;
     }
 
+    enum ProcessStatus { Started, FinishedSuccessfully, FinishedUnsuccessfully, Killed }
+
+    struct ProcessInstance{
+        address productDID;
+        uint startingTime;
+        uint finishingTime;
+        uint status;
+    }
+    mapping (uint => ProcessInstance) private instances;
+
     Counters.Counter private processesCounter;
     mapping (address => uint256) private productProcessMapping;
-    mapping (uint256 => address) private processProductMapping;
     Product productContract;
 
     function startProcess(address productDID) internal returns(uint256) {
@@ -40,16 +55,37 @@ abstract contract Process is Ownable {
         uint processID = processesCounter.current();
 
         productProcessMapping[productDID] = processID;
-        processProductMapping[processID]  = productDID;
+        ProcessInstance storage instance = instances[processID];
+        instance.startingTime = now;
+        instance.productDID = productDID;
+        instance.status = 0;
 
         emit ProcessStarted(processID, productDID);
 
         return processID;
     }
 
-    function finishProcess(uint processID) public onlyProcessOwner {
-        address productDID  = getProductDID(processID);
-        emit ProcessFinished(processID, productDID);
+    function finishProcess(uint processID, uint status) public processInstanceExists(processID) onlyProcessOwner() {
+        require(instances[processID].finishingTime == 0, "Process already finished.");
+        instances[processID].finishingTime = now;
+        instances[processID].status = status;
+        emit ProcessFinished(processID, instances[processID].productDID);
+    }
+
+    function killProcess(uint processID) public processInstanceExists(processID) onlyProcessOwner() {
+        require(instances[processID].finishingTime == 0, "Process already finished.");
+        instances[processID].finishingTime = now;
+        instances[processID].status = 3;
+        emit ProcessKilled(processID, instances[processID].productDID);
+    }
+
+
+    function getProcessInstance(uint processID) public view processInstanceExists(processID) returns (address, uint, uint, uint) {
+        return (instances[processID].productDID,
+            instances[processID].startingTime,
+            instances[processID].finishingTime,
+            instances[processID].status
+        );
     }
 
     function getProcessID(address productDID) public view returns (uint256) {
@@ -57,10 +93,8 @@ abstract contract Process is Ownable {
         return productProcessMapping[productDID];
     }
 
-    function getProductDID(uint256 processID) public view returns (address) {
-        require(processID != 0, "Process doesn't exists.");
-        require(processesCounter.current() >= processID, "Process doesn't exists.");
-        return processProductMapping[processID];
+    function getProductDID(uint256 processID) public view processInstanceExists(processID) returns (address) {
+        return instances[processID].productDID;
     }
 
     function getProcessesCount() public view returns (uint256) {
@@ -90,4 +124,5 @@ abstract contract Process is Ownable {
     event ProcessStepStarted(uint indexed processID, address indexed productDID, uint step);
     event ProcessStarted(uint indexed processID, address indexed productDID);
     event ProcessFinished(uint indexed processID, address indexed productDID);
+    event ProcessKilled(uint indexed processID, address indexed productDID);
 }

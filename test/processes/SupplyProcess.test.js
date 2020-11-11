@@ -69,19 +69,6 @@ describe("SupplyingProcess", function () {
     );
   });
 
-  it("should emit event when starting the supplying process", async function () {
-    receipt = await this.SupplyingProcessContract.startSupplyingProcess(
-      ProductDID,
-      {
-        from: ProductOwner,
-      }
-    );
-    expectEvent(receipt, "ProcessStarted", {
-      processID: "1",
-      productDID: ProductDID,
-    });
-  });
-
   it("should authorize VGR when executing step 1", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
       from: ProductOwner,
