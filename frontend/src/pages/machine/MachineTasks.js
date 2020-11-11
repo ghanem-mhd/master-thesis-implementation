@@ -6,6 +6,24 @@ import { Table, Grid, Card, Page } from "tabler-react";
 import Misc from "../utilities/Misc";
 import ConnectionContext from "../utilities/ConnectionContext";
 
+function getStatusLabel(status) {
+  if (status === "0") {
+    return "Assigned";
+  }
+  if (status === "1") {
+    return "Started";
+  }
+  if (status === "2") {
+    return "Finished Successfully";
+  }
+  if (status === "3") {
+    return "Finished unsuccessfully";
+  }
+  if (status === "4") {
+    return "Killed";
+  }
+}
+
 class MachineTasks extends React.Component {
   constructor(props) {
     super(props);
@@ -20,6 +38,7 @@ class MachineTasks extends React.Component {
     task.name = TaskResult[1];
     task.startingTime = Misc.formatTimestamp(TaskResult[2]);
     task.finishingTime = Misc.formatTimestamp(TaskResult[3]);
+    task.status = getStatusLabel(TaskResult[5].toString());
     return task;
   }
 
@@ -86,6 +105,9 @@ class MachineTasks extends React.Component {
                               <Table.ColHeader>Task ID</Table.ColHeader>
                               <Table.ColHeader>Task Name</Table.ColHeader>
                               <Table.ColHeader alignContent="center">
+                                Task Status
+                              </Table.ColHeader>
+                              <Table.ColHeader alignContent="center">
                                 Starting Time
                               </Table.ColHeader>
                               <Table.ColHeader alignContent="center">
@@ -99,6 +121,9 @@ class MachineTasks extends React.Component {
                               <Table.Row key={task.ID}>
                                 <Table.Col>{task.ID}</Table.Col>
                                 <Table.Col>{task.name}</Table.Col>
+                                <Table.Col alignContent="center">
+                                  {task.status}
+                                </Table.Col>
                                 <Table.Col alignContent="center">
                                   {task.startingTime}
                                 </Table.Col>
