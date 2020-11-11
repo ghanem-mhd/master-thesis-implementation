@@ -10,7 +10,7 @@ class EventsLogStreamTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: [],
+      rows: [],
     };
   }
 
@@ -19,33 +19,71 @@ class EventsLogStreamTable extends React.Component {
       this.contracts[machine].events.TaskStarted(
         { fromBlock: "latest" },
         (error, event) => {
-          this.onNewEvent(machine, error, event);
+          if (error) {
+            console.log(error);
+          } else {
+            this.onNewEvent(machine, event);
+          }
         }
       );
-
       this.contracts[machine].events.TaskFinished(
         { fromBlock: "latest" },
         (error, event) => {
-          this.onNewEvent(machine, error, event);
+          if (error) {
+            console.log(error);
+          } else {
+            this.onNewEvent(machine, event);
+          }
+        }
+      );
+    });
+
+    ["ProductionProcess", "SupplyingProcess"].forEach((process) => {
+      this.contracts[process].events.ProcessStarted(
+        { fromBlock: "latest" },
+        (error, event) => {
+          if (error) {
+            console.log(error);
+          } else {
+            this.onNewEvent(process, event);
+          }
+        }
+      );
+      this.contracts[process].events.ProcessStepStarted(
+        { fromBlock: "latest" },
+        (error, event) => {
+          if (error) {
+            console.log(error);
+          } else {
+            this.onNewEvent(process, event);
+          }
+        }
+      );
+      this.contracts[process].events.ProcessFinished(
+        { fromBlock: "latest" },
+        (error, event) => {
+          if (error) {
+            console.log(error);
+          } else {
+            this.onNewEvent(process, event);
+          }
         }
       );
     });
   }
 
-  onNewEvent(contractName, error, ethereumEvent) {
+  onNewEvent(contractName, ethereumEvent) {
     let row = {
       contractName: contractName,
+      _id: ethereumEvent.transactionHash,
+      payload: ethereumEvent,
+      eventName: ethereumEvent.event,
+      blockNumber: ethereumEvent.blockNumber,
+      transactionHash: ethereumEvent.transactionHash,
     };
-    if (error) {
-      row.payload = error;
-      row.eventName = "Error";
-    } else {
-      row.payload = ethereumEvent;
-      row.eventName = ethereumEvent.event;
-    }
     this.setState((state, props) => {
       return {
-        rows: [...this.state.data, row],
+        rows: [...this.state.rows, row],
       };
     });
   }
