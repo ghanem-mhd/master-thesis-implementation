@@ -13,6 +13,16 @@ class ProcessStepper extends React.Component {
     };
   }
   componentDidMount() {
+    this.props.contract.events.ProcessStarted(
+      { fromBlock: "latest" },
+      (error, event) => {
+        if (error) {
+          console.log(error);
+        } else {
+          this.setState({ activeStep: 0 });
+        }
+      }
+    );
     this.props.contract.events.ProcessStepStarted(
       { fromBlock: "latest" },
       (error, event) => {
@@ -22,6 +32,16 @@ class ProcessStepper extends React.Component {
           var step = parseInt(event.returnValues["step"]);
           step--;
           this.setState({ activeStep: step });
+        }
+      }
+    );
+    this.props.contract.events.ProcessFinished(
+      { fromBlock: "latest" },
+      (error, event) => {
+        if (error) {
+          console.log(error);
+        } else {
+          this.setState({ activeStep: this.props.steps.length });
         }
       }
     );
