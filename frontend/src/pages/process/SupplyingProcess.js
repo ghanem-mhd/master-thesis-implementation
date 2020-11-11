@@ -33,6 +33,7 @@ class SupplyingProcess extends React.Component {
       <ConnectionContext.Consumer>
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
+          this.contracts = connectionContext.contracts;
           this.contract = connectionContext.contracts["SupplyingProcess"];
           this.wsContract = connectionContext.wsContracts["SupplyingProcess"];
           var staticInfo = [
@@ -45,7 +46,8 @@ class SupplyingProcess extends React.Component {
               <ProcessInfo
                 dynamicInfo={getContractDynamicInfo()}
                 staticInfo={staticInfo}
-                contract={this.contract}
+                contracts={this.contracts}
+                process={"SupplyingProcess"}
               />
               <ProcessStepper
                 title="Process Steps"

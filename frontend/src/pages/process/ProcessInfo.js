@@ -13,13 +13,16 @@ class ProcessInfo extends React.Component {
   }
 
   getProcessInfo() {
-    var ProcessContract = this.props.contract;
+    var ProcessContract = this.props.contracts[this.props.process];
 
     this.props.dynamicInfo.forEach((element) => {
       ProcessContract.methods[element.methodName]()
         .call()
         .then((result) => {
           var newInfo = {};
+          if (element.methodName === "getProcessesCount") {
+            newInfo.link = "/" + this.props.process + "/instances";
+          }
           newInfo.infoName = element.infoName;
           if (element.postfix) {
             newInfo.infoValue = result + " " + element.postfix;

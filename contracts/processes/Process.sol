@@ -78,6 +78,7 @@ abstract contract Process is Ownable {
         require(instances[processID].finishingTime == 0, "Process already finished.");
         instances[processID].finishingTime = now;
         instances[processID].status = status;
+        instances[processID].currentStep = -1;
         emit ProcessFinished(processID, instances[processID].productDID);
     }
 

@@ -12,6 +12,7 @@ import Product from "./pages/product/Product";
 
 import SupplyingProcess from "./pages/process/SupplyingProcess";
 import ProductionProcess from "./pages/process/ProductionProcess";
+import ProcessInstances from "./pages/process/ProcessInstances";
 
 import CreateProduct from "./pages/product/CreateProduct";
 import EventsLogStream from "./pages/log/EventsLogStream";
@@ -30,12 +31,8 @@ import MachineMaintenanceOperations from "./pages/machine/MachineMaintenanceOper
 import ConnectionContext from "./pages/utilities/ConnectionContext";
 import ContractsLoader from "./pages/utilities/ContractsLoader";
 
-import socketIOClient from "socket.io-client";
-
 import "tabler-react/dist/Tabler.css";
 import "react-notifications-component/dist/theme.css";
-
-const socket = socketIOClient(process.env.REACT_APP_BACKEND_BASE_URL);
 
 class App extends React.Component {
   constructor(props) {
@@ -125,7 +122,6 @@ class App extends React.Component {
           web3: this.state.web3,
           contracts: this.state.contracts,
           wsContracts: this.state.wsContracts,
-          socket: socket,
         }}
       >
         <Router>
@@ -161,6 +157,9 @@ class App extends React.Component {
               </Route>
               <Route exact path="/production-process">
                 <ProductionProcess />
+              </Route>
+              <Route exact path="/:process/instances">
+                <ProcessInstances />
               </Route>
               <Route exact path="/create-product">
                 <CreateProduct />
