@@ -35,9 +35,8 @@ contract ProductionProcess is Process {
         MPOContract = MPO(MPOContractAddress);
     }
 
-    function startProductionProcess(address productDID) public onlyProcessOwner {
-        uint processID = super.startProcess(productDID);
-        step1(processID);
+    function startProductionProcess(address productDID) public {
+        super.startProcess(productDID);
     }
 
     function step1(uint processID) public onlyProcessOwner {

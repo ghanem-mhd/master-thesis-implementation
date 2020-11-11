@@ -69,13 +69,26 @@ describe("SupplyingProcess", function () {
     );
   });
 
-  it("should authorize VGR when starting the supplying process", async function () {
+  it("should emit event when starting the supplying process", async function () {
     receipt = await this.SupplyingProcessContract.startSupplyingProcess(
       ProductDID,
       {
-        from: Manufacturer,
+        from: ProductOwner,
       }
     );
+    expectEvent(receipt, "ProcessStarted", {
+      processID: "1",
+      productDID: ProductDID,
+    });
+  });
+
+  it("should authorize VGR when executing step 1", async function () {
+    await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
+      from: ProductOwner,
+    });
+    receipt = await this.SupplyingProcessContract.step1(1, {
+      from: Manufacturer,
+    });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
       productDID: ProductDID,
@@ -89,7 +102,7 @@ describe("SupplyingProcess", function () {
 
   it("should authorize none when executing step 2", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
-      from: Manufacturer,
+      from: ProductOwner,
     });
     receipt = await this.SupplyingProcessContract.step2(1, {
       from: Manufacturer,
@@ -107,7 +120,7 @@ describe("SupplyingProcess", function () {
 
   it("should authorize VGR when executing step 3", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
-      from: Manufacturer,
+      from: ProductOwner,
     });
     receipt = await this.SupplyingProcessContract.step3(1, {
       from: Manufacturer,
@@ -125,6 +138,9 @@ describe("SupplyingProcess", function () {
 
   it("should authorize HBW when executing step 4 and check get info operations", async function () {
     await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
+      from: ProductOwner,
+    });
+    await this.SupplyingProcessContract.step1(1, {
       from: Manufacturer,
     });
     await this.VGRContract.finishGetInfoTask(1, "1234", "white", {

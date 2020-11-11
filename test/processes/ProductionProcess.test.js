@@ -98,13 +98,26 @@ describe("ProductionProcess", function () {
     );
   });
 
-  it("should authorize HBW when starting the production process", async function () {
+  it("should emit event when starting the production process", async function () {
     receipt = await this.ProductionProcessContract.startProductionProcess(
       ProductDID,
       {
-        from: Manufacturer,
+        from: ProductOwner,
       }
     );
+    expectEvent(receipt, "ProcessStarted", {
+      processID: "1",
+      productDID: ProductDID,
+    });
+  });
+
+  it("should authorize HBW when executing step 1", async function () {
+    await this.ProductionProcessContract.startProductionProcess(ProductDID, {
+      from: ProductOwner,
+    });
+    receipt = await this.ProductionProcessContract.step1(1, {
+      from: Manufacturer,
+    });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
       productDID: ProductDID,
@@ -118,7 +131,7 @@ describe("ProductionProcess", function () {
 
   it("should authorize VGR when executing step 2", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: Manufacturer,
+      from: ProductOwner,
     });
     receipt = await this.ProductionProcessContract.step2(1, {
       from: Manufacturer,
@@ -136,7 +149,7 @@ describe("ProductionProcess", function () {
 
   it("should authorize MPO when executing step 3", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: Manufacturer,
+      from: ProductOwner,
     });
     receipt = await this.ProductionProcessContract.step3(1, {
       from: Manufacturer,
@@ -154,7 +167,7 @@ describe("ProductionProcess", function () {
 
   it("should authorize SLD when executing step 4", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: Manufacturer,
+      from: ProductOwner,
     });
     receipt = await this.ProductionProcessContract.step4(1, {
       from: Manufacturer,
@@ -172,7 +185,7 @@ describe("ProductionProcess", function () {
 
   it("should authorize VGR when executing step 5", async function () {
     await this.ProductionProcessContract.startProductionProcess(ProductDID, {
-      from: Manufacturer,
+      from: ProductOwner,
     });
     await this.ProductionProcessContract.step4(1, { from: Manufacturer });
     await this.SLDContract.finishSorting(1, "white", { from: SLD_DID });

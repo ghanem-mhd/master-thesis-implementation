@@ -53,6 +53,13 @@ class ProductionProcessClient {
 
         ClientUtils.registerCallbackForEvent(
           this.clientName,
+          "ProductionProcess",
+          "ProcessStarted",
+          (processStartedEvent) => this.onProcessStarted(processStartedEvent)
+        );
+
+        ClientUtils.registerCallbackForEvent(
+          this.clientName,
           "VGR",
           "TaskFinished",
           (taskFinishedEvent) => this.onVGRTaskFinished(taskFinishedEvent)
@@ -83,6 +90,27 @@ class ProductionProcessClient {
 
   onMQTTClose() {
     Logger.logEvent(this.clientName, "MQTT client disconnected");
+  }
+
+  async onProcessStarted(processStartedEvent) {
+    var processObject = ClientUtils.getProcessInfoFromProcessStartedEvent(
+      processStartedEvent
+    );
+    this.productionProcessContract
+      .step1(processObject.processID, {
+        from: this.address,
+        gas: process.env.DEFAULT_GAS,
+      })
+      .then((receipt) => {
+        Logger.logEvent(
+          this.clientName,
+          "Production process step 1 started",
+          receipt
+        );
+      })
+      .catch((error) => {
+        Logger.logError(error, this.clientName);
+      });
   }
 
   async onHBWTaskFinished(taskFinishedEvent) {
@@ -128,8 +156,21 @@ class ProductionProcessClient {
     }
 
     if (task.taskName == VGRClient.TASK4) {
-      this.publishOrderState("SHIPPED", this.orderColor);
-      setTimeout(() => this.publishOrderState("WAITING_FOR_ORDER", ""), 5000);
+      this.productionProcessContract
+        .finishProcess(task.processID, {
+          from: this.address,
+          gas: process.env.DEFAULT_GAS,
+        })
+        .then((receipt) => {
+          Logger.logEvent(
+            this.clientName,
+            "Production process finished.",
+            receipt
+          );
+        })
+        .catch((error) => {
+          Logger.logError(error, this.clientName);
+        });
     }
   }
 

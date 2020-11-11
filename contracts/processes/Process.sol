@@ -35,13 +35,21 @@ abstract contract Process is Ownable {
     Product productContract;
 
     function startProcess(address productDID) internal returns(uint256) {
+        require (_msgSender() == productContract.getProductOwner(productDID), "Only product owner can call this function.");
         processesCounter.increment();
         uint processID = processesCounter.current();
 
         productProcessMapping[productDID] = processID;
         processProductMapping[processID]  = productDID;
 
+        emit ProcessStarted(processID, productDID);
+
         return processID;
+    }
+
+    function finishProcess(uint processID) public onlyProcessOwner {
+        address productDID  = getProductDID(processID);
+        emit ProcessFinished(processID, productDID);
     }
 
     function getProcessID(address productDID) public view returns (uint256) {
@@ -80,4 +88,6 @@ abstract contract Process is Ownable {
     }
 
     event ProcessStepStarted(uint indexed processID, address indexed productDID, uint step);
+    event ProcessStarted(uint indexed processID, address indexed productDID);
+    event ProcessFinished(uint indexed processID, address indexed productDID);
 }

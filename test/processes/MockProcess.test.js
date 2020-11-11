@@ -20,6 +20,7 @@ describe("MockProcess", function () {
     ProductDID2,
     ProductDID3,
     RandomAddress,
+    ProductOwner,
   ] = accounts;
 
   beforeEach(async function () {
@@ -30,6 +31,15 @@ describe("MockProcess", function () {
       this.ProductContract.address,
       { from: Admin }
     );
+    await this.ProductContract.createProduct(ProductDID1, {
+      from: ProductOwner,
+    });
+    await this.ProductContract.createProduct(ProductDID2, {
+      from: ProductOwner,
+    });
+    await this.ProductContract.createProduct(ProductDID3, {
+      from: ProductOwner,
+    });
   });
 
   it("should get the owner address", async function () {
@@ -39,13 +49,13 @@ describe("MockProcess", function () {
 
   it("should increment process ID", async function () {
     await this.MockProcessContract.startMockProcess(ProductDID1, {
-      from: Owner,
+      from: ProductOwner,
     });
     await this.MockProcessContract.startMockProcess(ProductDID2, {
-      from: Owner,
+      from: ProductOwner,
     });
     await this.MockProcessContract.startMockProcess(ProductDID3, {
-      from: Owner,
+      from: ProductOwner,
     });
     ProcessesCount = await this.MockProcessContract.getProcessesCount();
     expect(ProcessesCount.toString()).to.equal("3");
@@ -53,13 +63,13 @@ describe("MockProcess", function () {
 
   it("should allow to multiple processes for the same product", async function () {
     await this.MockProcessContract.startMockProcess(ProductDID1, {
-      from: Owner,
+      from: ProductOwner,
     });
     await this.MockProcessContract.startMockProcess(ProductDID1, {
-      from: Owner,
+      from: ProductOwner,
     });
     await this.MockProcessContract.startMockProcess(ProductDID1, {
-      from: Owner,
+      from: ProductOwner,
     });
     ProcessesCount = await this.MockProcessContract.getProcessesCount();
     expect(ProcessesCount.toString()).to.equal("3");

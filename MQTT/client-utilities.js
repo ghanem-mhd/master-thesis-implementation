@@ -36,6 +36,12 @@ module.exports = {
     var readingType = ReadingTypeMapping[readingTypeIndex];
     return { readingTypeIndex, readingType };
   },
+  getProcessInfoFromProcessStartedEvent(event) {
+    var process = {};
+    process.productDID = event.returnValues["productDID"];
+    process.processID = event.returnValues["processID"];
+    return process;
+  },
   getTaskInputRequest: function (machineContract, taskID, inputName) {
     return machineContract.getTaskInput(taskID, Helper.toHex(inputName));
   },

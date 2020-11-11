@@ -38,6 +38,14 @@ class SupplyingProcessClient {
     ContractManager.getTruffleContract(this.provider, "SupplyingProcess")
       .then((contract) => {
         this.supplyingProcessContract = contract;
+
+        ClientUtils.registerCallbackForEvent(
+          this.clientName,
+          "SupplyingProcess",
+          "ProcessStarted",
+          (processStartedEvent) => this.onProcessStarted(processStartedEvent)
+        );
+
         ClientUtils.registerCallbackForEvent(
           this.clientName,
           "VGR",
@@ -58,6 +66,27 @@ class SupplyingProcessClient {
 
   onMQTTClose() {
     Logger.logEvent(this.clientName, "MQTT client disconnected");
+  }
+
+  async onProcessStarted(processStartedEvent) {
+    var processObject = ClientUtils.getProcessInfoFromProcessStartedEvent(
+      processStartedEvent
+    );
+    this.supplyingProcessContract
+      .step1(processObject.processID, {
+        from: this.address,
+        gas: process.env.DEFAULT_GAS,
+      })
+      .then((receipt) => {
+        Logger.logEvent(
+          this.clientName,
+          "Supplying process step 1 started",
+          receipt
+        );
+      })
+      .catch((error) => {
+        Logger.logError(error, this.clientName);
+      });
   }
 
   async onVGRTaskFinished(taskFinishedEvent) {
@@ -110,6 +139,24 @@ class SupplyingProcessClient {
           Logger.logEvent(
             this.clientName,
             "Supplying process step 3 started",
+            receipt
+          );
+        })
+        .catch((error) => {
+          Logger.logError(error, this.clientName);
+        });
+    }
+
+    if (task.taskName == HBWClient.TASK3) {
+      this.supplyingProcessContract
+        .finishProcess(task.processID, {
+          from: this.address,
+          gas: process.env.DEFAULT_GAS,
+        })
+        .then((receipt) => {
+          Logger.logEvent(
+            this.clientName,
+            "Supplying process finished.",
             receipt
           );
         })
