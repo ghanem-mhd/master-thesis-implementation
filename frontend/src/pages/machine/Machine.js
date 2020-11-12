@@ -23,7 +23,10 @@ class Machine extends React.Component {
           this.contracts = connectionContext.contracts;
           return (
             <Page.Content
-              title={Misc.getMachines()[this.props.match.params.machine]}
+              title={
+                Misc.getMachines()[this.props.match.params.machine] +
+                " Digital Twin"
+              }
             >
               <MachineMetrics
                 contracts={this.contracts}

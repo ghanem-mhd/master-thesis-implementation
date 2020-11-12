@@ -25,7 +25,10 @@ class Dashboard extends React.Component {
           this.socket = connectionContext.socket;
           this.contracts = connectionContext.wsContracts;
           return (
-            <Page.Content title="Dashboard">
+            <Page.Content
+              title="Dashboard"
+              subTitle="Real time monitoring for machines and processes"
+            >
               <Grid.Row cards={true}>
                 {["VGR", "HBW", "MPO", "SLD"].map((machine, index) => {
                   return (
