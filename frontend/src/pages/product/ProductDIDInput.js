@@ -29,8 +29,8 @@ class ProductDIDInput extends React.Component {
 
   render() {
     return (
-      <Grid.Row className="justify-content-center">
-        <Grid.Col sm={11}>
+      <Grid.Row className="d-flex justify-content-around">
+        <Grid.Col sm={10} className="text-center">
           <AddressInput
             label=""
             showDIDMethod={true}
@@ -39,7 +39,7 @@ class ProductDIDInput extends React.Component {
             ref={this.didInputRef}
           />
         </Grid.Col>
-        <Grid.Col sm={1}>
+        <Grid.Col sm={1} className="text-center">
           <Button
             disabled={this.state.findDisabled}
             onClick={this.onFindButtonClicked.bind(this)}
@@ -47,6 +47,9 @@ class ProductDIDInput extends React.Component {
           >
             Find
           </Button>
+        </Grid.Col>
+        <Grid.Col sm={1} className="text-center">
+          <Button color="success">NFC Read</Button>
         </Grid.Col>
       </Grid.Row>
     );

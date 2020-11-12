@@ -147,7 +147,10 @@ class Product extends React.Component {
           this.web3 = connectionContext.web3;
           this.contracts = connectionContext.contracts;
           return (
-            <Page.Content title="Product Digital Twin">
+            <Page.Content
+              title="Product Digital Twin"
+              subTitle="Look for a product by DID or NFC Tag"
+            >
               <ProductDIDInput
                 onFindButtonClicked={this.initiateGetProductData.bind(this)}
                 web3={this.web3}
