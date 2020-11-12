@@ -42,7 +42,7 @@ const navBarItems: Array<navItem> = [
     useExact: true,
   },
   {
-    value: "Machine",
+    value: "Machines",
     icon: "monitor",
     subItems: [
       {
@@ -76,16 +76,8 @@ const navBarItems: Array<navItem> = [
     ],
   },
   {
-    value: "Product",
+    value: "Products",
     icon: "shopping-bag",
-    to: "/product",
-    LinkComponent: withRouter(({ staticContext, ...props }) => {
-      return <NavLink {...props} />;
-    }),
-  },
-  {
-    value: "Processes",
-    icon: "server",
     subItems: [
       {
         value: "Create Product",
@@ -94,6 +86,19 @@ const navBarItems: Array<navItem> = [
           return <NavLink {...props} />;
         }),
       },
+      {
+        value: "Look Product",
+        to: "/product",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+    ],
+  },
+  {
+    value: "Processes",
+    icon: "server",
+    subItems: [
       {
         value: "Supplying",
         to: "/supplying-process",
@@ -111,8 +116,28 @@ const navBarItems: Array<navItem> = [
     ],
   },
   {
-    value: "Log",
-    icon: "monitor",
+    value: "Resolver",
+    icon: "search",
+    subItems: [
+      {
+        value: "DID Resolver",
+        to: "/did-resolver",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+      {
+        value: "VC Resolver",
+        to: "/operation-vc-resolver",
+        LinkComponent: withRouter(({ staticContext, ...props }) => {
+          return <NavLink {...props} />;
+        }),
+      },
+    ],
+  },
+  {
+    value: "Logs",
+    icon: "rss",
     subItems: [
       {
         value: "Stream",
@@ -131,9 +156,9 @@ const navBarItems: Array<navItem> = [
     ],
   },
   {
-    value: "DID",
-    icon: "user",
-    to: "/did-resolver",
+    value: "Settings",
+    icon: "settings",
+    to: "/settings",
     LinkComponent: withRouter(({ staticContext, ...props }) => {
       return <NavLink {...props} />;
     }),
@@ -220,21 +245,7 @@ class SiteWrapper extends React.Component<Props, State> {
               }}
               navProps={{ itemsObjects: navBarItems }}
               footerProps={{
-                copyright: (
-                  <React.Fragment>
-                    Copyright © 2019
-                    <a href="."> Tabler-react</a>. Theme by
-                    <a
-                      href="https://codecalm.net"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {" "}
-                      codecalm.net
-                    </a>{" "}
-                    All rights reserved.
-                  </React.Fragment>
-                ),
+                copyright: <React.Fragment></React.Fragment>,
                 nav: (
                   <React.Fragment>
                     <Grid.Col auto={true}>
