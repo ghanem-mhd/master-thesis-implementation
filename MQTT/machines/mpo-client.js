@@ -182,7 +182,9 @@ class MPOClient {
   }
 
   async onNewReadingRequest(newReadingEvent) {
-    var { readingTypeIndex, readingType } = ClientUtils.getReadingType(event);
+    var { readingTypeIndex, readingType } = ClientUtils.getReadingType(
+      newReadingEvent
+    );
     var readingValue = this.readingsClient.getRecentReading(readingType);
     this.Contract.saveReadingMPO(
       this.currentTaskID,
