@@ -2,7 +2,6 @@
 pragma solidity >=0.4.21 <0.7.0;
 
 import "../../contracts/Product.sol";
-import "../../contracts/RoleManager.sol";
 import "../../contracts/setTypes/UintSet.sol";
 import "../../contracts/setTypes/StringSet.sol";
 import "../../contracts/setTypes/AddressSet.sol";
