@@ -9,6 +9,7 @@ var contractsToCopy = [
   "Product",
   "SupplyingProcess",
   "ProductionProcess",
+  "Registry"
 ];
 
 if (!fs.existsSync(DISTENTION_DIR_PATH)) {

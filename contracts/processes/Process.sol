@@ -26,8 +26,7 @@ abstract contract Process is Ownable {
     }
 
     modifier processInstanceExists(uint processID){
-        require(processID != 0, "Process doesn't exists.");
-        require(processesCounter.current() >= processID, "Process doesn't exists.");
+        require(processID != 0 && processesCounter.current() >= processID, "Process doesn't exists.");
         _;
     }
 

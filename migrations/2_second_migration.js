@@ -7,10 +7,12 @@ const HBW = artifacts.require("HBW");
 const VGR = artifacts.require("VGR");
 const MPO = artifacts.require("MPO");
 const SLD = artifacts.require("SLD");
+const Registry = artifacts.require("Registry");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
     var deployedProductContract = await deployer.deploy(Product);
+    await deployer.deploy(Registry);
     await deployer.deploy(
       SupplyingProcess,
       process.env.MANUFACTURER_ADDRESS,
