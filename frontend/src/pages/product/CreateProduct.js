@@ -19,6 +19,10 @@ class CreateProduct extends React.Component {
     };
   }
 
+  componentDidMount() {
+    document.title = "Create Product";
+  }
+
   resetInput() {
     this.addressInputRef.current.resetInput();
     this.setState({ createDisabled: true });
