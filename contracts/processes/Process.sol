@@ -42,7 +42,7 @@ abstract contract Process is Ownable {
         uint startingTime;
         uint finishingTime;
         ProcessStatus status;
-        uint currentStep;
+        int currentStep;
     }
     mapping (uint => ProcessInstance) private instances;
 
@@ -67,8 +67,8 @@ abstract contract Process is Ownable {
         return processID;
     }
 
-    function startStep(uint processID, address productDID, uint nextStep) public processInstanceExists(processID) onlyProcessOwner() {
-        uint currentStep = instances[processID].currentStep;
+    function startStep(uint processID, address productDID, int nextStep) public processInstanceExists(processID) onlyProcessOwner() {
+        int currentStep = instances[processID].currentStep;
         require(currentStep == nextStep - 1, "Step can't be started in wrong order.");
         instances[processID].currentStep = nextStep;
         emit ProcessStepStarted(processID, productDID, nextStep);
@@ -89,7 +89,7 @@ abstract contract Process is Ownable {
         emit ProcessKilled(processID, instances[processID].productDID);
     }
 
-    function getProcessInstance(uint processID) public view processInstanceExists(processID) returns (address, uint, uint, ProcessStatus, uint) {
+    function getProcessInstance(uint processID) public view processInstanceExists(processID) returns (address, uint, uint, ProcessStatus, int) {
         return (instances[processID].productDID,
             instances[processID].startingTime,
             instances[processID].finishingTime,
@@ -131,7 +131,7 @@ abstract contract Process is Ownable {
         return productContract.getProductOperationResult(productDID, operationName);
     }
 
-    event ProcessStepStarted(uint indexed processID, address indexed productDID, uint step);
+    event ProcessStepStarted(uint indexed processID, address indexed productDID, int step);
     event ProcessStarted(uint indexed processID, address indexed productDID);
     event ProcessFinished(uint indexed processID, address indexed productDID);
     event ProcessKilled(uint indexed processID, address indexed productDID);
