@@ -6,4 +6,4 @@ IFS=
 
 pkill -f ganache-cli # stop the running instance if
 
-ganache-cli --account="$ADMIN_PRIVATE_KEY,1344395000000000000000000" -v
+ganache-cli --account="$ADMIN_PRIVATE_KEY,1344395000000000000000000"
