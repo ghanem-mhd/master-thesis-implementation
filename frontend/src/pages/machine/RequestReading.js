@@ -23,14 +23,13 @@ class RequestReading extends React.Component {
   }
 
   onRequestButtonClicked(e) {
-    var MachineContract = this.props.contracts[this.props.machine];
     var readingType = this.state.readingType;
 
     Misc.getCurrentAccount(this.props.web3, (error, account) => {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        MachineContract.methods["getNewReading"](readingType)
+        this.props.MachineContract.methods["getNewReading"](readingType)
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,

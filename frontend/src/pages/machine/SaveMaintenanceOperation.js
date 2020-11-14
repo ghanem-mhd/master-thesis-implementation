@@ -26,14 +26,15 @@ class SaveMaintenanceOperation extends React.Component {
   }
 
   onSaveButtonClicked(e) {
-    var MachineContract = this.props.contracts[this.props.machine];
     var description = this.state.inputValue;
 
     Misc.getCurrentAccount(this.props.web3, (error, account) => {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        MachineContract.methods["saveMaintenanceOperation"](description)
+        this.props.MachineContract.methods["saveMaintenanceOperation"](
+          description
+        )
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,

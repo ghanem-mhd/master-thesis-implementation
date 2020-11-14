@@ -2,14 +2,11 @@ var fs = require("fs");
 
 DISTENTION_DIR_PATH = "frontend/src/contracts";
 var contractsToCopy = [
-  "VGR",
-  "MPO",
-  "SLD",
-  "HBW",
   "Product",
-  "SupplyingProcess",
   "ProductionProcess",
-  "Registry"
+  "SupplyingProcess",
+  "Machine",
+  "Registry",
 ];
 
 if (!fs.existsSync(DISTENTION_DIR_PATH)) {

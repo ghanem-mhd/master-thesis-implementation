@@ -27,8 +27,6 @@ class SaveMachineInfo extends React.Component {
   }
 
   onSaveButtonClicked(e) {
-    var MachineContract = this.props.contracts[this.props.machine];
-
     var infoInput = this.infoInputRef.current;
     var infoName = Misc.toHex(
       this.props.web3,
@@ -42,7 +40,10 @@ class SaveMachineInfo extends React.Component {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        MachineContract.methods["saveMachineInfo"](infoName, infoValue)
+        this.props.MachineContract.methods["saveMachineInfo"](
+          infoName,
+          infoValue
+        )
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,

@@ -3,6 +3,7 @@ import { Table, Grid, Card, Button, Dimmer } from "tabler-react";
 
 import { store } from "react-notifications-component";
 import Misc from "../utilities/Misc";
+import AddressResolver from "../utilities/AddressResolver";
 
 class AuthorizedParties extends React.Component {
   constructor(props) {
@@ -12,9 +13,8 @@ class AuthorizedParties extends React.Component {
     };
   }
 
-  getAuthorizedParties(machine) {
-    var MachineContract = this.props.contracts[machine];
-    MachineContract.methods["getAuthorizedManufacturers"]()
+  getAuthorizedParties() {
+    this.props.MachineContract.methods["getAuthorizedManufacturers"]()
       .call()
       .then((manufacturersList) => {
         let list = [];
@@ -24,7 +24,7 @@ class AuthorizedParties extends React.Component {
             type: "Manufacturer",
           });
         });
-        MachineContract.methods["getAuthorizedMaintainers"]()
+        this.props.MachineContract.methods["getAuthorizedMaintainers"]()
           .call()
           .then((maintainersList) => {
             maintainersList.forEach((element) => {
@@ -45,17 +45,10 @@ class AuthorizedParties extends React.Component {
   }
 
   componentDidMount() {
-    this.getAuthorizedParties(this.props.machine);
-  }
-
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.machine !== nextProps.machine) {
-      this.getAuthorizedParties(nextProps.machine);
-    }
+    this.getAuthorizedParties();
   }
 
   onDeauthorizeButtonClicked(object) {
-    var MachineContract = this.props.contracts[this.props.machine];
     var partyAddress = object.address;
 
     var methodName = null;
@@ -65,14 +58,11 @@ class AuthorizedParties extends React.Component {
       methodName = "deauthorizeMaintainer";
     }
 
-    console.log(partyAddress);
-    console.log(methodName);
-
     Misc.getCurrentAccount(this.props.web3, (error, account) => {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        MachineContract.methods[methodName](partyAddress)
+        this.props.MachineContract.methods[methodName](partyAddress)
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,
@@ -96,7 +86,7 @@ class AuthorizedParties extends React.Component {
   render() {
     return (
       <Grid.Row>
-        <Grid.Col md={12} xl={12}>
+        <Grid.Col>
           <Card title={"Authorized Parities"} isCollapsible>
             <Dimmer active={false}>
               <Card.Body>
@@ -108,16 +98,23 @@ class AuthorizedParties extends React.Component {
                   <Table>
                     <Table.Header>
                       <Table.Row>
-                        <Table.ColHeader>Type</Table.ColHeader>
+                        <Table.ColHeader>Name</Table.ColHeader>
                         <Table.ColHeader>Address</Table.ColHeader>
+                        <Table.ColHeader>Type</Table.ColHeader>
+
                         <Table.ColHeader></Table.ColHeader>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
                       {this.state.list.map((object, i) => (
                         <Table.Row key={this.state.list[i].address}>
-                          <Table.Col>{this.state.list[i].type}</Table.Col>
+                          <Table.Col>
+                            <AddressResolver
+                              address={this.state.list[i].address}
+                            />
+                          </Table.Col>
                           <Table.Col>{this.state.list[i].address}</Table.Col>
+                          <Table.Col>{this.state.list[i].type}</Table.Col>
                           <Table.Col>
                             <Button
                               size="sm"

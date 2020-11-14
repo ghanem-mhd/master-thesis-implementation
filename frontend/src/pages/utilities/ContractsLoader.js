@@ -1,22 +1,17 @@
-import VGR from "../../contracts/VGR.json";
-import HBW from "../../contracts/HBW.json";
-import SLD from "../../contracts/SLD.json";
-import MPO from "../../contracts/MPO.json";
 import Product from "../../contracts/Product.json";
+import EthereumDIDRegistry from "../../contracts/EthereumDIDRegistry.json";
+import Registry from "../../contracts/Registry.json";
+import Machine from "../../contracts/Machine.json";
 import ProductionProcess from "../../contracts/ProductionProcess.json";
 import SupplyingProcess from "../../contracts/SupplyingProcess.json";
-import EthereumDIDRegistry from "../../contracts/EthereumDIDRegistry.json";
 import Web3 from "web3";
 
 const ContractsArtifactsList = [
-  VGR,
-  HBW,
-  SLD,
-  MPO,
   Product,
-  SupplyingProcess,
-  ProductionProcess,
   EthereumDIDRegistry,
+  Registry,
+  ProductionProcess,
+  SupplyingProcess,
 ];
 
 const ContractsLoader = {
@@ -56,6 +51,31 @@ const ContractsLoader = {
         })
         .catch((error) => {
           reject("Can't connected to the current network.");
+        });
+    });
+  },
+  loadMachineContract(web3, contractAddress) {
+    return new Promise(function (resolve, reject) {
+      var wsProvider = new Web3(process.env.REACT_APP_WS_NETWORK);
+      web3.eth.net
+        .getId()
+        .then((networkID) => {
+          var machineContract = {};
+
+          machineContract.wsContract = new wsProvider.eth.Contract(
+            Machine.abi,
+            contractAddress
+          );
+
+          machineContract.metaMaskContract = new web3.eth.Contract(
+            Machine.abi,
+            contractAddress
+          );
+
+          resolve(machineContract);
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },

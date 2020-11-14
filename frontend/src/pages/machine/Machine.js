@@ -2,46 +2,71 @@
 
 import * as React from "react";
 import { withRouter } from "react-router-dom";
-import { Page } from "tabler-react";
+import { Page, Dimmer } from "tabler-react";
 
 import ConnectionContext from "../utilities/ConnectionContext";
 import MachineInfo from "./MachineInfo";
 import MachineMetrics from "./MachineMetrics";
 import AuthorizedParties from "./AuthorizedParties";
-import Misc from "../utilities/Misc";
+import ContractsLoader from "../utilities/ContractsLoader";
+import AddressResolver from "../utilities/AddressResolver";
+import ErrorPage from "../utilities/ErrorPage";
 
 class Machine extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      machineContract: null,
+      pageTitle: "Machine Digital Twin",
+    };
+  }
+
   componentDidMount() {
     document.title = "Machine Digital Twin";
+
+    ContractsLoader.loadMachineContract(
+      this.web3,
+      this.props.match.params.address
+    )
+      .then((result) => {
+        this.setState({ machineContract: result.metaMaskContract });
+      })
+      .catch((error) => {
+        this.setState({ fatalError: error.message });
+      });
   }
 
   render() {
+    if (this.state.fatalError) {
+      return <ErrorPage errorMessage={this.state.fatalError} />;
+    }
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
-          this.contracts = connectionContext.contracts;
           return (
             <Page.Content
               title={
-                Misc.getMachines()[this.props.match.params.machine] +
-                " Digital Twin"
+                <AddressResolver address={this.props.match.params.address} />
               }
             >
-              <MachineMetrics
-                contracts={this.contracts}
-                machine={this.props.match.params.machine}
-              />
-              <MachineInfo
-                contracts={this.contracts}
-                machine={this.props.match.params.machine}
-                web3={this.web3}
-              />
-              <AuthorizedParties
-                contracts={this.contracts}
-                machine={this.props.match.params.machine}
-                web3={this.web3}
-              />
+              <Dimmer active={this.state.machineContract == null} loader>
+                {this.state.machineContract && (
+                  <React.Fragment>
+                    <MachineMetrics
+                      MachineContract={this.state.machineContract}
+                    />
+                    <MachineInfo
+                      MachineContract={this.state.machineContract}
+                      web3={this.web3}
+                    />
+                    <AuthorizedParties
+                      web3={this.web3}
+                      MachineContract={this.state.machineContract}
+                    />
+                  </React.Fragment>
+                )}
+              </Dimmer>
             </Page.Content>
           );
         }}

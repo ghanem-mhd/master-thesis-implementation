@@ -29,7 +29,6 @@ class AuthorizeParty extends React.Component {
   }
 
   onAuthorizeButtonClicked(e) {
-    var MachineContract = this.props.contracts[this.props.machine];
     var partyAddressInput = this.partyAddressInputRef.current;
     var partyAddress = partyAddressInput.state.addressInputState.value;
 
@@ -44,7 +43,7 @@ class AuthorizeParty extends React.Component {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        MachineContract.methods[methodName](partyAddress)
+        this.props.MachineContract.methods[methodName](partyAddress)
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,

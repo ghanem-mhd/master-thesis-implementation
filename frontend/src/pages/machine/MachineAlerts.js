@@ -2,15 +2,19 @@ import React from "react";
 
 import { withRouter } from "react-router";
 
-import { Table, Grid, Card, Page } from "tabler-react";
+import { Table, Grid, Card, Page, Dimmer } from "tabler-react";
 import Misc from "../utilities/Misc";
 import ConnectionContext from "../utilities/ConnectionContext";
+import ContractsLoader from "../utilities/ContractsLoader";
+import AddressResolver from "../utilities/AddressResolver";
+import ErrorPage from "../utilities/ErrorPage";
 
 class MachineAlerts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       alerts: [],
+      loading: true,
     };
   }
 
@@ -23,11 +27,11 @@ class MachineAlerts extends React.Component {
     return alert;
   }
 
-  getMachineAlerts(machine) {
-    var MachineContract = this.contracts[machine];
+  getMachineAlerts(MachineContract) {
     MachineContract.methods["getAlertsCount"]()
       .call()
       .then((alertsCount) => {
+        this.setState({ loading: false });
         for (let alertID = 1; alertID <= alertsCount; alertID++) {
           MachineContract.methods["getAlert"](alertID)
             .call()
@@ -35,10 +39,8 @@ class MachineAlerts extends React.Component {
               var alert = this.getAlertObject(alertResult);
               alert.ID = alertID;
               this.setState((state, props) => {
-                var alerts = this.state.alerts;
-                alerts.push(alert);
                 return {
-                  alerts: alerts,
+                  alerts: [...this.state.alerts, alert],
                 };
               });
             })
@@ -54,79 +56,95 @@ class MachineAlerts extends React.Component {
 
   componentDidMount() {
     document.title = "Machine Alerts";
-    this.getMachineAlerts(this.props.match.params.machine);
+    ContractsLoader.loadMachineContract(
+      this.web3,
+      this.props.match.params.address
+    )
+      .then((result) => {
+        this.getMachineAlerts(result.metaMaskContract);
+      })
+      .catch((error) => {
+        this.setState({ fatalError: error.message });
+      });
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.match.params.machine !== nextProps.match.params.machine) {
+    if (this.props.match.params.address !== nextProps.match.params.address) {
       this.getMachineAlerts(nextProps.match.params.machine);
     }
   }
 
   render() {
+    if (this.state.fatalError) {
+      return <ErrorPage errorMessage={this.state.fatalError} />;
+    }
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
-          this.contracts = connectionContext.contracts;
           return (
             <Page.Content
-              title={this.props.match.params.machine + " Machine Digital Twin"}
+              title={
+                <AddressResolver address={this.props.match.params.address} />
+              }
+              subTitle="A list of all alerts created by the smart contract of of the machine"
             >
-              <Grid.Row>
-                <Grid.Col>
-                  <Card title="Machine Alerts" isCollapsible isFullscreenable>
-                    <Card.Body>
-                      {this.state.alerts.length === 0 ? (
-                        <div className="emptyListStatus">{"No Alerts."}</div>
-                      ) : (
-                        <Table>
-                          <Table.Header>
-                            <Table.Row>
-                              <Table.ColHeader alignContent="center">
-                                ID
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Type
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Reason
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Time
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Reading ID
-                              </Table.ColHeader>
-                            </Table.Row>
-                          </Table.Header>
-                          <Table.Body>
-                            {this.state.alerts.map((alert, i) => (
-                              <Table.Row key={alert.ID}>
-                                <Table.Col alignContent="center">
-                                  {alert.ID}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {alert.type}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {alert.reason}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {alert.time}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {alert.readingID}
-                                </Table.Col>
+              <Dimmer active={this.state.loading} loader>
+                <Grid.Row>
+                  <Grid.Col>
+                    <Card title="Machine Alerts" isCollapsible isFullscreenable>
+                      <Card.Body>
+                        {this.state.alerts.length === 0 ? (
+                          <div className="emptyListStatus">{"No Alerts."}</div>
+                        ) : (
+                          <Table>
+                            <Table.Header>
+                              <Table.Row>
+                                <Table.ColHeader alignContent="center">
+                                  ID
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Type
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Reason
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Time
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Reading ID
+                                </Table.ColHeader>
                               </Table.Row>
-                            ))}
-                          </Table.Body>
-                        </Table>
-                      )}
-                    </Card.Body>
-                  </Card>
-                </Grid.Col>
-              </Grid.Row>
+                            </Table.Header>
+                            <Table.Body>
+                              {this.state.alerts.map((alert, i) => (
+                                <Table.Row key={alert.ID}>
+                                  <Table.Col alignContent="center">
+                                    {alert.ID}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {alert.type}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {alert.reason}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {alert.time}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {alert.readingID}
+                                  </Table.Col>
+                                </Table.Row>
+                              ))}
+                            </Table.Body>
+                          </Table>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Grid.Col>
+                </Grid.Row>
+              </Dimmer>
             </Page.Content>
           );
         }}

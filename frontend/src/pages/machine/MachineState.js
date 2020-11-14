@@ -61,8 +61,8 @@ class MachineState extends React.Component {
         icon="activity"
         color="blue"
         header={
-          <Link to={"/machine/" + this.props.machine}>
-            <small>{this.props.machine + " Machine Status"}</small>
+          <Link to={"/machine/" + this.props.machineContract}>
+            <small>{this.props.machineContract + " Machine Status"}</small>
           </Link>
         }
         footer={getStateElement(this.state.machineState)}

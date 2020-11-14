@@ -16,19 +16,11 @@ class MachineMetrics extends React.Component {
   }
 
   componentDidMount() {
-    this.getMetrics(this.props.machine);
+    this.getMetrics();
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.machine !== nextProps.machine) {
-      this.getMetrics(nextProps.machine);
-    }
-  }
-
-  getMetrics(machine) {
-    var MachineContract = this.props.contracts[machine];
-
-    MachineContract.methods["getTasksCount"]()
+  getMetrics() {
+    this.props.MachineContract.methods["getTasksCount"]()
       .call()
       .then((result) => {
         this.setState((state, props) => {
@@ -43,7 +35,7 @@ class MachineMetrics extends React.Component {
         console.log(error);
       });
 
-    MachineContract.methods["getReadingsCount"]()
+    this.props.MachineContract.methods["getReadingsCount"]()
       .call()
       .then((result) => {
         this.setState((state, props) => {
@@ -58,7 +50,7 @@ class MachineMetrics extends React.Component {
         console.log(error);
       });
 
-    MachineContract.methods["getAlertsCount"]()
+    this.props.MachineContract.methods["getAlertsCount"]()
       .call()
       .then((result) => {
         this.setState((state, props) => {
@@ -73,7 +65,7 @@ class MachineMetrics extends React.Component {
         console.log(error);
       });
 
-    MachineContract.methods["getMaintenanceOperationsCount"]()
+    this.props.MachineContract.methods["getMaintenanceOperationsCount"]()
       .call()
       .then((result) => {
         this.setState((state, props) => {
@@ -94,28 +86,42 @@ class MachineMetrics extends React.Component {
       <Grid.Row cards={true}>
         <Grid.Col sm={6} lg={3}>
           <StampCard color="blue" icon="list">
-            <Link to={"/" + this.props.machine + "/tasks"}>
+            <Link
+              to={"/machine/" + this.props.MachineContract._address + "/tasks"}
+            >
               {this.state.metrics.tasksCount} Tasks
             </Link>
           </StampCard>
         </Grid.Col>
         <Grid.Col sm={6} lg={3}>
           <StampCard color="green" icon="radio">
-            <Link to={"/" + this.props.machine + "/readings"}>
+            <Link
+              to={
+                "/machine/" + this.props.MachineContract._address + "/readings"
+              }
+            >
               {this.state.metrics.readingsCount} Readings
             </Link>
           </StampCard>
         </Grid.Col>
         <Grid.Col sm={6} lg={3}>
           <StampCard color="red" icon="alert-circle">
-            <Link to={"/" + this.props.machine + "/alerts"}>
+            <Link
+              to={"/machine/" + this.props.MachineContract._address + "/alerts"}
+            >
               {this.state.metrics.alertsCount} Alerts
             </Link>
           </StampCard>
         </Grid.Col>
         <Grid.Col sm={6} lg={3}>
           <StampCard color="yellow" icon="alert-circle">
-            <Link to={"/" + this.props.machine + "/operations"}>
+            <Link
+              to={
+                "/machine/" +
+                this.props.MachineContract._address +
+                "/operations"
+              }
+            >
               {this.state.metrics.maintenanceOperationsCount} M. Operations
             </Link>
           </StampCard>

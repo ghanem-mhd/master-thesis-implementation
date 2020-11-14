@@ -1,6 +1,6 @@
 import * as React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import { Page, Dimmer, Header, Container } from "tabler-react";
+import { Page, Dimmer, Container } from "tabler-react";
 
 import ReactNotification from "react-notifications-component";
 import detectEthereumProvider from "@metamask/detect-provider";
@@ -21,6 +21,7 @@ import EventsLogNonStream from "./pages/log/EventsLogNonStream";
 import DIDResolver from "./pages/DID/DIDResolver";
 import VCResolver from "./pages/DID/VCResolver";
 
+import MachinesRegistry from "./pages/machine/MachinesRegistry";
 import Machine from "./pages/machine/Machine";
 import MachineTasks from "./pages/machine/MachineTasks";
 import ManageMachine from "./pages/machine/ManageMachine";
@@ -30,6 +31,8 @@ import MachineMaintenanceOperations from "./pages/machine/MachineMaintenanceOper
 
 import ConnectionContext from "./pages/utilities/ConnectionContext";
 import ContractsLoader from "./pages/utilities/ContractsLoader";
+
+import ErrorPage from "./pages/utilities/ErrorPage";
 
 import "tabler-react/dist/Tabler.css";
 import "react-notifications-component/dist/theme.css";
@@ -103,16 +106,7 @@ class App extends React.Component {
     }
 
     if (this.state.errorMessage != null) {
-      return (
-        <Page className="text-center">
-          <Container>
-            <Header.H1 className="display-1 text-muted mb-5">
-              {"Oops! Something Went Wrong!"}
-            </Header.H1>
-            <Header.H2>{this.state.errorMessage}</Header.H2>
-          </Container>
-        </Page>
-      );
+      return <ErrorPage errorMessage={this.state.errorMessage} />;
     }
 
     return (
@@ -121,6 +115,7 @@ class App extends React.Component {
           provider: this.state.provider,
           web3: this.state.web3,
           contracts: this.state.contracts,
+          registry: this.state.contracts["Registry"],
           wsContracts: this.state.wsContracts,
         }}
       >
@@ -131,22 +126,25 @@ class App extends React.Component {
               <Route exact path="/">
                 <Dashboard />
               </Route>
-              <Route exact path="/machine/:machine?">
+              <Route exact path="/machines">
+                <MachinesRegistry />
+              </Route>
+              <Route exact path="/machine/:address">
                 <Machine />
               </Route>
-              <Route exact path="/:machine/manage">
+              <Route exact path="/machine/:address/manage">
                 <ManageMachine />
               </Route>
-              <Route exact path="/:machine/tasks">
+              <Route exact path="/machine/:address/tasks">
                 <MachineTasks />
               </Route>
-              <Route exact path="/:machine/readings">
+              <Route exact path="/machine/:address/readings">
                 <MachineReadings />
               </Route>
-              <Route exact path="/:machine/alerts">
+              <Route exact path="/machine/:address/alerts">
                 <MachineAlerts />
               </Route>
-              <Route exact path="/:machine/operations">
+              <Route exact path="/machine/:address/operations">
                 <MachineMaintenanceOperations />
               </Route>
               <Route exact path="/product">
