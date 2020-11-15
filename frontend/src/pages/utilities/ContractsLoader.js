@@ -2,17 +2,10 @@ import Product from "../../contracts/Product.json";
 import EthereumDIDRegistry from "../../contracts/EthereumDIDRegistry.json";
 import Registry from "../../contracts/Registry.json";
 import Machine from "../../contracts/Machine.json";
-import ProductionProcess from "../../contracts/ProductionProcess.json";
-import SupplyingProcess from "../../contracts/SupplyingProcess.json";
+import Process from "../../contracts/Process.json";
 import Web3 from "web3";
 
-const ContractsArtifactsList = [
-  Product,
-  EthereumDIDRegistry,
-  Registry,
-  ProductionProcess,
-  SupplyingProcess,
-];
+const ContractsArtifactsList = [Product, EthereumDIDRegistry, Registry];
 
 const ContractsLoader = {
   load: function (web3) {
@@ -55,6 +48,12 @@ const ContractsLoader = {
     });
   },
   loadMachineContract(web3, contractAddress) {
+    return ContractsLoader.loadContract(web3, contractAddress, Machine.abi);
+  },
+  loadProcessContract(web3, contractAddress) {
+    return ContractsLoader.loadContract(web3, contractAddress, Process.abi);
+  },
+  loadContract(web3, contractAddress, abi) {
     return new Promise(function (resolve, reject) {
       var wsProvider = new Web3(process.env.REACT_APP_WS_NETWORK);
       web3.eth.net
@@ -63,12 +62,12 @@ const ContractsLoader = {
           var machineContract = {};
 
           machineContract.wsContract = new wsProvider.eth.Contract(
-            Machine.abi,
+            abi,
             contractAddress
           );
 
           machineContract.metaMaskContract = new web3.eth.Contract(
-            Machine.abi,
+            abi,
             contractAddress
           );
 

@@ -95,13 +95,11 @@ class AuthorizedParties extends React.Component {
                     {"No Authorized Parities."}
                   </div>
                 ) : (
-                  <Table>
+                  <Table className="table-vcenter">
                     <Table.Header>
                       <Table.Row>
                         <Table.ColHeader>Name</Table.ColHeader>
-                        <Table.ColHeader>Address</Table.ColHeader>
                         <Table.ColHeader>Type</Table.ColHeader>
-
                         <Table.ColHeader></Table.ColHeader>
                       </Table.Row>
                     </Table.Header>
@@ -113,7 +111,6 @@ class AuthorizedParties extends React.Component {
                               address={this.state.list[i].address}
                             />
                           </Table.Col>
-                          <Table.Col>{this.state.list[i].address}</Table.Col>
                           <Table.Col>{this.state.list[i].type}</Table.Col>
                           <Table.Col>
                             <Button

@@ -3,20 +3,38 @@ import { Link } from "react-router-dom";
 
 import { Table, Grid, Card, Dimmer } from "tabler-react";
 
+function getContractDynamicInfo() {
+  return [
+    {
+      methodName: "getProcessesCount",
+      infoName: "Process Instance Count",
+      postfix: "Instances",
+    },
+    {
+      methodName: "getNumberOfMachines",
+      infoName: "Number of Machines",
+      postfix: "Machines",
+    },
+    {
+      methodName: "getNumberOfSteps",
+      infoName: "Number of Steps",
+      postfix: "Steps",
+    },
+  ];
+}
+
 class ProcessInfo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      info: props.staticInfo,
+      info: [],
       loading: true,
     };
   }
 
   getProcessInfo() {
-    var ProcessContract = this.props.contracts[this.props.process];
-
-    this.props.dynamicInfo.forEach((element) => {
-      ProcessContract.methods[element.methodName]()
+    getContractDynamicInfo().forEach((element) => {
+      this.props.ProcessContract.methods[element.methodName]()
         .call()
         .then((result) => {
           var newInfo = {};
@@ -59,7 +77,9 @@ class ProcessInfo extends React.Component {
                     <Table.Header>
                       <Table.Row>
                         <Table.ColHeader>Info Name</Table.ColHeader>
-                        <Table.ColHeader>Info Value</Table.ColHeader>
+                        <Table.ColHeader alignContent="center">
+                          Info Value
+                        </Table.ColHeader>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -67,7 +87,7 @@ class ProcessInfo extends React.Component {
                         <Table.Row key={this.state.info[i].infoName}>
                           <Table.Col>{this.state.info[i].infoName}</Table.Col>
                           {this.state.info[i].link && (
-                            <Table.Col>
+                            <Table.Col alignContent="center">
                               <Link
                                 to={this.state.info[i].link}
                                 target="_blank"
@@ -77,7 +97,7 @@ class ProcessInfo extends React.Component {
                             </Table.Col>
                           )}
                           {!this.state.info[i].link && (
-                            <Table.Col>
+                            <Table.Col alignContent="center">
                               {this.state.info[i].infoValue}
                             </Table.Col>
                           )}

@@ -19,7 +19,7 @@ class MachineInfo extends React.Component {
     newState.info = [];
     this.setState(newState);
 
-    this.props.MachineContract.methods["getMachineID"]()
+    this.props.MachineContract.methods["getMachineDID"]()
       .call()
       .then((result) => {
         this.setState((state, props) => {
@@ -149,7 +149,7 @@ class MachineInfo extends React.Component {
                 {this.state.info.length === 0 ? (
                   <div className="emptyListStatus">{"No Machine Info."}</div>
                 ) : (
-                  <Table>
+                  <Table className="table-vcenter">
                     <Table.Header>
                       <Table.Row>
                         <Table.ColHeader>Info Name</Table.ColHeader>

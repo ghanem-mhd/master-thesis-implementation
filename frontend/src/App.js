@@ -10,8 +10,8 @@ import SiteWrapper from "./pages/SiteWrapper.react";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Product from "./pages/product/Product";
 
-import SupplyingProcess from "./pages/process/SupplyingProcess";
-import ProductionProcess from "./pages/process/ProductionProcess";
+import ProcessesRegistry from "./pages/process/ProcessesRegistry";
+import Process from "./pages/process/Process";
 import ProcessInstances from "./pages/process/ProcessInstances";
 
 import CreateProduct from "./pages/product/CreateProduct";
@@ -150,11 +150,11 @@ class App extends React.Component {
               <Route exact path="/product">
                 <Product />
               </Route>
-              <Route exact path="/supplying-process">
-                <SupplyingProcess />
+              <Route exact path="/processes">
+                <ProcessesRegistry />
               </Route>
-              <Route exact path="/production-process">
-                <ProductionProcess />
+              <Route exact path="/process/:address">
+                <Process />
               </Route>
               <Route exact path="/:process/instances">
                 <ProcessInstances />

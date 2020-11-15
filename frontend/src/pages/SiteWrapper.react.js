@@ -72,22 +72,10 @@ const navBarItems: Array<navItem> = [
   {
     value: "Processes",
     icon: "server",
-    subItems: [
-      {
-        value: "Supplying",
-        to: "/supplying-process",
-        LinkComponent: withRouter(({ staticContext, ...props }) => {
-          return <NavLink {...props} />;
-        }),
-      },
-      {
-        value: "Production",
-        to: "/production-process",
-        LinkComponent: withRouter(({ staticContext, ...props }) => {
-          return <NavLink {...props} />;
-        }),
-      },
-    ],
+    to: "/processes",
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
   },
   {
     value: "Resolver",

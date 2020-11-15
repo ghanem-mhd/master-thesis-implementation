@@ -30,7 +30,7 @@ class StartProcess extends React.Component {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        this.props.contract.methods[this.props.methodName](productDID)
+        this.props.ProcessContract.methods["startProcess"](productDID)
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,
