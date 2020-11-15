@@ -5,13 +5,13 @@ const ProviderManager = require("./providers-manager");
 const Logger = require("./logger");
 
 const transactionOption = {
-  from: process.env.MANUFACTURER_ADDRESS,
+  from: process.env.PROCESS_OWNER_ADDRESS,
   gas: process.env.DEFAULT_GAS,
 };
 
-var manufacturerProvider = ProviderManager.getHttpProvider(
+var processOwnerProvider = ProviderManager.getHttpProvider(
   process.env.NETWORK,
-  process.env.MANUFACTURER_PK
+  process.env.PROCESS_OWNER_PK
 );
 var productOwnerProvider = ProviderManager.getHttpProvider(
   process.env.NETWORK,
@@ -19,10 +19,10 @@ var productOwnerProvider = ProviderManager.getHttpProvider(
 );
 
 var contractsAsyncGets = [
-  ContractsManager.getTruffleContract(manufacturerProvider, "VGR"),
-  ContractsManager.getTruffleContract(manufacturerProvider, "HBW"),
-  ContractsManager.getTruffleContract(manufacturerProvider, "MPO"),
-  ContractsManager.getTruffleContract(manufacturerProvider, "SLD"),
+  ContractsManager.getTruffleContract(processOwnerProvider, "VGR"),
+  ContractsManager.getTruffleContract(processOwnerProvider, "HBW"),
+  ContractsManager.getTruffleContract(processOwnerProvider, "MPO"),
+  ContractsManager.getTruffleContract(processOwnerProvider, "SLD"),
   ContractsManager.getTruffleContract(productOwnerProvider, "Product"),
 ];
 

@@ -23,7 +23,7 @@ class SupplyingProcessClient {
     );
     this.provider = ProviderManager.getHttpProvider(
       process.env.NETWORK,
-      process.env.MANUFACTURER_PK
+      process.env.PROCESS_OWNER_PK
     );
     this.address = this.provider.addresses[0];
   }

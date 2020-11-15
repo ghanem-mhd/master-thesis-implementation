@@ -19,9 +19,9 @@ var machineOwnerProvider = ProviderManager.getHttpProvider(
   process.env.MACHINE_OWNER_PK
 );
 
-var manufacturerProvider = ProviderManager.getHttpProvider(
+var processOwnerProvider = ProviderManager.getHttpProvider(
   process.env.NETWORK,
-  process.env.MANUFACTURER_PK
+  process.env.PROCESS_OWNER_PK
 );
 
 var contractsAsyncGets = [
@@ -29,9 +29,9 @@ var contractsAsyncGets = [
   ContractsManager.getTruffleContract(machineOwnerProvider, "HBW"),
   ContractsManager.getTruffleContract(machineOwnerProvider, "MPO"),
   ContractsManager.getTruffleContract(machineOwnerProvider, "SLD"),
-  ContractsManager.getTruffleContract(manufacturerProvider, "SupplyingProcess"),
+  ContractsManager.getTruffleContract(processOwnerProvider, "SupplyingProcess"),
   ContractsManager.getTruffleContract(
-    manufacturerProvider,
+    processOwnerProvider,
     "ProductionProcess"
   ),
   ContractsManager.getTruffleContract(productOwnerProvider, "Product"),
@@ -78,10 +78,10 @@ Promise.all(contractsAsyncGets)
       Logger.info("Fund SLD " + receipt.transactionHash);
       receipt = await web3.eth.sendTransaction({
         from: adminProvider.addresses[0],
-        to: process.env.MANUFACTURER_ADDRESS,
+        to: process.env.PROCESS_OWNER_ADDRESS,
         value: web3.utils.toWei("100", "ether"),
       });
-      Logger.info("Fund Manufacturer " + receipt.transactionHash);
+      Logger.info("Fund Process Owner " + receipt.transactionHash);
       receipt = await web3.eth.sendTransaction({
         from: adminProvider.addresses[0],
         to: process.env.MAINTAINER_ADDRESS,
@@ -114,16 +114,8 @@ Promise.all(contractsAsyncGets)
         })
       );
       Logger.info("createProduct " + receipt.transactionHash);
-      receipt = await Helper.sendTransaction(
-        productContract.authorizeManufacturer(
-          process.env.MANUFACTURER_ADDRESS,
-          process.env.DUMMY_PRODUCT,
-          { from: process.env.PRODUCT_OWNER_ADDRESS }
-        )
-      );
-      Logger.info("authorizeManufacturer " + receipt.transactionHash);
     } catch (error) {
-      Logger.error(error.message);
+      Logger.logError(error, "Seed");
     } finally {
       Logger.info("Product seeding finished");
     }
@@ -132,30 +124,30 @@ Promise.all(contractsAsyncGets)
       Logger.info("SupplyingProcess seeding started");
       receipt = await Helper.sendTransaction(
         supplyingProcessContract.setMachineAddress(1, VGRContract.address, {
-          from: manufacturerProvider.addresses[0],
+          from: processOwnerProvider.addresses[0],
         })
       );
       Logger.info("setVGRContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         supplyingProcessContract.setMachineAddress(2, HBWContract.address, {
-          from: manufacturerProvider.addresses[0],
+          from: processOwnerProvider.addresses[0],
         })
       );
       Logger.info("setHBWContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
-        VGRContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {
+        VGRContract.authorizeProcess(supplyingProcessContract.address, {
           from: machineOwnerProvider.addresses[0],
         })
       );
-      Logger.info("authorizeManufacturer1 " + receipt.transactionHash);
+      Logger.info("authorizeProcess1 " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
-        HBWContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {
+        HBWContract.authorizeProcess(supplyingProcessContract.address, {
           from: machineOwnerProvider.addresses[0],
         })
       );
-      Logger.info("authorizeManufacturer2 " + receipt.transactionHash);
+      Logger.info("authorizeProcess2 " + receipt.transactionHash);
     } catch (error) {
-      Logger.error(error.message);
+      Logger.logError(error, "Seed");
     } finally {
       Logger.info("SupplyingProcess seeding finished");
     }
@@ -164,40 +156,54 @@ Promise.all(contractsAsyncGets)
       Logger.info("ProductionProcess seeding started");
       receipt = await Helper.sendTransaction(
         productionProcessContract.setMachineAddress(1, HBWContract.address, {
-          from: manufacturerProvider.addresses[0],
+          from: processOwnerProvider.addresses[0],
         })
       );
       Logger.info("setHBWContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         productionProcessContract.setMachineAddress(2, VGRContract.address, {
-          from: manufacturerProvider.addresses[0],
+          from: processOwnerProvider.addresses[0],
         })
       );
       Logger.info("setVGRContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         productionProcessContract.setMachineAddress(3, MPOContract.address, {
-          from: manufacturerProvider.addresses[0],
+          from: processOwnerProvider.addresses[0],
         })
       );
       Logger.info("setMPOContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
         productionProcessContract.setMachineAddress(4, SLDContract.address, {
-          from: manufacturerProvider.addresses[0],
+          from: processOwnerProvider.addresses[0],
         })
       );
       Logger.info("setSLDContractAddress " + receipt.transactionHash);
+
       receipt = await Helper.sendTransaction(
-        MPOContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {
+        VGRContract.authorizeProcess(productionProcessContract.address, {
           from: machineOwnerProvider.addresses[0],
         })
       );
-      Logger.info("authorizeManufacturer1 " + receipt.transactionHash);
+      Logger.info("authorizeProcess1 " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
-        SLDContract.authorizeManufacturer(process.env.MANUFACTURER_ADDRESS, {
+        HBWContract.authorizeProcess(productionProcessContract.address, {
           from: machineOwnerProvider.addresses[0],
         })
       );
-      Logger.info("authorizeManufacturer2 " + receipt.transactionHash);
+      Logger.info("authorizeProcess2 " + receipt.transactionHash);
+      receipt = await Helper.sendTransaction(
+        MPOContract.authorizeProcess(productionProcessContract.address, {
+          from: machineOwnerProvider.addresses[0],
+        })
+      );
+      Logger.info("authorizeProcess3 " + receipt.transactionHash);
+      receipt = await Helper.sendTransaction(
+        SLDContract.authorizeProcess(productionProcessContract.address, {
+          from: machineOwnerProvider.addresses[0],
+        })
+      );
+      Logger.info("authorizeProcess4 " + receipt.transactionHash);
+
       receipt = await Helper.sendTransaction(
         VGRContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {
           from: machineOwnerProvider.addresses[0],
@@ -223,7 +229,7 @@ Promise.all(contractsAsyncGets)
       );
       Logger.info("authorizeMaintainer4 " + receipt.transactionHash);
     } catch (error) {
-      Logger.error(error.message);
+      Logger.logError(error, "Seed");
     } finally {
       Logger.info("ProductionProcess seeding finished");
     }
@@ -317,7 +323,7 @@ Promise.all(contractsAsyncGets)
       receipt = await Helper.sendTransaction(
         registryContract.registerName(
           "Process Owner",
-          process.env.MANUFACTURER_ADDRESS,
+          process.env.PROCESS_OWNER_ADDRESS,
           {
             from: adminProvider.addresses[0],
           }
@@ -347,7 +353,7 @@ Promise.all(contractsAsyncGets)
       );
       Logger.info("Register product owner address " + receipt.transactionHash);
     } catch (error) {
-      Logger.error(error.message);
+      Logger.logError(error, "Seed");
     } finally {
       Logger.info("Registry seeding finished");
     }
