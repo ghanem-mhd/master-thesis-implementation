@@ -61,8 +61,8 @@ contract Product is Ownable {
     }
 
     modifier onlyAuthorizeMachine(address productDID){
-        require(productsAuthorizedMachines[productDID] != address(0) &&
-        (tx.origin == productsAuthorizedMachines[productDID]),
+        require( (tx.origin == productsOwners[productDID]) ||
+        ( productsAuthorizedMachines[productDID] != address(0) && (tx.origin == productsAuthorizedMachines[productDID])),
         "Only authorize machine can call this function.");
         _;
     }
