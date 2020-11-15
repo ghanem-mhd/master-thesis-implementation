@@ -35,6 +35,7 @@ var contractsAsyncGets = [
     "ProductionProcess"
   ),
   ContractsManager.getTruffleContract(productOwnerProvider, "Product"),
+  ContractsManager.getTruffleContract(adminProvider, "Registry"),
 ];
 
 Promise.all(contractsAsyncGets)
@@ -46,6 +47,7 @@ Promise.all(contractsAsyncGets)
     var supplyingProcessContract = contracts[4];
     var productionProcessContract = contracts[5];
     var productContract = contracts[6];
+    var registryContract = contracts[7];
 
     try {
       Logger.info("Funding accounts started");
@@ -129,13 +131,13 @@ Promise.all(contractsAsyncGets)
     try {
       Logger.info("SupplyingProcess seeding started");
       receipt = await Helper.sendTransaction(
-        supplyingProcessContract.setVGRContractAddress(VGRContract.address, {
+        supplyingProcessContract.setMachineAddress(1, VGRContract.address, {
           from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setVGRContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
-        supplyingProcessContract.setHBWContractAddress(HBWContract.address, {
+        supplyingProcessContract.setMachineAddress(2, HBWContract.address, {
           from: manufacturerProvider.addresses[0],
         })
       );
@@ -161,25 +163,25 @@ Promise.all(contractsAsyncGets)
     try {
       Logger.info("ProductionProcess seeding started");
       receipt = await Helper.sendTransaction(
-        productionProcessContract.setVGRContractAddress(VGRContract.address, {
-          from: manufacturerProvider.addresses[0],
-        })
-      );
-      Logger.info("setVGRContractAddress " + receipt.transactionHash);
-      receipt = await Helper.sendTransaction(
-        productionProcessContract.setHBWContractAddress(HBWContract.address, {
+        productionProcessContract.setMachineAddress(1, HBWContract.address, {
           from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setHBWContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
-        productionProcessContract.setMPOContractAddress(MPOContract.address, {
+        productionProcessContract.setMachineAddress(2, VGRContract.address, {
+          from: manufacturerProvider.addresses[0],
+        })
+      );
+      Logger.info("setVGRContractAddress " + receipt.transactionHash);
+      receipt = await Helper.sendTransaction(
+        productionProcessContract.setMachineAddress(3, MPOContract.address, {
           from: manufacturerProvider.addresses[0],
         })
       );
       Logger.info("setMPOContractAddress " + receipt.transactionHash);
       receipt = await Helper.sendTransaction(
-        productionProcessContract.setSLDContractAddress(SLDContract.address, {
+        productionProcessContract.setMachineAddress(4, SLDContract.address, {
           from: manufacturerProvider.addresses[0],
         })
       );
@@ -225,6 +227,131 @@ Promise.all(contractsAsyncGets)
     } finally {
       Logger.info("ProductionProcess seeding finished");
     }
+
+    try {
+      Logger.info("Registry seeding started");
+      receipt = await Helper.sendTransaction(
+        registryContract.registerMachine(
+          "Vacuum Gripper Robot - VGR 2020",
+          VGRContract.address,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register VGR " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerMachine(
+          "High-Bay Warehouse - HBW 2020",
+          HBWContract.address,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register HBW " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerMachine(
+          "Multi-Processing Station - MPO 2020",
+          MPOContract.address,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register MPO " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerMachine(
+          "Sorting Line - SLD 2020",
+          SLDContract.address,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register SLD " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerProcess(
+          "Supplying Process",
+          supplyingProcessContract.address,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register Supplying Process " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerProcess(
+          "Production Process - Fraunhofer FIT",
+          productionProcessContract.address,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register Production Process " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerName("Admin", process.env.ADMIN_ADDRESS, {
+          from: adminProvider.addresses[0],
+        })
+      );
+      Logger.info("Register admin address " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerName(
+          "Fischertechnik GmbH",
+          process.env.MAINTAINER_ADDRESS,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register maintainer address " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerName(
+          "Process Owner",
+          process.env.MANUFACTURER_ADDRESS,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register process owner address " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerName(
+          "Fraunhofer FIT - Machines Department",
+          process.env.MACHINE_OWNER_ADDRESS,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register machine owner address " + receipt.transactionHash);
+
+      receipt = await Helper.sendTransaction(
+        registryContract.registerName(
+          "Fraunhofer FIT - Products Department",
+          process.env.PRODUCT_OWNER_ADDRESS,
+          {
+            from: adminProvider.addresses[0],
+          }
+        )
+      );
+      Logger.info("Register product owner address " + receipt.transactionHash);
+    } catch (error) {
+      Logger.error(error.message);
+    } finally {
+      Logger.info("Registry seeding finished");
+    }
+
     process.exit(0);
   })
   .catch((error) => {
