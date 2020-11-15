@@ -17,7 +17,7 @@ const SupplyingProcessArtifact = contract.fromArtifact("SupplyingProcess");
 describe("SupplyingProcess", function () {
   const [
     Admin,
-    Manufacturer,
+    ProcessOwner,
     VGR_DID,
     HBW_DID,
     ProductDID,
@@ -28,9 +28,6 @@ describe("SupplyingProcess", function () {
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     await this.ProductContract.createProduct(ProductDID, {
-      from: ProductOwner,
-    });
-    await this.ProductContract.authorizeManufacturer(Manufacturer, ProductDID, {
       from: ProductOwner,
     });
 
@@ -47,27 +44,32 @@ describe("SupplyingProcess", function () {
       { from: Admin }
     );
     this.SupplyingProcessContract = await SupplyingProcessArtifact.new(
-      Manufacturer,
+      ProcessOwner,
       this.ProductContract.address,
       { from: Admin }
     );
 
-    this.ProcessContractAddress = this.SupplyingProcessContract.address;
-    await this.VGRContract.authorizeManufacturer(Manufacturer, {
-      from: Admin,
-    });
-    await this.HBWContract.authorizeManufacturer(Manufacturer, {
-      from: Admin,
-    });
+    await this.VGRContract.authorizeProcess(
+      this.SupplyingProcessContract.address,
+      {
+        from: Admin,
+      }
+    );
+    await this.HBWContract.authorizeProcess(
+      this.SupplyingProcessContract.address,
+      {
+        from: Admin,
+      }
+    );
     await this.SupplyingProcessContract.setMachineAddress(
       1,
       this.VGRContract.address,
-      { from: Manufacturer }
+      { from: ProcessOwner }
     );
     await this.SupplyingProcessContract.setMachineAddress(
       2,
       this.HBWContract.address,
-      { from: Manufacturer }
+      { from: ProcessOwner }
     );
   });
 
@@ -76,7 +78,7 @@ describe("SupplyingProcess", function () {
       from: ProductOwner,
     });
     receipt = await this.SupplyingProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -86,7 +88,7 @@ describe("SupplyingProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(VGR_DID);
+    expect(AuthorizedMachine).to.equal(this.VGRContract.address);
   });
 
   it("should authorize HBW when executing step 2", async function () {
@@ -94,10 +96,10 @@ describe("SupplyingProcess", function () {
       from: ProductOwner,
     });
     await this.SupplyingProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     receipt = await this.SupplyingProcessContract.step2(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -107,7 +109,7 @@ describe("SupplyingProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(HBW_DID);
+    expect(AuthorizedMachine).to.equal(this.HBWContract.address);
   });
 
   it("should authorize VGR when executing step 3", async function () {
@@ -115,13 +117,13 @@ describe("SupplyingProcess", function () {
       from: ProductOwner,
     });
     await this.SupplyingProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.SupplyingProcessContract.step2(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     receipt = await this.SupplyingProcessContract.step3(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -131,7 +133,7 @@ describe("SupplyingProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(VGR_DID);
+    expect(AuthorizedMachine).to.equal(this.VGRContract.address);
   });
 
   it("should authorize HBW when executing step 4 and check get info operations", async function () {
@@ -139,19 +141,19 @@ describe("SupplyingProcess", function () {
       from: ProductOwner,
     });
     await this.SupplyingProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.VGRContract.finishGetInfoTask(1, "1234", "white", {
       from: VGR_DID,
     });
     await this.SupplyingProcessContract.step2(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.SupplyingProcessContract.step3(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     receipt = await this.SupplyingProcessContract.step4(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -161,6 +163,6 @@ describe("SupplyingProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(HBW_DID);
+    expect(AuthorizedMachine).to.equal(this.HBWContract.address);
   });
 });

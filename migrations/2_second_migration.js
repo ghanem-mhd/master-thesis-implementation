@@ -15,12 +15,12 @@ module.exports = function (deployer) {
     await deployer.deploy(Registry);
     await deployer.deploy(
       SupplyingProcess,
-      process.env.MANUFACTURER_ADDRESS,
+      process.env.PROCESS_OWNER_ADDRESS,
       deployedProductContract.address
     );
     await deployer.deploy(
       ProductionProcess,
-      process.env.MANUFACTURER_ADDRESS,
+      process.env.PROCESS_OWNER_ADDRESS,
       deployedProductContract.address
     );
     await deployer.deploy(

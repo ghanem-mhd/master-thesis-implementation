@@ -18,7 +18,7 @@ describe("MPO_Machine", function () {
     MachineID,
     ProductDID,
     anyone,
-    Manufacturer,
+    ProcessContractAddress,
   ] = accounts;
 
   beforeEach(async function () {
@@ -30,21 +30,21 @@ describe("MPO_Machine", function () {
       this.ProductContract.address,
       { from: MPOOwner }
     );
-    await this.MPOContract.authorizeManufacturer(Manufacturer, {
+    await this.MPOContract.authorizeProcess(ProcessContractAddress, {
       from: MPOOwner,
     });
   });
 
   it("should accept a Processing task", async function () {
     receipt = await this.MPOContract.assignTask(1, ProductDID, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "Processing",
       productDID: ProductDID,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
   });
 });

@@ -16,7 +16,7 @@ describe("Product", function () {
     ProductDID1,
     ProductDID2,
     MachineDID,
-    ManufacturerDID,
+    ProcessContractAddress,
     NotOwner,
   ] = accounts;
 
@@ -50,56 +50,52 @@ describe("Product", function () {
     expect(AcutalProductCount.toString()).to.equal("2");
   });
 
-  it("should let owner authorize a manufacturer", async function () {
+  it("should let owner authorize a process", async function () {
     await this.ProductContract.createProduct(ProductDID1, { from: Owner });
-    await this.ProductContract.authorizeManufacturer(
-      ManufacturerDID,
+    await this.ProductContract.authorizeProcess(
+      ProcessContractAddress,
       ProductDID1,
       { from: Owner }
     );
-    AuthorizedManufacturer = await this.ProductContract.getAuthorizeManufacturer(
-      ProductDID1
-    );
-    expect(AuthorizedManufacturer).to.equal(ManufacturerDID);
+    result = await this.ProductContract.getAuthorizeProcess(ProductDID1);
+    expect(result).to.equal(ProcessContractAddress);
   });
 
-  it("should revert when non owner authorize a manufacturer", async function () {
+  it("should revert when non owner authorize a process", async function () {
     await this.ProductContract.createProduct(ProductDID1, { from: Owner });
-    receipt = this.ProductContract.authorizeManufacturer(
-      ManufacturerDID,
+    receipt = this.ProductContract.authorizeProcess(
+      ProcessContractAddress,
       ProductDID1,
       { from: NotOwner }
     );
     await expectRevert(receipt, "Only product owner can call this function.");
   });
 
-  it("should unauthorize a manufacturer", async function () {
+  it("should unauthorize a process", async function () {
     await this.ProductContract.createProduct(ProductDID1, { from: Owner });
-    await this.ProductContract.unauthorizeCurrentManufacturer(ProductDID1, {
+    await this.ProductContract.unauthorizeCurrentProcess(ProductDID1, {
       from: Owner,
     });
-    AuthorizedManufacturer = await this.ProductContract.getAuthorizeManufacturer(
-      ProductDID1
-    );
-    expect(AuthorizedManufacturer).to.equal(constants.ZERO_ADDRESS);
+    result = await this.ProductContract.getAuthorizeProcess(ProductDID1);
+    expect(result).to.equal(constants.ZERO_ADDRESS);
     receipt = this.ProductContract.authorizeMachine(MachineDID, ProductDID1, {
-      from: ManufacturerDID,
+      from: ProcessContractAddress,
     });
     await expectRevert(
       receipt,
-      "Only authorize manufacturer can call this function."
+      "Only authorize process can call this function."
     );
   });
 
-  it("should let the authorized manufacturer to authorize a machine", async function () {
+  it("should let the authorized process to authorize a machine", async function () {
     await this.ProductContract.createProduct(ProductDID1, { from: Owner });
-    await this.ProductContract.authorizeManufacturer(
-      ManufacturerDID,
+    await this.ProductContract.authorizeProcess(
+      ProcessContractAddress,
       ProductDID1,
       { from: Owner }
     );
     await this.ProductContract.authorizeMachine(MachineDID, ProductDID1, {
-      from: ManufacturerDID,
+      from: ProcessContractAddress,
     });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID1
@@ -107,14 +103,14 @@ describe("Product", function () {
     expect(AuthorizedMachine).to.equal(MachineDID);
   });
 
-  it("should revert when non owner authorized manufacturer authorize a machine", async function () {
+  it("should revert when non owner authorized process authorize a machine", async function () {
     await this.ProductContract.createProduct(ProductDID1, { from: Owner });
     receipt = this.ProductContract.authorizeMachine(MachineDID, ProductDID1, {
-      from: ManufacturerDID,
+      from: ProcessContractAddress,
     });
     await expectRevert(
       receipt,
-      "Only authorize manufacturer can call this function."
+      "Only authorize process can call this function."
     );
   });
 

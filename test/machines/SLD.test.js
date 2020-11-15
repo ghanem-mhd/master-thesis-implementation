@@ -18,7 +18,8 @@ describe("SLD_Machine", function () {
     SLD_DID,
     ProductDID,
     anyone,
-    Manufacturer,
+    ProcessContractAddress,
+    ProcessOwner,
     ProductOwner,
   ] = accounts;
 
@@ -35,30 +36,34 @@ describe("SLD_Machine", function () {
       { from: SLDOwner }
     );
 
-    await this.ProductContract.authorizeMachine(SLD_DID, ProductDID, {
-      from: ProductOwner,
-    });
-    await this.SLDContract.authorizeManufacturer(Manufacturer, {
+    await this.ProductContract.authorizeMachine(
+      this.SLDContract.address,
+      ProductDID,
+      {
+        from: ProductOwner,
+      }
+    );
+    await this.SLDContract.authorizeProcess(ProcessContractAddress, {
       from: SLDOwner,
     });
   });
 
   it("should accept a Sorting task", async function () {
     receipt = await this.SLDContract.assignTask(1, ProductDID, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "Sorting",
       productDID: ProductDID,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
   });
 
   it("should save the operations of the Sorting task", async function () {
     await this.SLDContract.assignTask(1, ProductDID, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     await this.SLDContract.startTask(1, { from: SLD_DID });
     receipt = await this.SLDContract.finishSorting(1, "Pink", {
@@ -76,7 +81,7 @@ describe("SLD_Machine", function () {
       taskName: "Sorting",
       productDID: ProductDID,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
     StoredProductOperations = await this.SLDContract.getProductOperations(
       ProductDID

@@ -16,7 +16,7 @@ describe("MockMachine", function () {
     MachineDID,
     ProductDID,
     anyone,
-    Manufacturer,
+    ProcessContractAddress,
     Maintainer,
     ProductContractAddress,
   ] = accounts;
@@ -28,7 +28,7 @@ describe("MockMachine", function () {
       ProductContractAddress,
       { from: MachineOwner }
     );
-    await this.MockMachineContract.authorizeManufacturer(Manufacturer, {
+    await this.MockMachineContract.authorizeProcess(ProcessContractAddress, {
       from: MachineOwner,
     });
     await this.MockMachineContract.authorizeMaintainer(Maintainer, {
@@ -78,16 +78,16 @@ describe("MockMachine", function () {
     );
   });
 
-  it("should deauthorize manufacturer", async function () {
-    await this.MockMachineContract.deauthorizeManufacturer(Manufacturer, {
+  it("should deauthorize a process", async function () {
+    await this.MockMachineContract.deauthorizeProcess(ProcessContractAddress, {
       from: MachineOwner,
     });
     var receipt = this.MockMachineContract.assignTask(1, ProductDID, 2, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     await expectRevert(
       receipt,
-      "Only authorized manufactures can call this function."
+      "Only authorized process can call this function."
     );
   });
 
@@ -95,7 +95,7 @@ describe("MockMachine", function () {
     tasksCount = await this.MockMachineContract.getTasksCount();
     expect(tasksCount.toString()).to.equal("0");
     await this.MockMachineContract.assignTask(1, ProductDID, 2, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     tasksCount = await this.MockMachineContract.getTasksCount();
     expect(tasksCount.toString()).to.equal("1");
@@ -106,14 +106,14 @@ describe("MockMachine", function () {
       1,
       constants.ZERO_ADDRESS,
       1,
-      { from: Manufacturer }
+      { from: ProcessContractAddress }
     );
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "TaskWithoutProduct",
       productDID: constants.ZERO_ADDRESS,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
   });
 
@@ -122,7 +122,7 @@ describe("MockMachine", function () {
       1,
       constants.ZERO_ADDRESS,
       1,
-      { from: Manufacturer }
+      { from: ProcessContractAddress }
     );
     receipt = await this.MockMachineContract.startTask(1, { from: MachineDID });
     expectEvent(receipt, "TaskStarted", {
@@ -130,7 +130,7 @@ describe("MockMachine", function () {
       taskName: "TaskWithoutProduct",
       productDID: constants.ZERO_ADDRESS,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
   });
 
@@ -139,7 +139,7 @@ describe("MockMachine", function () {
       1,
       constants.ZERO_ADDRESS,
       1,
-      { from: Manufacturer }
+      { from: ProcessContractAddress }
     );
     savedTask = await this.MockMachineContract.getTask(1);
     expect(savedTask[0]).to.equal(constants.ZERO_ADDRESS);
@@ -148,7 +148,7 @@ describe("MockMachine", function () {
     expect(savedTask[5].toString()).to.equal("0");
 
     receipt = await this.MockMachineContract.assignTask(1, ProductDID, 2, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     savedTask = await this.MockMachineContract.getTask(2);
     expect(savedTask[0]).to.equal(ProductDID);
@@ -159,13 +159,13 @@ describe("MockMachine", function () {
 
   it("should save task input", async function () {
     await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     await this.MockMachineContract.saveTaskParam(
       1,
       Helper.toHex("inputName"),
       "inputValue",
-      { from: Manufacturer }
+      { from: ProcessContractAddress }
     );
     saveTaskParam = await this.MockMachineContract.getTaskInput(
       1,
@@ -176,7 +176,7 @@ describe("MockMachine", function () {
 
   it("should get task name", async function () {
     await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     taskName = await this.MockMachineContract.getTaskName(1);
     expect(taskName).to.equal("TaskWithoutProduct");
@@ -184,7 +184,7 @@ describe("MockMachine", function () {
 
   it("should emit TaskFinished event", async function () {
     await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     taskFinishedEvent = await this.MockMachineContract.finishTask(1, 2, {
       from: MachineDID,
@@ -199,7 +199,7 @@ describe("MockMachine", function () {
 
   it("only machine can finish the task", async function () {
     await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     receipt = this.MockMachineContract.finishTask(1, 2, { from: anyone });
     await expectRevert(receipt, "Only machine can call this function.");
@@ -211,7 +211,7 @@ describe("MockMachine", function () {
       constants.ZERO_ADDRESS,
       1,
       {
-        from: Manufacturer,
+        from: ProcessContractAddress,
       }
     );
     taskStatus = await this.MockMachineContract.getTaskStatus(1);
@@ -234,7 +234,7 @@ describe("MockMachine", function () {
       constants.ZERO_ADDRESS,
       1,
       {
-        from: Manufacturer,
+        from: ProcessContractAddress,
       }
     );
     taskStatus = await this.MockMachineContract.getTaskStatus(1);
@@ -317,9 +317,9 @@ describe("MockMachine", function () {
     expect(savedMaintenanceOperation[2]).to.equal("Maintenance description");
   });
 
-  it("should getAuthorizedManufacturers", async function () {
-    var receipt = await this.MockMachineContract.getAuthorizedManufacturers();
-    expect(receipt[0]).to.equal(Manufacturer);
+  it("should getAuthorizedProcesses", async function () {
+    var receipt = await this.MockMachineContract.getAuthorizedProcesses();
+    expect(receipt[0]).to.equal(ProcessContractAddress);
   });
 
   it("should getAuthorizedMaintainers", async function () {

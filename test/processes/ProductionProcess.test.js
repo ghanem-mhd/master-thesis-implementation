@@ -24,16 +24,13 @@ describe("ProductionProcess", function () {
     SLD_DID,
     MPO_DID,
     ProductDID,
-    Manufacturer,
+    ProcessOwner,
     ProductOwner,
   ] = accounts;
 
   beforeEach(async function () {
     this.ProductContract = await ProductArtifact.new({ from: Admin });
     await this.ProductContract.createProduct(ProductDID, {
-      from: ProductOwner,
-    });
-    await this.ProductContract.authorizeManufacturer(Manufacturer, ProductDID, {
       from: ProductOwner,
     });
 
@@ -63,42 +60,54 @@ describe("ProductionProcess", function () {
     );
 
     this.ProductionProcessContract = await ProductionProcessArtifact.new(
-      Manufacturer,
+      ProcessOwner,
       this.ProductContract.address,
       { from: Admin }
     );
 
-    await this.VGRContract.authorizeManufacturer(Manufacturer, {
-      from: Admin,
-    });
-    await this.HBWContract.authorizeManufacturer(Manufacturer, {
-      from: Admin,
-    });
-    await this.MPOContract.authorizeManufacturer(Manufacturer, {
-      from: Admin,
-    });
-    await this.SLDContract.authorizeManufacturer(Manufacturer, {
-      from: Admin,
-    });
+    await this.VGRContract.authorizeProcess(
+      this.ProductionProcessContract.address,
+      {
+        from: Admin,
+      }
+    );
+    await this.HBWContract.authorizeProcess(
+      this.ProductionProcessContract.address,
+      {
+        from: Admin,
+      }
+    );
+    await this.MPOContract.authorizeProcess(
+      this.ProductionProcessContract.address,
+      {
+        from: Admin,
+      }
+    );
+    await this.SLDContract.authorizeProcess(
+      this.ProductionProcessContract.address,
+      {
+        from: Admin,
+      }
+    );
     await this.ProductionProcessContract.setMachineAddress(
       1,
       this.HBWContract.address,
-      { from: Manufacturer }
+      { from: ProcessOwner }
     );
     await this.ProductionProcessContract.setMachineAddress(
       2,
       this.VGRContract.address,
-      { from: Manufacturer }
+      { from: ProcessOwner }
     );
     await this.ProductionProcessContract.setMachineAddress(
       3,
       this.MPOContract.address,
-      { from: Manufacturer }
+      { from: ProcessOwner }
     );
     await this.ProductionProcessContract.setMachineAddress(
       4,
       this.SLDContract.address,
-      { from: Manufacturer }
+      { from: ProcessOwner }
     );
   });
 
@@ -107,7 +116,7 @@ describe("ProductionProcess", function () {
       from: ProductOwner,
     });
     receipt = await this.ProductionProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -117,7 +126,7 @@ describe("ProductionProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(HBW_DID);
+    expect(AuthorizedMachine).to.equal(this.HBWContract.address);
     processInstance = await this.ProductionProcessContract.getProcessInstance(
       1
     );
@@ -131,10 +140,10 @@ describe("ProductionProcess", function () {
       from: ProductOwner,
     });
     await this.ProductionProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     receipt = await this.ProductionProcessContract.step2(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -144,7 +153,7 @@ describe("ProductionProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(VGR_DID);
+    expect(AuthorizedMachine).to.equal(this.VGRContract.address);
     processInstance = await this.ProductionProcessContract.getProcessInstance(
       1
     );
@@ -158,13 +167,13 @@ describe("ProductionProcess", function () {
       from: ProductOwner,
     });
     await this.ProductionProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.ProductionProcessContract.step2(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     receipt = await this.ProductionProcessContract.step3(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -174,7 +183,7 @@ describe("ProductionProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(MPO_DID);
+    expect(AuthorizedMachine).to.equal(this.MPOContract.address);
     processInstance = await this.ProductionProcessContract.getProcessInstance(
       1
     );
@@ -188,16 +197,16 @@ describe("ProductionProcess", function () {
       from: ProductOwner,
     });
     await this.ProductionProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.ProductionProcessContract.step2(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.ProductionProcessContract.step3(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     receipt = await this.ProductionProcessContract.step4(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
@@ -207,7 +216,7 @@ describe("ProductionProcess", function () {
       productDID: ProductDID,
       step: "4",
     });
-    expect(AuthorizedMachine).to.equal(SLD_DID);
+    expect(AuthorizedMachine).to.equal(this.SLDContract.address);
     processInstance = await this.ProductionProcessContract.getProcessInstance(
       1
     );
@@ -221,18 +230,18 @@ describe("ProductionProcess", function () {
       from: ProductOwner,
     });
     await this.ProductionProcessContract.step1(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.ProductionProcessContract.step2(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     await this.ProductionProcessContract.step3(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
-    await this.ProductionProcessContract.step4(1, { from: Manufacturer });
+    await this.ProductionProcessContract.step4(1, { from: ProcessOwner });
     await this.SLDContract.finishSorting(1, "white", { from: SLD_DID });
     receipt = await this.ProductionProcessContract.step5(1, {
-      from: Manufacturer,
+      from: ProcessOwner,
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
@@ -242,7 +251,7 @@ describe("ProductionProcess", function () {
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(VGR_DID);
+    expect(AuthorizedMachine).to.equal(this.VGRContract.address);
     processInstance = await this.ProductionProcessContract.getProcessInstance(
       1
     );

@@ -56,7 +56,7 @@ abstract contract Process is Ownable {
     Product productContract;
 
     function startProcess(address productDID) public returns(uint256) {
-        require (_msgSender() == productContract.getProductOwner(productDID), "Only product owner can call this function.");
+        productContract.authorizeProcess(address(this), productDID);
         processesCounter.increment();
         uint processID = processesCounter.current();
 
@@ -119,7 +119,7 @@ abstract contract Process is Ownable {
 
     function authorizeMachine(uint machineNumber, uint processID) public   {
         address productDID  = getProductDID(processID);
-        productContract.authorizeMachine(getMachineDID(machineNumber), productDID);
+        productContract.authorizeMachine(getMachineAddress(machineNumber), productDID);
     }
 
     function unauthorizeCurrentMachine(uint processID) public {

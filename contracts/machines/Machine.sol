@@ -32,8 +32,8 @@ abstract contract Machine is Ownable {
         _;
     }
 
-    modifier onlyManufacturer(){
-        require( manufacturers.exists(tx.origin) || (tx.origin == machineOwner)  , "Only authorized manufactures can call this function.");
+    modifier onlyProcess(){
+        require( authorizedProcesses.exists(_msgSender()) || (_msgSender() == machineOwner)  , "Only authorized process can call this function.");
         _;
     }
 
@@ -91,7 +91,7 @@ abstract contract Machine is Ownable {
         bytes32[] paramsNames;
         uint processID;
         address processContractAddress;
-        address manufacturer;
+        address processOwner;
         TaskStatus status;
     }
     // counter to generate new task id
@@ -110,7 +110,7 @@ abstract contract Machine is Ownable {
         address productDID,
         uint processID,
         address processContractAddress,
-        address manufacturer);
+        address processOwner);
     // To notifiy others that a task has been started
     event TaskStarted(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
     // To notifiy others that a task has been finished
@@ -119,7 +119,7 @@ abstract contract Machine is Ownable {
     event TaskKilled(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
 
     // Tasks Methods
-    function assignTask(uint processID, address productDID, uint taskType) public virtual onlyManufacturer returns (uint){
+    function assignTask(uint processID, address productDID, uint taskType) public virtual onlyProcess returns (uint){
         taskIDCounter.increment();
         uint newtaskID = taskIDCounter.current();
         tasksIds.insert(newtaskID);
@@ -127,7 +127,7 @@ abstract contract Machine is Ownable {
         task.taskName               = getTaskTypeName(taskType);
         task.productDID             = productDID;
         task.processID              = processID;
-        task.manufacturer           = tx.origin;
+        task.processOwner           = tx.origin;
         task.processContractAddress = _msgSender();
         task.status                 = TaskStatus.Assinged;
         if(productDID != address(0)){
@@ -164,7 +164,7 @@ abstract contract Machine is Ownable {
         emit TaskKilled(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
     }
 
-    function saveTaskParam(uint taskID, bytes32 inputName, string memory inputValue) public taskExists(taskID) onlyManufacturer {
+    function saveTaskParam(uint taskID, bytes32 inputName, string memory inputValue) public taskExists(taskID) onlyProcess {
         tasks[taskID].params[inputName] = inputValue;
         tasks[taskID].paramsNames.push(inputName);
     }
@@ -389,21 +389,20 @@ abstract contract Machine is Ownable {
         return maintenanceOperationsIds.count();
     }
 
-    // Manufacturers Methods
-    AddressSet.Set private manufacturers; // set of allowed manufacturers to interact with this machine
+    AddressSet.Set private authorizedProcesses;
 
-    function authorizeManufacturer(address manufacturerAddress) public onlyMachineOwner {
-        require(!manufacturers.exists(manufacturerAddress), "Manufacturer already exist.");
-        manufacturers.insert(manufacturerAddress);
+    function authorizeProcess(address processContractAddress) public onlyMachineOwner {
+        require(!authorizedProcesses.exists(processContractAddress), "Process already exist.");
+        authorizedProcesses.insert(processContractAddress);
     }
 
-    function deauthorizeManufacturer(address manufacturerAddress) public onlyMachineOwner {
-        require(manufacturers.exists(manufacturerAddress), "Manufacturer doesn't exist.");
-        manufacturers.remove(manufacturerAddress);
+    function deauthorizeProcess(address processContractAddress) public onlyMachineOwner {
+        require(authorizedProcesses.exists(processContractAddress), "Process doesn't exist.");
+        authorizedProcesses.remove(processContractAddress);
     }
 
-    function getAuthorizedManufacturers() public view returns (address [] memory) {
-        return manufacturers.keyList;
+    function getAuthorizedProcesses() public view returns (address [] memory) {
+        return authorizedProcesses.keyList;
     }
 
     // Maintainers Methods

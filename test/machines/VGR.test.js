@@ -18,7 +18,7 @@ describe("VGR_Machine", function () {
     MachineDID,
     ProductDID,
     anyone,
-    Manufacturer,
+    ProcessContractAddress,
     ProductOwner,
   ] = accounts;
 
@@ -35,30 +35,34 @@ describe("VGR_Machine", function () {
       { from: VGROwner }
     );
 
-    await this.ProductContract.authorizeMachine(MachineDID, ProductDID, {
-      from: ProductOwner,
-    });
-    await this.VGRContract.authorizeManufacturer(Manufacturer, {
+    await this.ProductContract.authorizeMachine(
+      this.VGRContract.address,
+      ProductDID,
+      {
+        from: ProductOwner,
+      }
+    );
+    await this.VGRContract.authorizeProcess(ProcessContractAddress, {
       from: VGROwner,
     });
   });
 
   it("should accept a GetInfo task", async function () {
     receipt = await this.VGRContract.assignTask(1, ProductDID, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "GetInfo",
       productDID: ProductDID,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
   });
 
   it("should save the operation of the GetInfo task", async function () {
     receipt = await this.VGRContract.assignTask(1, ProductDID, 1, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     await this.VGRContract.startTask(1, { from: MachineDID });
     receipt = await this.VGRContract.finishGetInfoTask(1, "123", "White", {
@@ -101,27 +105,27 @@ describe("VGR_Machine", function () {
 
   it("should accept a DropToHBW task", async function () {
     receipt = await this.VGRContract.assignTask(1, ProductDID, 2, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "DropToHBW",
       productDID: ProductDID,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
   });
 
   it("should accept a MoveHBW2MPO task", async function () {
     receipt = await this.VGRContract.assignTask(1, ProductDID, 4, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "MoveHBW2MPO",
       productDID: ProductDID,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
   });
 
@@ -134,14 +138,14 @@ describe("VGR_Machine", function () {
       { from: ProductOwner }
     );
     receipt = await this.VGRContract.assignTask(1, ProductDID, 3, {
-      from: Manufacturer,
+      from: ProcessContractAddress,
     });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "PickSorted",
       productDID: ProductDID,
       processID: "1",
-      processContractAddress: Manufacturer,
+      processContractAddress: ProcessContractAddress,
     });
     StoredInputValue = await this.VGRContract.getTaskInput(
       1,

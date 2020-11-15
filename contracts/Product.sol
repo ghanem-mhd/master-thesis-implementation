@@ -32,7 +32,7 @@ contract Product is Ownable {
     UintSet.Set private operationsIds;
 
     mapping (address => address) private productsOwners;
-    mapping (address => address) private productsAuthorizedManufacturers;
+    mapping (address => address) private productsAuthorizedProcesses;
     mapping (address => address) private productsAuthorizedMachines;
 
     mapping (uint => Operation) private operations;
@@ -53,16 +53,16 @@ contract Product is Ownable {
         _;
     }
 
-    modifier onlyAuthorizeManufacturerOrOwner(address productDID){
-        require( (tx.origin == productsOwners[productDID]) ||
-        (productsAuthorizedManufacturers[productDID] != address(0) && (tx.origin == productsAuthorizedManufacturers[productDID])),
-        "Only authorize manufacturer can call this function.");
+    modifier onlyAuthorizeProcessOrOwner(address productDID){
+        require( (_msgSender() == productsOwners[productDID]) ||
+        (productsAuthorizedProcesses[productDID] != address(0) && (_msgSender() == productsAuthorizedProcesses[productDID])),
+        "Only authorize process can call this function.");
         _;
     }
 
     modifier onlyAuthorizeMachine(address productDID){
-        require( (tx.origin == productsOwners[productDID]) ||
-        ( productsAuthorizedMachines[productDID] != address(0) && (tx.origin == productsAuthorizedMachines[productDID])),
+        require( (_msgSender() == productsOwners[productDID]) ||
+        ( productsAuthorizedMachines[productDID] != address(0) && (_msgSender() == productsAuthorizedMachines[productDID])),
         "Only authorize machine can call this function.");
         _;
     }
@@ -82,23 +82,23 @@ contract Product is Ownable {
         return productsCreationTime[productDID];
     }
 
-    function authorizeManufacturer(address manufacturerDID, address productDID) public productExists(productDID) onlyProductOwner(productDID)  {
-        productsAuthorizedManufacturers[productDID] = manufacturerDID;
+    function authorizeProcess(address processContractAddress, address productDID) public productExists(productDID) onlyProductOwner(productDID)  {
+        productsAuthorizedProcesses[productDID] = processContractAddress;
     }
 
-    function unauthorizeCurrentManufacturer(address productDID) public productExists(productDID) onlyProductOwner(productDID) {
-        productsAuthorizedManufacturers[productDID] = address(0);
+    function unauthorizeCurrentProcess(address productDID) public productExists(productDID) onlyProductOwner(productDID) {
+        productsAuthorizedProcesses[productDID] = address(0);
     }
 
-    function getAuthorizeManufacturer(address productDID) public productExists(productDID) view returns(address){
-        return productsAuthorizedManufacturers[productDID];
+    function getAuthorizeProcess(address productDID) public productExists(productDID) view returns(address){
+        return productsAuthorizedProcesses[productDID];
     }
 
-    function authorizeMachine(address machineDID, address productDID) public productExists(productDID) onlyAuthorizeManufacturerOrOwner(productDID)  {
+    function authorizeMachine(address machineDID, address productDID) public productExists(productDID) onlyAuthorizeProcessOrOwner(productDID)  {
         productsAuthorizedMachines[productDID] = machineDID;
     }
 
-    function unauthorizeCurrentMachine(address productDID) public productExists(productDID) onlyAuthorizeManufacturerOrOwner(productDID) {
+    function unauthorizeCurrentMachine(address productDID) public productExists(productDID) onlyAuthorizeProcessOrOwner(productDID) {
         productsAuthorizedMachines[productDID] = address(0);
     }
 
