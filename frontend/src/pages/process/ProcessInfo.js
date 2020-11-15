@@ -39,7 +39,8 @@ class ProcessInfo extends React.Component {
         .then((result) => {
           var newInfo = {};
           if (element.methodName === "getProcessesCount") {
-            newInfo.link = "/" + this.props.process + "/instances";
+            newInfo.link =
+              "/process/" + this.props.ProcessContract._address + "/instances";
           }
           newInfo.infoName = element.infoName;
           if (element.postfix) {
@@ -88,10 +89,7 @@ class ProcessInfo extends React.Component {
                           <Table.Col>{this.state.info[i].infoName}</Table.Col>
                           {this.state.info[i].link && (
                             <Table.Col alignContent="center">
-                              <Link
-                                to={this.state.info[i].link}
-                                target="_blank"
-                              >
+                              <Link to={this.state.info[i].link}>
                                 {this.state.info[i].infoValue}
                               </Link>
                             </Table.Col>

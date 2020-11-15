@@ -156,7 +156,7 @@ class App extends React.Component {
               <Route exact path="/process/:address">
                 <Process />
               </Route>
-              <Route exact path="/:process/instances">
+              <Route exact path="/process/:address/instances">
                 <ProcessInstances />
               </Route>
               <Route exact path="/create-product">

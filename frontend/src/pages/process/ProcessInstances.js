@@ -2,9 +2,12 @@ import React from "react";
 
 import { withRouter } from "react-router";
 
-import { Table, Grid, Card, Page } from "tabler-react";
+import { Table, Grid, Card, Page, Dimmer } from "tabler-react";
 import Misc from "../utilities/Misc";
 import ConnectionContext from "../utilities/ConnectionContext";
+import ContractsLoader from "../utilities/ContractsLoader";
+import AddressResolver from "../utilities/AddressResolver";
+import ErrorPage from "../utilities/ErrorPage";
 
 class ProcessInstances extends React.Component {
   StatusTypes = {
@@ -18,6 +21,7 @@ class ProcessInstances extends React.Component {
     super(props);
     this.state = {
       instances: [],
+      loading: true,
     };
   }
 
@@ -32,14 +36,19 @@ class ProcessInstances extends React.Component {
     );
     processInstance.status = processInstanceResult[3];
     processInstance.currentStep = processInstanceResult[4];
+
+    if (processInstance.currentStep === -1) {
+      processInstance.currentStep = "n.a.";
+    }
+
     return processInstance;
   }
 
-  getProcessInstances() {
-    var ProcessContract = this.contracts[this.props.match.params.process];
+  getProcessInstances(ProcessContract) {
     ProcessContract.methods["getProcessesCount"]()
       .call()
       .then((instanceCount) => {
+        this.setState({ loading: false });
         for (let instanceID = 1; instanceID <= instanceCount; instanceID++) {
           ProcessContract.methods["getProcessInstance"](instanceID)
             .call()
@@ -66,82 +75,99 @@ class ProcessInstances extends React.Component {
 
   componentDidMount() {
     document.title = "Process Instances";
-    this.getProcessInstances();
+    ContractsLoader.loadProcessContract(
+      this.web3,
+      this.props.match.params.address
+    )
+      .then((result) => {
+        this.getProcessInstances(result.metaMaskContract);
+      })
+      .catch((error) => {
+        this.setState({ fatalError: error.message });
+      });
   }
 
   render() {
+    if (this.state.fatalError) {
+      return <ErrorPage errorMessage={this.state.fatalError} />;
+    }
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
-          this.contracts = connectionContext.contracts;
           return (
             <Page.Content
-              title={this.props.match.params.process + " Instances"}
+              title={
+                <AddressResolver address={this.props.match.params.address} />
+              }
             >
-              <Grid.Row>
-                <Grid.Col>
-                  <Card>
-                    <Card.Header isFullscreenable>
-                      <Card.Title>Instances List</Card.Title>
-                    </Card.Header>
-                    <Card.Body>
-                      {this.state.instances.length === 0 ? (
-                        <div className="emptyListStatus">{"No Instances."}</div>
-                      ) : (
-                        <Table>
-                          <Table.Header>
-                            <Table.Row>
-                              <Table.ColHeader alignContent="center">
-                                ID
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Status
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Starting Time
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Finishing Time
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Current Step
-                              </Table.ColHeader>
-                              <Table.ColHeader alignContent="center">
-                                Product
-                              </Table.ColHeader>
-                            </Table.Row>
-                          </Table.Header>
-                          <Table.Body>
-                            {this.state.instances.map((instance, i) => (
-                              <Table.Row key={instance.ID}>
-                                <Table.Col alignContent="center">
-                                  {instance.ID}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {this.StatusTypes[instance.status]}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {instance.startingTime}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {instance.finishingTime}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {instance.currentStep}
-                                </Table.Col>
-                                <Table.Col alignContent="center">
-                                  {instance.productDID}
-                                </Table.Col>
+              <Dimmer active={this.state.loading} loader>
+                <Grid.Row>
+                  <Grid.Col>
+                    <Card>
+                      <Card.Header isFullscreenable>
+                        <Card.Title>Instances List</Card.Title>
+                      </Card.Header>
+                      <Card.Body>
+                        {this.state.instances.length === 0 ? (
+                          <div className="emptyListStatus">
+                            {"No Instances."}
+                          </div>
+                        ) : (
+                          <Table>
+                            <Table.Header>
+                              <Table.Row>
+                                <Table.ColHeader alignContent="center">
+                                  ID
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Status
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Starting Time
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Finishing Time
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Current Step
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Product
+                                </Table.ColHeader>
                               </Table.Row>
-                            ))}
-                          </Table.Body>
-                        </Table>
-                      )}
-                    </Card.Body>
-                  </Card>
-                </Grid.Col>
-              </Grid.Row>
+                            </Table.Header>
+                            <Table.Body>
+                              {this.state.instances.map((instance, i) => (
+                                <Table.Row key={instance.ID}>
+                                  <Table.Col alignContent="center">
+                                    {instance.ID}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {this.StatusTypes[instance.status]}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {instance.startingTime}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {instance.finishingTime}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {instance.currentStep}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {instance.productDID}
+                                  </Table.Col>
+                                </Table.Row>
+                              ))}
+                            </Table.Body>
+                          </Table>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Grid.Col>
+                </Grid.Row>
+              </Dimmer>
             </Page.Content>
           );
         }}
