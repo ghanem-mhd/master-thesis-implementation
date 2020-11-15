@@ -9,7 +9,6 @@ import ConnectionContext from "../utilities/ConnectionContext";
 import ProductDIDInput from "./ProductDIDInput";
 import ProductOperations from "./ProductOperations";
 import Misc from "../utilities/Misc";
-import AuthorizeManufacturer from "./AuthorizeManufacturer";
 import SaveProductInfo from "./SaveProductInfo";
 
 class Product extends React.Component {
@@ -25,7 +24,7 @@ class Product extends React.Component {
 
   getProductData(productDID) {
     var ProductContract = this.contracts["Product"];
-    ProductContract.methods["getAuthorizeManufacturer"](productDID)
+    ProductContract.methods["getAuthorizeProcess"](productDID)
       .call()
       .then((result) => {
         this.setState((state, props) => {
@@ -34,12 +33,12 @@ class Product extends React.Component {
             result.toString() === "0x0000000000000000000000000000000000000000"
           ) {
             product.info.push({
-              infoName: "Authorized Manufacturer",
+              infoName: "Authorized Process",
               infoValue: "None",
             });
           } else {
             product.info.push({
-              infoName: "Authorized Manufacturer",
+              infoName: "Authorized Process",
               infoValue: result,
             });
           }
@@ -214,11 +213,6 @@ class Product extends React.Component {
                     contracts={this.contracts}
                     productDID={this.state.productDID}
                   />
-                  <AuthorizeManufacturer
-                    contracts={this.contracts}
-                    web3={this.web3}
-                    productDID={this.state.productDID}
-                    updateCallback={this.updateCallback.bind(this)}
                   />
                   <SaveProductInfo
                     contracts={this.contracts}

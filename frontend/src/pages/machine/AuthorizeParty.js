@@ -14,7 +14,7 @@ class AuthorizeParty extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      party: "manufacturer",
+      party: "process",
       inputValidity: {
         partyAddress: false,
       },
@@ -33,8 +33,8 @@ class AuthorizeParty extends React.Component {
     var partyAddress = partyAddressInput.state.addressInputState.value;
 
     var methodName = null;
-    if (this.state.party.toString() === "manufacturer") {
-      methodName = "authorizeManufacturer";
+    if (this.state.party.toString() === "process") {
+      methodName = "authorizeProcess";
     } else {
       methodName = "authorizeMaintainer";
     }
@@ -83,7 +83,7 @@ class AuthorizeParty extends React.Component {
             <Card.Body>
               <Form.Group label="Party Type">
                 <Form.Select onChange={this.handleChange.bind(this)}>
-                  <option value="manufacturer">Manufacturer</option>
+                  <option value="process">Process</option>
                   <option value="maintainer">Maintainer</option>
                 </Form.Select>
               </Form.Group>

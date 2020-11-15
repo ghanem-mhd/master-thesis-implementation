@@ -14,30 +14,21 @@ class AuthorizedParties extends React.Component {
   }
 
   getAuthorizedParties() {
-    this.props.MachineContract.methods["getAuthorizedManufacturers"]()
+    this.props.MachineContract.methods["getAuthorizedProcesses"]()
       .call()
-      .then((manufacturersList) => {
-        let list = [];
-        manufacturersList.forEach((element) => {
-          list.push({
-            address: element,
-            type: "Manufacturer",
+      .then((processesList) => {
+        processesList.forEach((element) => {
+          this.setState((state, props) => {
+            return {
+              list: [
+                ...this.state.list,
+                {
+                  address: element,
+                },
+              ],
+            };
           });
         });
-        this.props.MachineContract.methods["getAuthorizedMaintainers"]()
-          .call()
-          .then((maintainersList) => {
-            maintainersList.forEach((element) => {
-              list.push({
-                address: element,
-                type: "Maintainer",
-              });
-            });
-            this.setState({ list: list });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
       })
       .catch((error) => {
         console.log(error);
@@ -52,8 +43,8 @@ class AuthorizedParties extends React.Component {
     var partyAddress = object.address;
 
     var methodName = null;
-    if (object.type.toString() === "Manufacturer") {
-      methodName = "deauthorizeManufacturer";
+    if (object.type.toString() === "Process") {
+      methodName = "deauthorizeProcess";
     } else {
       methodName = "deauthorizeMaintainer";
     }
@@ -87,19 +78,18 @@ class AuthorizedParties extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title={"Authorized Parities"} isCollapsible>
+          <Card title={"Authorized Processes"} isCollapsible>
             <Dimmer active={false}>
               <Card.Body>
                 {this.state.list.length === 0 ? (
                   <div className="emptyListStatus">
-                    {"No Authorized Parities."}
+                    {"No Authorized Processes."}
                   </div>
                 ) : (
                   <Table className="table-vcenter">
                     <Table.Header>
                       <Table.Row>
                         <Table.ColHeader>Name</Table.ColHeader>
-                        <Table.ColHeader>Type</Table.ColHeader>
                         <Table.ColHeader></Table.ColHeader>
                       </Table.Row>
                     </Table.Header>
@@ -111,7 +101,6 @@ class AuthorizedParties extends React.Component {
                               address={this.state.list[i].address}
                             />
                           </Table.Col>
-                          <Table.Col>{this.state.list[i].type}</Table.Col>
                           <Table.Col>
                             <Button
                               size="sm"
