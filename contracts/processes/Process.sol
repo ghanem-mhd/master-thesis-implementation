@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
-
+import "../../contracts/machines/Machine.sol";
 import "../../contracts/Product.sol";
 import "../../contracts/setTypes/UintSet.sol";
 import "../../contracts/setTypes/AddressSet.sol";
@@ -12,6 +12,7 @@ abstract contract Process is Ownable {
 
     using UintSet for UintSet.Set;
     using Counters for Counters.Counter;
+    using AddressSet for AddressSet.Set;
 
     constructor(address _processOwner, address _productContractAddress) public {
         processOwner = _processOwner;
@@ -27,6 +28,11 @@ abstract contract Process is Ownable {
 
     modifier processInstanceExists(uint processID){
         require(processID != 0 && processesCounter.current() >= processID, "Process doesn't exists.");
+        _;
+    }
+
+    modifier machineExists(uint machineNumber){
+        require(1 <= machineNumber &&  machineNumber <= getNumberOfMachines(), "Unknown Machine Number.");
         _;
     }
 
@@ -49,7 +55,7 @@ abstract contract Process is Ownable {
     mapping (address => uint256) private productProcessMapping;
     Product productContract;
 
-    function startProcess(address productDID) internal returns(uint256) {
+    function startProcess(address productDID) public returns(uint256) {
         require (_msgSender() == productContract.getProductOwner(productDID), "Only product owner can call this function.");
         processesCounter.increment();
         uint processID = processesCounter.current();
@@ -66,7 +72,8 @@ abstract contract Process is Ownable {
         return processID;
     }
 
-    function startStep(uint processID, address productDID, int nextStep) public processInstanceExists(processID) onlyProcessOwner() {
+    function markStepAsStarted(uint processID, int nextStep) public processInstanceExists(processID) onlyProcessOwner() {
+        address productDID  = getProductDID(processID);
         int currentStep = instances[processID].currentStep;
         require(currentStep == nextStep - 1, "Step can't be started in wrong order.");
         instances[processID].currentStep = nextStep;
@@ -110,11 +117,13 @@ abstract contract Process is Ownable {
         return processesCounter.current();
     }
 
-    function authorizeMachine(address machineContractAddress, address productDID) public {
-        productContract.authorizeMachine(machineContractAddress, productDID);
+    function authorizeMachine(uint machineNumber, uint processID) public   {
+        address productDID  = getProductDID(processID);
+        productContract.authorizeMachine(getMachineDID(machineNumber), productDID);
     }
 
-    function unauthorizeCurrentMachine(address productDID) public {
+    function unauthorizeCurrentMachine(uint processID) public {
+        address productDID  = getProductDID(processID);
         productContract.unauthorizeCurrentMachine(productDID);
     }
 
@@ -130,8 +139,30 @@ abstract contract Process is Ownable {
         return productContract.getProductOperationResult(productDID, operationName);
     }
 
+    mapping(uint => Machine) machines;
+
+    function setMachineAddress(uint machineNumber, address machineContractAddress) public machineExists(machineNumber)  {
+        machines[machineNumber] = Machine(machineContractAddress);
+    }
+
+    function getMachineAddress(uint machineNumber) public machineExists(machineNumber) view returns (address) {
+        return address(machines[machineNumber]);
+    }
+
+    function getMachineDID(uint machineNumber) public view returns (address) {
+        return machines[machineNumber].getMachineDID();
+    }
+
+    function assignTask(uint machineNumber, uint processID, uint taskType) public {
+        address productDID  = getProductDID(processID);
+        machines[machineNumber].assignTask(processID, productDID, taskType);
+    }
+
     event ProcessStepStarted(uint indexed processID, address indexed productDID, int step);
     event ProcessStarted(uint indexed processID, address indexed productDID);
     event ProcessFinished(uint indexed processID, address indexed productDID);
     event ProcessKilled(uint indexed processID, address indexed productDID);
+
+    function getNumberOfMachines() public virtual pure returns(uint);
+    function getNumberOfSteps() public virtual pure returns(uint);
 }

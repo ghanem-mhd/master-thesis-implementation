@@ -12,4 +12,12 @@ contract MockProcess is Process {
     function startMockProcess(address productDID) public {
         super.startProcess(productDID);
     }
+
+    function getNumberOfMachines() public override pure returns(uint) {
+        return 1;
+    }
+
+    function getNumberOfSteps() public override pure returns(uint) {
+        return 2;
+    }
 }

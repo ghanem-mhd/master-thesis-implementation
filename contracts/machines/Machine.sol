@@ -3,7 +3,6 @@ pragma solidity >=0.4.21 <0.7.0;
 
 import "../../contracts/Product.sol";
 import "../../contracts/setTypes/UintSet.sol";
-import "../../contracts/setTypes/StringSet.sol";
 import "../../contracts/setTypes/AddressSet.sol";
 import "../../contracts/setTypes/Bytes32Set.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -16,15 +15,15 @@ abstract contract Machine is Ownable {
     using Bytes32Set for Bytes32Set.Set;
     using AddressSet for AddressSet.Set;
 
-    constructor(address _machineOwner, address _machineID, address _productContractAddress) public {
+    constructor(address _machineOwner, address _machineDID, address _productContractAddress) public {
         machineOwner    = _machineOwner;
-        machineID       = _machineID;
+        machineDID      = _machineDID;
         productContract = Product(_productContractAddress);
     }
 
     // Modifiers
     modifier onlyMachine(){
-        require(_msgSender() == machineID, "Only machine can call this function.");
+        require(_msgSender() == machineDID, "Only machine can call this function.");
         _;
     }
 
@@ -53,14 +52,14 @@ abstract contract Machine is Ownable {
 
     // Machine Info Structure
     address public machineOwner; // the DID of machine owner
-    address public machineID;    // the DID of the machine
+    address public machineDID;    // the DID of the machine
     mapping (bytes32 => bytes32) public info; // static information about the machine
     Bytes32Set.Set private infoNames;
 
     // Machine Info Methods
 
-    function getMachineID() public view returns(address) {
-        return machineID;
+    function getMachineDID() public view returns(address) {
+        return machineDID;
     }
 
     function getMachineOwner() public view returns(address) {
@@ -120,12 +119,12 @@ abstract contract Machine is Ownable {
     event TaskKilled(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
 
     // Tasks Methods
-    function assignTask(uint processID, address productDID, string memory taskName) internal onlyManufacturer returns (uint){
+    function assignTask(uint processID, address productDID, uint taskType) public virtual onlyManufacturer returns (uint){
         taskIDCounter.increment();
         uint newtaskID = taskIDCounter.current();
         tasksIds.insert(newtaskID);
         Task storage task           = tasks[newtaskID];
-        task.taskName               = taskName;
+        task.taskName               = getTaskTypeName(taskType);
         task.productDID             = productDID;
         task.processID              = processID;
         task.manufacturer           = tx.origin;
@@ -134,7 +133,7 @@ abstract contract Machine is Ownable {
         if(productDID != address(0)){
             productsTasks[productDID].push(newtaskID);
         }
-        emit TaskAssigned(newtaskID, taskName, productDID, processID, _msgSender(), tx.origin);
+        emit TaskAssigned(newtaskID, task.taskName, productDID, processID, _msgSender(), tx.origin);
         return newtaskID;
     }
 
@@ -228,6 +227,10 @@ abstract contract Machine is Ownable {
 
     function getProductOperations(address productDID) public view returns(uint [] memory) {
         return productContract.getProductOperations(productDID);
+    }
+
+    function getProductOperationResult(address productDID, string memory operationName) public view returns (string memory) {
+        return productContract.getProductOperationResult(productDID, operationName);
     }
 
     function getProductID(uint taskID) public taskExists(taskID) view returns (address){
@@ -419,4 +422,8 @@ abstract contract Machine is Ownable {
     function getAuthorizedMaintainers() public view returns (address [] memory) {
         return maintainers.keyList;
     }
+
+    function getTasksTypesCount() public virtual pure returns(uint);
+
+    function getTaskTypeName(uint taskType) public virtual pure returns(string memory);
 }

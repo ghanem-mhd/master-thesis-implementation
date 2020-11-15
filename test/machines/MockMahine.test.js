@@ -14,7 +14,7 @@ describe("MockMachine", function () {
   const [
     MachineOwner,
     MachineDID,
-    product,
+    ProductDID,
     anyone,
     Manufacturer,
     Maintainer,
@@ -37,7 +37,7 @@ describe("MockMachine", function () {
   });
 
   it("get the machine ID", async function () {
-    storedMachineID = await this.MockMachineContract.getMachineID();
+    storedMachineID = await this.MockMachineContract.getMachineDID();
     expect(storedMachineID).to.equal(MachineDID);
   });
 
@@ -82,12 +82,9 @@ describe("MockMachine", function () {
     await this.MockMachineContract.deauthorizeManufacturer(Manufacturer, {
       from: MachineOwner,
     });
-    var receipt = this.MockMachineContract.assignTaskWithProduct(
-      1,
-      product,
-      "someTaskName",
-      { from: Manufacturer }
-    );
+    var receipt = this.MockMachineContract.assignTask(1, ProductDID, 2, {
+      from: Manufacturer,
+    });
     await expectRevert(
       receipt,
       "Only authorized manufactures can call this function."
@@ -97,25 +94,23 @@ describe("MockMachine", function () {
   it("should create a task", async function () {
     tasksCount = await this.MockMachineContract.getTasksCount();
     expect(tasksCount.toString()).to.equal("0");
-    await this.MockMachineContract.assignTaskWithProduct(
-      1,
-      product,
-      "someTaskName",
-      { from: Manufacturer }
-    );
+    await this.MockMachineContract.assignTask(1, ProductDID, 2, {
+      from: Manufacturer,
+    });
     tasksCount = await this.MockMachineContract.getTasksCount();
     expect(tasksCount.toString()).to.equal("1");
   });
 
   it("assigning a task should create a TaskAssigned event", async function () {
-    receipt = await this.MockMachineContract.assignTaskWithoutProduct(
+    receipt = await this.MockMachineContract.assignTask(
       1,
-      "someTaskName",
+      constants.ZERO_ADDRESS,
+      1,
       { from: Manufacturer }
     );
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
-      taskName: "someTaskName",
+      taskName: "TaskWithoutProduct",
       productDID: constants.ZERO_ADDRESS,
       processID: "1",
       processContractAddress: Manufacturer,
@@ -123,15 +118,16 @@ describe("MockMachine", function () {
   });
 
   it("starting a task should create a TaskAssigned event", async function () {
-    receipt = await this.MockMachineContract.assignTaskWithoutProduct(
+    receipt = await this.MockMachineContract.assignTask(
       1,
-      "someTaskName",
+      constants.ZERO_ADDRESS,
+      1,
       { from: Manufacturer }
     );
     receipt = await this.MockMachineContract.startTask(1, { from: MachineDID });
     expectEvent(receipt, "TaskStarted", {
       taskID: "1",
-      taskName: "someTaskName",
+      taskName: "TaskWithoutProduct",
       productDID: constants.ZERO_ADDRESS,
       processID: "1",
       processContractAddress: Manufacturer,
@@ -139,32 +135,30 @@ describe("MockMachine", function () {
   });
 
   it("should get the task information", async function () {
-    receipt = await this.MockMachineContract.assignTaskWithoutProduct(
+    receipt = await this.MockMachineContract.assignTask(
       1,
-      "task1",
+      constants.ZERO_ADDRESS,
+      1,
       { from: Manufacturer }
     );
     savedTask = await this.MockMachineContract.getTask(1);
     expect(savedTask[0]).to.equal(constants.ZERO_ADDRESS);
-    expect(savedTask[1]).to.equal("task1");
-    expect(savedTask[4]).to.deep.equal([Helper.toHex("taskInput")]);
+    expect(savedTask[1]).to.equal("TaskWithoutProduct");
+    expect(savedTask[4]).to.deep.equal([]);
     expect(savedTask[5].toString()).to.equal("0");
 
-    receipt = await this.MockMachineContract.assignTaskWithProduct(
-      1,
-      product,
-      "task2",
-      { from: Manufacturer }
-    );
+    receipt = await this.MockMachineContract.assignTask(1, ProductDID, 2, {
+      from: Manufacturer,
+    });
     savedTask = await this.MockMachineContract.getTask(2);
-    expect(savedTask[0]).to.equal(product);
-    expect(savedTask[1]).to.equal("task2");
-    expect(savedTask[4]).to.deep.equal([]);
+    expect(savedTask[0]).to.equal(ProductDID);
+    expect(savedTask[1]).to.equal("TaskWithProduct");
+    expect(savedTask[4]).to.deep.equal([Helper.toHex("taskInput")]);
     expect(savedTask[5].toString()).to.equal("0");
   });
 
   it("should save task input", async function () {
-    await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
+    await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: Manufacturer,
     });
     await this.MockMachineContract.saveTaskParam(
@@ -181,15 +175,15 @@ describe("MockMachine", function () {
   });
 
   it("should get task name", async function () {
-    await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
+    await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: Manufacturer,
     });
     taskName = await this.MockMachineContract.getTaskName(1);
-    expect(taskName).to.equal("task1");
+    expect(taskName).to.equal("TaskWithoutProduct");
   });
 
   it("should emit TaskFinished event", async function () {
-    await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
+    await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: Manufacturer,
     });
     taskFinishedEvent = await this.MockMachineContract.finishTask(1, 2, {
@@ -197,14 +191,14 @@ describe("MockMachine", function () {
     });
     expectEvent(taskFinishedEvent, "TaskFinished", {
       taskID: "1",
-      taskName: "task1",
+      taskName: "TaskWithoutProduct",
       productDID: constants.ZERO_ADDRESS,
       status: "2",
     });
   });
 
   it("only machine can finish the task", async function () {
-    await this.MockMachineContract.assignTaskWithoutProduct(1, "task1", {
+    await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: Manufacturer,
     });
     receipt = this.MockMachineContract.finishTask(1, 2, { from: anyone });
@@ -212,9 +206,10 @@ describe("MockMachine", function () {
   });
 
   it("should get task status - Assigned/Started/FinishedSuccessfully", async function () {
-    taskStatus = await this.MockMachineContract.assignTaskWithoutProduct(
+    taskStatus = await this.MockMachineContract.assignTask(
       1,
-      "task1",
+      constants.ZERO_ADDRESS,
+      1,
       {
         from: Manufacturer,
       }
@@ -234,9 +229,10 @@ describe("MockMachine", function () {
   });
 
   it("should get task status - Assigned/Started/FinishedUnSuccessfully", async function () {
-    taskStatus = await this.MockMachineContract.assignTaskWithoutProduct(
+    taskStatus = await this.MockMachineContract.assignTask(
       1,
-      "task1",
+      constants.ZERO_ADDRESS,
+      1,
       {
         from: Manufacturer,
       }

@@ -9,16 +9,12 @@ contract VGR is Machine {
 
     constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
 
-    function getTaskName(TasksNames taskName) internal pure returns (string memory) {
-        require(uint8(taskName) <= 5);
-        if (TasksNames.GetInfo == taskName) return "GetInfo";
-        if (TasksNames.DropToHBW == taskName) return "DropToHBW";
-        if (TasksNames.PickSorted == taskName) return "PickSorted";
-        if (TasksNames.MoveHBW2MPO == taskName) return "MoveHBW2MPO";
-    }
-
-    function assignGetInfoTask(uint processID, address productDID) public {
-        super.assignTask(processID, productDID, getTaskName(TasksNames.GetInfo));
+    function getTaskTypeName(uint taskType) public override pure returns (string memory) {
+        require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unkown Task Type.");
+        if (taskType == 1) return "GetInfo";
+        if (taskType == 2) return "DropToHBW";
+        if (taskType == 3) return "PickSorted";
+        if (taskType == 4) return "MoveHBW2MPO";
     }
 
     function finishGetInfoTask(uint taskID, string memory nfcTag, string memory color) public {
@@ -27,20 +23,32 @@ contract VGR is Machine {
         super.finishTask(taskID, TaskStatus.FinishedSuccessfully);
     }
 
-    function assignDropToHBWTask(uint processID, address productDID) public{
-        super.assignTask(processID, productDID, getTaskName(TasksNames.DropToHBW));
-    }
+    function assignTask(uint processID, address productDID, uint taskType) public override returns (uint) {
+        if (taskType == 1) {
+            return super.assignTask(processID, productDID, taskType);
+        }
 
-    function assignMoveHBW2MPOTask(uint processID, address productDID) public{
-        super.assignTask(processID, productDID, getTaskName(TasksNames.MoveHBW2MPO));
-    }
+        if (taskType == 2) {
+            return super.assignTask(processID, productDID, taskType);
+        }
 
-    function assignPickSortedTask(uint processID, address productDID, string memory color) public{
-       uint taskID = super.assignTask(processID, productDID, getTaskName(TasksNames.PickSorted));
-       super.saveTaskParam(taskID, "color", color);
+        if (taskType == 3) {
+            string memory color = super.getProductOperationResult(productDID, "Sorting");
+            uint taskID = super.assignTask(processID, productDID, taskType);
+            super.saveTaskParam(taskID, "color", color);
+            return taskID;
+        }
+
+        if (taskType == 4) {
+            return super.assignTask(processID, productDID, taskType);
+        }
     }
 
     function saveReadingVGR(uint taskID, ReadingType readingType, int readingValue) public {
         super.saveReading(taskID, readingType, readingValue);
+    }
+
+    function getTasksTypesCount() public override pure returns(uint) {
+        return 4;
     }
 }

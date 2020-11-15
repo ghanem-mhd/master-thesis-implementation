@@ -14,7 +14,7 @@ const MockProcessArtifact = contract.fromArtifact("MockProcess");
 describe("MockProcess", function () {
   const [
     Admin,
-    Owner,
+    ProcessOwner,
     MachineContract1,
     ProductDID1,
     ProductDID2,
@@ -27,7 +27,7 @@ describe("MockProcess", function () {
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     this.MockProcessContract = await MockProcessArtifact.new(
-      Owner,
+      ProcessOwner,
       this.ProductContract.address,
       { from: Admin }
     );
@@ -44,7 +44,7 @@ describe("MockProcess", function () {
 
   it("should get the owner address", async function () {
     receipt = await this.MockProcessContract.getProcessOwner();
-    expect(receipt).to.equal(Owner);
+    expect(receipt).to.equal(ProcessOwner);
   });
 
   it("should increment process ID", async function () {
@@ -115,7 +115,7 @@ describe("MockProcess", function () {
       from: ProductOwner,
     });
     await this.MockProcessContract.finishProcess(1, 1, {
-      from: Owner,
+      from: ProcessOwner,
     });
     processInstance = await this.MockProcessContract.getProcessInstance(1);
     expect(processInstance[0]).to.equal(ProductDID1);
@@ -127,10 +127,25 @@ describe("MockProcess", function () {
       from: ProductOwner,
     });
     await this.MockProcessContract.killProcess(1, {
-      from: Owner,
+      from: ProcessOwner,
     });
     processInstance = await this.MockProcessContract.getProcessInstance(1);
     expect(processInstance[0]).to.equal(ProductDID1);
     expect(processInstance[3].toString()).to.equal("3");
+  });
+
+  it("should set the machine contract address", async function () {
+    await this.MockProcessContract.setMachineAddress(1, MachineContract1, {
+      from: ProcessOwner,
+    });
+    result = await this.MockProcessContract.getMachineAddress(1);
+    expect(result).to.equal(MachineContract1);
+  });
+
+  it("should revert for setting a wrong machine number", async function () {
+    receipt = this.MockProcessContract.setMachineAddress(3, MachineContract1, {
+      from: ProcessOwner,
+    });
+    await expectRevert(receipt, "Unknown Machine Number.");
   });
 });

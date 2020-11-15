@@ -36,7 +36,7 @@ describe("MPO_Machine", function () {
   });
 
   it("should accept a Processing task", async function () {
-    receipt = await this.MPOContract.assignProcessingTask(1, ProductDID, {
+    receipt = await this.MPOContract.assignTask(1, ProductDID, 1, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {

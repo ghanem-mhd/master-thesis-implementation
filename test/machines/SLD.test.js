@@ -44,7 +44,7 @@ describe("SLD_Machine", function () {
   });
 
   it("should accept a Sorting task", async function () {
-    receipt = await this.SLDContract.assignSortingTask(1, ProductDID, {
+    receipt = await this.SLDContract.assignTask(1, ProductDID, 1, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {
@@ -57,7 +57,7 @@ describe("SLD_Machine", function () {
   });
 
   it("should save the operations of the Sorting task", async function () {
-    await this.SLDContract.assignSortingTask(1, ProductDID, {
+    await this.SLDContract.assignTask(1, ProductDID, 1, {
       from: Manufacturer,
     });
     await this.SLDContract.startTask(1, { from: SLD_DID });

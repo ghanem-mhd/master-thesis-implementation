@@ -44,7 +44,7 @@ describe("VGR_Machine", function () {
   });
 
   it("should accept a GetInfo task", async function () {
-    receipt = await this.VGRContract.assignGetInfoTask(1, ProductDID, {
+    receipt = await this.VGRContract.assignTask(1, ProductDID, 1, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {
@@ -57,7 +57,7 @@ describe("VGR_Machine", function () {
   });
 
   it("should save the operation of the GetInfo task", async function () {
-    receipt = await this.VGRContract.assignGetInfoTask(1, ProductDID, {
+    receipt = await this.VGRContract.assignTask(1, ProductDID, 1, {
       from: Manufacturer,
     });
     await this.VGRContract.startTask(1, { from: MachineDID });
@@ -100,7 +100,7 @@ describe("VGR_Machine", function () {
   });
 
   it("should accept a DropToHBW task", async function () {
-    receipt = await this.VGRContract.assignDropToHBWTask(1, ProductDID, {
+    receipt = await this.VGRContract.assignTask(1, ProductDID, 2, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {
@@ -113,7 +113,7 @@ describe("VGR_Machine", function () {
   });
 
   it("should accept a MoveHBW2MPO task", async function () {
-    receipt = await this.VGRContract.assignMoveHBW2MPOTask(1, ProductDID, {
+    receipt = await this.VGRContract.assignTask(1, ProductDID, 4, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {
@@ -126,12 +126,16 @@ describe("VGR_Machine", function () {
   });
 
   it("should accept a PickSorted task", async function () {
-    receipt = await this.VGRContract.assignPickSortedTask(
-      1,
+    await this.ProductContract.saveProductOperation(
       ProductDID,
-      "orange",
-      { from: Manufacturer }
+      10,
+      "Sorting",
+      "Orange",
+      { from: ProductOwner }
     );
+    receipt = await this.VGRContract.assignTask(1, ProductDID, 3, {
+      from: Manufacturer,
+    });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "PickSorted",
@@ -143,6 +147,6 @@ describe("VGR_Machine", function () {
       1,
       Helper.toHex("color")
     );
-    expect(StoredInputValue, "orange");
+    expect(StoredInputValue, "Orange");
   });
 });

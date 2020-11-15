@@ -19,10 +19,15 @@ describe("HBW_Machine", function () {
     ProductDID,
     anyone,
     Manufacturer,
+    ProductOwner,
   ] = accounts;
 
   beforeEach(async function () {
     this.ProductContract = await ProductArtifact.new({ from: Admin });
+
+    await this.ProductContract.createProduct(ProductDID, {
+      from: ProductOwner,
+    });
 
     this.HBWContract = await HBWArtifact.new(
       HBWOwner,
@@ -36,7 +41,7 @@ describe("HBW_Machine", function () {
   });
 
   it("should accept a FetchContainer task", async function () {
-    receipt = await this.HBWContract.assignFetchContainerTask(1, {
+    receipt = await this.HBWContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {
@@ -49,7 +54,7 @@ describe("HBW_Machine", function () {
   });
 
   it("should accept a StoreContainer task", async function () {
-    receipt = await this.HBWContract.assignStoreContainerTask(1, {
+    receipt = await this.HBWContract.assignTask(1, constants.ZERO_ADDRESS, 2, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {
@@ -62,13 +67,23 @@ describe("HBW_Machine", function () {
   });
 
   it("should accept a StoreProduct task", async function () {
-    receipt = await this.HBWContract.assignStoreProductTask(
-      1,
+    await this.ProductContract.saveProductOperation(
       ProductDID,
-      "123",
+      10,
+      "ColorDetection",
       "orange",
-      { from: Manufacturer }
+      { from: ProductOwner }
     );
+    await this.ProductContract.saveProductOperation(
+      ProductDID,
+      10,
+      "NFCTagReading",
+      "123",
+      { from: ProductOwner }
+    );
+    receipt = await this.HBWContract.assignTask(1, ProductDID, 3, {
+      from: Manufacturer,
+    });
     expectEvent(receipt, "TaskAssigned", {
       taskID: "1",
       taskName: "StoreProduct",
@@ -89,7 +104,7 @@ describe("HBW_Machine", function () {
   });
 
   it("should accept a FetchProduct task", async function () {
-    receipt = await this.HBWContract.assignFetchProductTask(1, ProductDID, {
+    receipt = await this.HBWContract.assignTask(1, ProductDID, 4, {
       from: Manufacturer,
     });
     expectEvent(receipt, "TaskAssigned", {

@@ -59,18 +59,20 @@ describe("SupplyingProcess", function () {
     await this.HBWContract.authorizeManufacturer(Manufacturer, {
       from: Admin,
     });
-    await this.SupplyingProcessContract.setVGRContractAddress(
+    await this.SupplyingProcessContract.setMachineAddress(
+      1,
       this.VGRContract.address,
       { from: Manufacturer }
     );
-    await this.SupplyingProcessContract.setHBWContractAddress(
+    await this.SupplyingProcessContract.setMachineAddress(
+      2,
       this.HBWContract.address,
       { from: Manufacturer }
     );
   });
 
   it("should authorize VGR when executing step 1", async function () {
-    await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
+    await this.SupplyingProcessContract.startProcess(ProductDID, {
       from: ProductOwner,
     });
     receipt = await this.SupplyingProcessContract.step1(1, {
@@ -87,8 +89,8 @@ describe("SupplyingProcess", function () {
     expect(AuthorizedMachine).to.equal(VGR_DID);
   });
 
-  it("should authorize none when executing step 2", async function () {
-    await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
+  it("should authorize HBW when executing step 2", async function () {
+    await this.SupplyingProcessContract.startProcess(ProductDID, {
       from: ProductOwner,
     });
     await this.SupplyingProcessContract.step1(1, {
@@ -99,17 +101,17 @@ describe("SupplyingProcess", function () {
     });
     expectEvent(receipt, "ProcessStepStarted", {
       processID: "1",
-      productDID: constants.ZERO_ADDRESS,
+      productDID: ProductDID,
       step: "2",
     });
     AuthorizedMachine = await this.ProductContract.getAuthorizedMachine(
       ProductDID
     );
-    expect(AuthorizedMachine).to.equal(constants.ZERO_ADDRESS);
+    expect(AuthorizedMachine).to.equal(HBW_DID);
   });
 
   it("should authorize VGR when executing step 3", async function () {
-    await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
+    await this.SupplyingProcessContract.startProcess(ProductDID, {
       from: ProductOwner,
     });
     await this.SupplyingProcessContract.step1(1, {
@@ -133,7 +135,7 @@ describe("SupplyingProcess", function () {
   });
 
   it("should authorize HBW when executing step 4 and check get info operations", async function () {
-    await this.SupplyingProcessContract.startSupplyingProcess(ProductDID, {
+    await this.SupplyingProcessContract.startProcess(ProductDID, {
       from: ProductOwner,
     });
     await this.SupplyingProcessContract.step1(1, {
