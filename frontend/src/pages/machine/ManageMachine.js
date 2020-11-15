@@ -9,7 +9,6 @@ import ConnectionContext from "../utilities/ConnectionContext";
 import AuthorizeParty from "./AuthorizeParty";
 import SaveMachineInfo from "./SaveMachineInfo";
 import RequestReading from "./RequestReading";
-import SaveMaintenanceOperation from "./SaveMaintenanceOperation";
 import ContractsLoader from "../utilities/ContractsLoader";
 import AddressResolver from "../utilities/AddressResolver";
 import ErrorPage from "../utilities/ErrorPage";
@@ -65,10 +64,6 @@ class ManageMachine extends React.Component {
                       MachineContract={this.state.machineContract}
                     />
                     <RequestReading
-                      web3={this.web3}
-                      MachineContract={this.state.machineContract}
-                    />
-                    <SaveMaintenanceOperation
                       web3={this.web3}
                       MachineContract={this.state.machineContract}
                     />

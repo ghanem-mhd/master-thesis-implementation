@@ -84,7 +84,7 @@ class MachineMetrics extends React.Component {
   render() {
     return (
       <Grid.Row cards={true}>
-        <Grid.Col sm={6} lg={3}>
+        <Grid.Col sm={12} lg={4}>
           <StampCard color="blue" icon="list">
             <Link
               to={"/machine/" + this.props.MachineContract._address + "/tasks"}
@@ -93,7 +93,7 @@ class MachineMetrics extends React.Component {
             </Link>
           </StampCard>
         </Grid.Col>
-        <Grid.Col sm={6} lg={3}>
+        <Grid.Col sm={12} lg={4}>
           <StampCard color="green" icon="radio">
             <Link
               to={
@@ -104,25 +104,12 @@ class MachineMetrics extends React.Component {
             </Link>
           </StampCard>
         </Grid.Col>
-        <Grid.Col sm={6} lg={3}>
+        <Grid.Col sm={12} lg={4}>
           <StampCard color="red" icon="alert-circle">
             <Link
               to={"/machine/" + this.props.MachineContract._address + "/alerts"}
             >
               {this.state.metrics.alertsCount} Alerts
-            </Link>
-          </StampCard>
-        </Grid.Col>
-        <Grid.Col sm={6} lg={3}>
-          <StampCard color="yellow" icon="alert-circle">
-            <Link
-              to={
-                "/machine/" +
-                this.props.MachineContract._address +
-                "/operations"
-              }
-            >
-              {this.state.metrics.maintenanceOperationsCount} M. Operations
             </Link>
           </StampCard>
         </Grid.Col>

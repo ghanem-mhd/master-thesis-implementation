@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Grid, Card, Button, Form } from "tabler-react";
+import { Grid, Card, Button } from "tabler-react";
 
 import AddressInput from "../utilities/AddressInput";
 import { store } from "react-notifications-component";
@@ -79,16 +79,10 @@ class AuthorizeParty extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Authorize New Party" isCollapsible>
+          <Card title="Authorize New Process" isCollapsible>
             <Card.Body>
-              <Form.Group label="Party Type">
-                <Form.Select onChange={this.handleChange.bind(this)}>
-                  <option value="process">Process</option>
-                  <option value="maintainer">Maintainer</option>
-                </Form.Select>
-              </Form.Group>
               <AddressInput
-                label="Address"
+                label="Process Smart Contract Address"
                 showDIDMethod={false}
                 web3={this.props.web3}
                 onAddressValidityChanged={this.onPartyAddressValidityChanged.bind(
