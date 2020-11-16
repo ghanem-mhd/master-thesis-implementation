@@ -203,31 +203,6 @@ Promise.all(contractsAsyncGets)
         })
       );
       Logger.info("authorizeProcess4 " + receipt.transactionHash);
-
-      receipt = await Helper.sendTransaction(
-        VGRContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {
-          from: machineOwnerProvider.addresses[0],
-        })
-      );
-      Logger.info("authorizeMaintainer1 " + receipt.transactionHash);
-      receipt = await Helper.sendTransaction(
-        HBWContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {
-          from: machineOwnerProvider.addresses[0],
-        })
-      );
-      Logger.info("authorizeMaintainer2 " + receipt.transactionHash);
-      receipt = await Helper.sendTransaction(
-        MPOContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {
-          from: machineOwnerProvider.addresses[0],
-        })
-      );
-      Logger.info("authorizeMaintainer3 " + receipt.transactionHash);
-      receipt = await Helper.sendTransaction(
-        SLDContract.authorizeMaintainer(process.env.MAINTAINER_ADDRESS, {
-          from: machineOwnerProvider.addresses[0],
-        })
-      );
-      Logger.info("authorizeMaintainer4 " + receipt.transactionHash);
     } catch (error) {
       Logger.logError(error, "Seed");
     } finally {

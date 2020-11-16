@@ -37,11 +37,6 @@ abstract contract Machine is Ownable {
         _;
     }
 
-    modifier onlyMaintainer(){
-        require( maintainers.exists(_msgSender()) || (_msgSender() == machineOwner)  , "Only authorized maintainers can call this function.");
-        _;
-    }
-
     modifier taskExists(uint taskID){
         require(tasksIds.exists(taskID), "Task doesn't exist.");
         _;
@@ -348,47 +343,6 @@ abstract contract Machine is Ownable {
         return alertsIds.count();
     }
 
-    // Maintenance Structure
-    struct MaintenanceOperation {
-        uint time;
-        address maintainer;
-        string description;
-    }
-    Counters.Counter private maintenanceOperationIDCounter;
-    UintSet.Set private maintenanceOperationsIds;
-    mapping (uint => MaintenanceOperation) private maintenanceOperations;
-
-    // Maintenance events
-    event NewMaintenanceOperation(uint indexed maintenanceOperationID, address indexed maintainer, string description);
-
-    function saveMaintenanceOperation(string memory description) public onlyMaintainer returns(uint)  {
-        maintenanceOperationIDCounter.increment();
-        uint newID = maintenanceOperationIDCounter.current();
-
-        maintenanceOperationsIds.insert(newID);
-
-        MaintenanceOperation storage maintenanceOperation = maintenanceOperations[newID];
-        maintenanceOperation.time = now;
-        maintenanceOperation.maintainer = _msgSender();
-        maintenanceOperation.description = description;
-
-        emit NewMaintenanceOperation(newID, _msgSender(), description);
-
-        return newID;
-    }
-
-    function getMaintenanceOperation(uint maintenanceOperationID) public view returns (uint, address, string memory) {
-        require(maintenanceOperationsIds.exists(maintenanceOperationID), "MaintenanceOperation doesn't exist.");
-        return (maintenanceOperations[maintenanceOperationID].time,
-            maintenanceOperations[maintenanceOperationID].maintainer,
-            maintenanceOperations[maintenanceOperationID].description
-        );
-    }
-
-    function getMaintenanceOperationsCount() public view returns (uint) {
-        return maintenanceOperationsIds.count();
-    }
-
     AddressSet.Set private authorizedProcesses;
 
     function authorizeProcess(address processContractAddress) public onlyMachineOwner {
@@ -403,23 +357,6 @@ abstract contract Machine is Ownable {
 
     function getAuthorizedProcesses() public view returns (address [] memory) {
         return authorizedProcesses.keyList;
-    }
-
-    // Maintainers Methods
-    AddressSet.Set private maintainers; // set of allowed maintainers to maintain the machine
-
-    function authorizeMaintainer(address maintainerAddress) public onlyMachineOwner {
-        require(!maintainers.exists(maintainerAddress), "Maintainer already exist.");
-        maintainers.insert(maintainerAddress);
-    }
-
-    function deauthorizeMaintainer(address maintainerAddress) public onlyMachineOwner {
-        require(maintainers.exists(maintainerAddress), "Maintainer doesn't exist.");
-        maintainers.remove(maintainerAddress);
-    }
-
-    function getAuthorizedMaintainers() public view returns (address [] memory) {
-        return maintainers.keyList;
     }
 
     function getTasksTypesCount() public virtual pure returns(uint);

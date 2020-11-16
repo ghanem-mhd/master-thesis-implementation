@@ -17,7 +17,6 @@ describe("MockMachine", function () {
     ProductDID,
     anyone,
     ProcessContractAddress,
-    Maintainer,
     ProductContractAddress,
   ] = accounts;
 
@@ -29,9 +28,6 @@ describe("MockMachine", function () {
       { from: MachineOwner }
     );
     await this.MockMachineContract.authorizeProcess(ProcessContractAddress, {
-      from: MachineOwner,
-    });
-    await this.MockMachineContract.authorizeMaintainer(Maintainer, {
       from: MachineOwner,
     });
   });
@@ -62,33 +58,6 @@ describe("MockMachine", function () {
       { from: anyone }
     );
     await expectRevert(receipt, "Only machine owner can call this function.");
-  });
-
-  it("should deauthorize maintainer", async function () {
-    await this.MockMachineContract.deauthorizeMaintainer(Maintainer, {
-      from: MachineOwner,
-    });
-    var receipt = this.MockMachineContract.saveMaintenanceOperation(
-      "Maintenance description",
-      { from: Maintainer }
-    );
-    await expectRevert(
-      receipt,
-      "Only authorized maintainers can call this function."
-    );
-  });
-
-  it("should deauthorize a process", async function () {
-    await this.MockMachineContract.deauthorizeProcess(ProcessContractAddress, {
-      from: MachineOwner,
-    });
-    var receipt = this.MockMachineContract.assignTask(1, ProductDID, 2, {
-      from: ProcessContractAddress,
-    });
-    await expectRevert(
-      receipt,
-      "Only authorized process can call this function."
-    );
   });
 
   it("should create a task", async function () {
@@ -300,30 +269,8 @@ describe("MockMachine", function () {
     expect(savedAlert[3].toString()).to.equal("Critical");
   });
 
-  it("should create/get a new maintenance operation", async function () {
-    var receipt = await this.MockMachineContract.saveMaintenanceOperation(
-      "Maintenance description",
-      { from: Maintainer }
-    );
-    expectEvent(receipt, "NewMaintenanceOperation", {
-      maintenanceOperationID: "1",
-      maintainer: Maintainer,
-      description: "Maintenance description",
-    });
-    var savedMaintenanceOperation = await this.MockMachineContract.getMaintenanceOperation(
-      1
-    );
-    expect(savedMaintenanceOperation[1]).to.equal(Maintainer);
-    expect(savedMaintenanceOperation[2]).to.equal("Maintenance description");
-  });
-
   it("should getAuthorizedProcesses", async function () {
     var receipt = await this.MockMachineContract.getAuthorizedProcesses();
     expect(receipt[0]).to.equal(ProcessContractAddress);
-  });
-
-  it("should getAuthorizedMaintainers", async function () {
-    var receipt = await this.MockMachineContract.getAuthorizedMaintainers();
-    expect(receipt[0]).to.equal(Maintainer);
   });
 });
