@@ -129,6 +129,7 @@ class Dashboard extends React.Component {
                     </Grid.Col>
                   </Grid.Row>
                 ))}
+                <EventsLogStreamTable title={"Events Log"} />
               </Dimmer>
             </Page.Content>
           );
