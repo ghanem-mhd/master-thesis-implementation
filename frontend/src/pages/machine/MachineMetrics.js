@@ -64,21 +64,6 @@ class MachineMetrics extends React.Component {
       .catch((error) => {
         console.log(error);
       });
-
-    this.props.MachineContract.methods["getMaintenanceOperationsCount"]()
-      .call()
-      .then((result) => {
-        this.setState((state, props) => {
-          var metrics = this.state.metrics;
-          metrics.maintenanceOperationsCount = result;
-          return {
-            metrics: metrics,
-          };
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
   }
 
   render() {
