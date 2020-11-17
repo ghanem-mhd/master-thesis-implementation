@@ -122,5 +122,5 @@ module.exports = {
       // }
     },
   },
-  plugins: ["oneclick"],
+  plugins: ["truffle-contract-size"],
 };
