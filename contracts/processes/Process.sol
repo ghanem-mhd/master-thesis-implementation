@@ -19,7 +19,7 @@ abstract contract Process is Ownable {
         processOwner = _processOwner;
         productContract = Product(_productContractAddress);
         registryContact = Registry(_regsitryContractAddress);
-        registryContact.registerMachine(getName(), address(this));
+        registryContact.registerProcess(getName(), address(this));
     }
 
     address public processOwner;
@@ -163,10 +163,11 @@ abstract contract Process is Ownable {
         machines[machineNumber].assignTask(processID, productDID, taskType);
     }
 
-    function getStepInfo(uint stepNumber) public view returns(address, string memory) {
+    function getStepInfo(uint stepNumber) public view returns(string memory, string memory) {
         uint taskType = getStepTaskType(stepNumber);
         string memory taskName = machines[getMachineNumber(stepNumber)].getTaskTypeName(taskType);
-        return (getMachineAddress(getMachineNumber(stepNumber)), taskName);
+        string memory machineSymbol = machines[getMachineNumber(stepNumber)].getSymbol();
+        return (machineSymbol, taskName);
     }
 
     event ProcessStepStarted(uint indexed processID, address indexed productDID, int step);

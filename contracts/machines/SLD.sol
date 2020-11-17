@@ -36,7 +36,7 @@ contract SLD is Machine {
     }
 
     function getSymbol() public override pure returns (string memory) {
-        return "MPO";
+        return "SLD";
     }
 
     function getName() public override pure returns (string memory) {

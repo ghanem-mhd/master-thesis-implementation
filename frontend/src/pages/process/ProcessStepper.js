@@ -119,7 +119,7 @@ class ProcessStepper extends React.Component {
                           <StepLabel>
                             {step.taskName}
                             <br />
-                            <AddressResolver address={step.machineName} />
+                            {step.machineName}
                           </StepLabel>
                         </Step>
                       );
