@@ -26,6 +26,10 @@ describe("Product", function () {
 
   it("should create one product for DID", async function () {
     await this.ProductContract.createProduct(ProductDID1, { from: Owner });
+    result = await this.ProductContract.getProductID(ProductDID1);
+    expect(result.toString()).to.equal("1");
+    result = await this.ProductContract.getProductDID(1);
+    expect(result).to.equal(ProductDID1);
     receipt = this.ProductContract.createProduct(ProductDID1, { from: Owner });
     await expectRevert(receipt, "Product already exist.");
   });

@@ -15,6 +15,8 @@ contract Product is Ownable {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     Counters.Counter private productsCount;
+    mapping (uint => address) private productIDMapping;
+    mapping (address => uint) private productIDReverseMapping;
     mapping (string => address) private productPhysicalIDMapping;
 
     mapping (address => mapping (bytes32 => bytes32)) proudctsInfo;
@@ -72,6 +74,8 @@ contract Product is Ownable {
         productsOwners[productDID] = _msgSender();
         productsCount.increment();
         productsCreationTime[productDID] = now;
+        productIDMapping[productsCount.current()] = productDID;
+        productIDReverseMapping[productDID] = productsCount.current();
     }
 
     function getProductOwner(address productDID) public productExists(productDID) view returns (address){
@@ -167,5 +171,15 @@ contract Product is Ownable {
 
     function getProductInfo(address productDID, bytes32 infoName) public productExists(productDID) view returns(bytes32)  {
         return proudctsInfo[productDID][infoName];
+    }
+
+    function getProductID(address productDID) public productExists(productDID) view returns(uint) {
+        return productIDReverseMapping[productDID];
+    }
+
+    function getProductDID(uint productID) public view returns (address) {
+        require(productID >= 1, "Wrong product ID");
+        require(productIDMapping[productID] != address(0), "Product doesn't exist");
+        return productIDMapping[productID];
     }
 }
