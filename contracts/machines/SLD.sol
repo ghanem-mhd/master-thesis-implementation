@@ -5,7 +5,7 @@ import "./Machine.sol";
 
 contract SLD is Machine {
 
-    constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
+    constructor(address _machineOwner, address _machineID, address _productContractAddress, address _regsitryContractAddress) Machine(_machineOwner, _machineID, _productContractAddress, _regsitryContractAddress) public {}
 
     function getTaskTypeName(uint taskType) public override pure returns (string memory) {
         require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unkown Task Type.");
@@ -33,5 +33,13 @@ contract SLD is Machine {
 
     function getTasksTypesCount() public override pure returns(uint) {
         return 1;
+    }
+
+    function getSymbol() public override pure returns (string memory) {
+        return "MPO";
+    }
+
+    function getName() public override pure returns (string memory) {
+        return "Sorting Line with Color Detection (SLD)";
     }
 }

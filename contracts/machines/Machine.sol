@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
+import "../../contracts/Registry.sol";
 import "../../contracts/Product.sol";
 import "../../contracts/setTypes/UintSet.sol";
 import "../../contracts/setTypes/AddressSet.sol";
@@ -15,13 +16,14 @@ abstract contract Machine is Ownable {
     using Bytes32Set for Bytes32Set.Set;
     using AddressSet for AddressSet.Set;
 
-    constructor(address _machineOwner, address _machineDID, address _productContractAddress) public {
+    constructor(address _machineOwner, address _machineDID, address _productContractAddress, address _regsitryContractAddress) public {
         machineOwner    = _machineOwner;
         machineDID      = _machineDID;
         productContract = Product(_productContractAddress);
+        registryContact = Registry(_regsitryContractAddress);
+        registryContact.registerMachine(getName(), address(this));
     }
 
-    // Modifiers
     modifier onlyMachine(){
         require(_msgSender() == machineDID, "Only machine can call this function.");
         _;
@@ -42,16 +44,12 @@ abstract contract Machine is Ownable {
         _;
     }
 
-    // Product Contract
     Product productContract;
-
-    // Machine Info Structure
-    address public machineOwner; // the DID of machine owner
-    address public machineDID;    // the DID of the machine
-    mapping (bytes32 => bytes32) public info; // static information about the machine
+    Registry registryContact;
+    address public machineOwner;
+    address public machineDID;
+    mapping (bytes32 => bytes32) public info;
     Bytes32Set.Set private infoNames;
-
-    // Machine Info Methods
 
     function getMachineDID() public view returns(address) {
         return machineDID;
@@ -74,7 +72,6 @@ abstract contract Machine is Ownable {
         return info[infoName];
     }
 
-    // Task Structure
     enum TaskStatus {Assinged, Started, FinishedSuccessfully, FinishedUnsuccessfully, Killed }
 
     struct Task{
@@ -89,31 +86,20 @@ abstract contract Machine is Ownable {
         address processOwner;
         TaskStatus status;
     }
-    // counter to generate new task id
     Counters.Counter private taskIDCounter;
-    // to store all tasks ids
     UintSet.Set private tasksIds;
-    // for each product keep a list of all tasks performed on this product
     mapping (address => uint[]) private productsTasks;
-    // map the taskID to the task struct
     mapping (uint => Task) private tasks;
-
-    // Task Eevents
-    // to notifiy the machine to perfome a task
     event TaskAssigned(uint indexed taskID,
         string taskName,
         address productDID,
         uint processID,
         address processContractAddress,
         address processOwner);
-    // To notifiy others that a task has been started
     event TaskStarted(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
-    // To notifiy others that a task has been finished
     event TaskFinished(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress, TaskStatus status);
-    // To notifiy others that a task has been killed
     event TaskKilled(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
 
-    // Tasks Methods
     function assignTask(uint processID, address productDID, uint taskType) public virtual onlyProcess returns (uint){
         taskIDCounter.increment();
         uint newtaskID = taskIDCounter.current();
@@ -202,12 +188,6 @@ abstract contract Machine is Ownable {
         return productsTasks[productDID];
     }
 
-    // Product Operations Structure
-    AddressSet.Set private productsIDs;
-    mapping (address => mapping (bytes32 => string)) productsOperations;
-    mapping (address => bytes32[]) operationsNames;
-
-    // Product Methods
     event ProductOperationSaved(uint operationID, uint indexed taskID, address indexed productDID, string operationName, string operationResult);
 
     function saveProductOperation(uint taskID, string memory operationName, string memory operationResult) public taskExists(taskID) onlyMachine {
@@ -232,7 +212,6 @@ abstract contract Machine is Ownable {
         return tasks[taskID].productDID;
     }
 
-    // Reading Structure
     enum ReadingType { Temperature, Humidity, AirPressure, GasResistance, Brightness }
     struct Reading{
         uint time;
@@ -240,18 +219,11 @@ abstract contract Machine is Ownable {
         int readingValue;
         uint taskID;
     }
-    // counter to generate new reading id
     Counters.Counter private readingIDCounter;
-    // to store all reading ids
     UintSet.Set private readingsIds;
-    // map the readingID to the reading struct
     mapping (uint => Reading) private readings;
-
-    // Reading Events
-    // to notifiy the machine to send a new reading from a certian type e.g. temperature..
     event NewReading(ReadingType indexed readingType);
 
-    // Reading Methods
     function getNewReading(ReadingType readingType) public onlyMachineOwner {
         emit NewReading(readingType);
     }
@@ -293,25 +265,16 @@ abstract contract Machine is Ownable {
         if (AlertType.Urgent == alertType) return "Urgent";
         if (AlertType.Critical == alertType) return "Critical";
     }
-    // Alerts Structure
     struct Alert{
         uint time;
         uint readingID;
         string reason;
         string alertType;
     }
-    // counter to generate new alert id
     Counters.Counter private alertIDCounter;
-    // to store all alerts ids
     UintSet.Set private alertsIds;
-    // map the alertID to the alert struct
     mapping (uint => Alert) private alerts;
-
-    // Alert Events
-    // to notifiy someone about the new alert
     event NewAlert(uint indexed alertID, string reason, string alertType);
-
-    // Alert Methods
 
     function saveAlert(uint readingID, string memory reason, AlertType alertType) internal onlyMachine {
         alertIDCounter.increment();
@@ -360,6 +323,7 @@ abstract contract Machine is Ownable {
     }
 
     function getTasksTypesCount() public virtual pure returns(uint);
-
     function getTaskTypeName(uint taskType) public virtual pure returns(string memory);
+    function getSymbol() public virtual pure returns (string memory);
+    function getName() public virtual pure returns (string memory);
 }

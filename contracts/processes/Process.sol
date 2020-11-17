@@ -2,6 +2,7 @@
 pragma solidity >=0.4.21 <0.7.0;
 
 import "../../contracts/machines/Machine.sol";
+import "../../contracts/Registry.sol";
 import "../../contracts/Product.sol";
 import "../../contracts/setTypes/UintSet.sol";
 import "../../contracts/setTypes/AddressSet.sol";
@@ -14,9 +15,11 @@ abstract contract Process is Ownable {
     using Counters for Counters.Counter;
     using AddressSet for AddressSet.Set;
 
-    constructor(address _processOwner, address _productContractAddress) public {
+    constructor(address _processOwner, address _productContractAddress, address _regsitryContractAddress) public {
         processOwner = _processOwner;
         productContract = Product(_productContractAddress);
+        registryContact = Registry(_regsitryContractAddress);
+        registryContact.registerMachine(getName(), address(this));
     }
 
     address public processOwner;
@@ -54,6 +57,8 @@ abstract contract Process is Ownable {
     Counters.Counter private processesCounter;
     mapping (address => uint256) private productProcessMapping;
     Product productContract;
+    Registry registryContact;
+
 
     function startProcess(address productDID) public returns(uint256) {
         productContract.authorizeProcess(address(this), productDID);
@@ -158,6 +163,12 @@ abstract contract Process is Ownable {
         machines[machineNumber].assignTask(processID, productDID, taskType);
     }
 
+    function getStepInfo(uint stepNumber) public view returns(address, string memory) {
+        uint taskType = getStepTaskType(stepNumber);
+        string memory taskName = machines[getMachineNumber(stepNumber)].getTaskTypeName(taskType);
+        return (getMachineAddress(getMachineNumber(stepNumber)), taskName);
+    }
+
     event ProcessStepStarted(uint indexed processID, address indexed productDID, int step);
     event ProcessStarted(uint indexed processID, address indexed productDID);
     event ProcessFinished(uint indexed processID, address indexed productDID);
@@ -165,4 +176,8 @@ abstract contract Process is Ownable {
 
     function getNumberOfMachines() public virtual pure returns(uint);
     function getNumberOfSteps() public virtual pure returns(uint);
+    function getStepTaskType(uint stepNumber) public virtual pure returns(uint);
+    function getMachineNumber(uint stepNumber) public virtual pure returns(uint);
+    function getSymbol() public virtual pure returns (string memory);
+    function getName() public virtual pure returns (string memory);
 }

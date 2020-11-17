@@ -9,6 +9,7 @@ const { expect } = require("chai");
 const web3 = require("web3");
 const Helper = require("../../utilities/helper");
 
+const RegistryArtifact = contract.fromArtifact("Registry");
 const ProductArtifact = contract.fromArtifact("Product");
 const VGRArtifact = contract.fromArtifact("VGR");
 const HBWArtifact = contract.fromArtifact("HBW");
@@ -29,6 +30,8 @@ describe("ProductionProcess", function () {
   ] = accounts;
 
   beforeEach(async function () {
+    this.RegistryContract = await RegistryArtifact.new({ from: Admin });
+
     this.ProductContract = await ProductArtifact.new({ from: Admin });
     await this.ProductContract.createProduct(ProductDID, {
       from: ProductOwner,
@@ -38,30 +41,35 @@ describe("ProductionProcess", function () {
       Admin,
       VGR_DID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
     this.HBWContract = await HBWArtifact.new(
       Admin,
       HBW_DID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
     this.SLDContract = await SLDArtifact.new(
       Admin,
       SLD_DID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
     this.MPOContract = await MPOArtifact.new(
       Admin,
       MPO_DID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
 
     this.ProductionProcessContract = await ProductionProcessArtifact.new(
       ProcessOwner,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
 

@@ -8,6 +8,7 @@ const {
 const { expect } = require("chai");
 const Helper = require("../../utilities/helper");
 
+const RegistryArtifact = contract.fromArtifact("Registry");
 const ProductArtifact = contract.fromArtifact("Product");
 const VGRArtifact = contract.fromArtifact("VGR");
 
@@ -23,6 +24,7 @@ describe("VGR_Machine", function () {
   ] = accounts;
 
   beforeEach(async function () {
+    this.RegistryContract = await RegistryArtifact.new({ from: Admin });
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     await this.ProductContract.createProduct(ProductDID, {
@@ -32,6 +34,7 @@ describe("VGR_Machine", function () {
       VGROwner,
       MachineDID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: VGROwner }
     );
 

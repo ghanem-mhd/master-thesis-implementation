@@ -5,9 +5,7 @@ import "./Machine.sol";
 
 contract MPO is Machine {
 
-    enum TasksNames { Processing }
-
-    constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
+    constructor(address _machineOwner, address _machineID, address _productContractAddress, address _regsitryContractAddress) Machine(_machineOwner, _machineID, _productContractAddress, _regsitryContractAddress) public {}
 
     function getTaskTypeName(uint taskType) public override pure returns (string memory) {
         require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unkown Task Type.");
@@ -26,5 +24,13 @@ contract MPO is Machine {
 
     function getTasksTypesCount() public override pure returns(uint) {
         return 1;
+    }
+
+    function getSymbol() public override pure returns (string memory) {
+        return "MPO";
+    }
+
+    function getName() public override pure returns (string memory) {
+        return "Multi-Processing Station (MPO)";
     }
 }

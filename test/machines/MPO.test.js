@@ -8,6 +8,7 @@ const {
 const { expect } = require("chai");
 const Helper = require("../../utilities/helper");
 
+const RegistryArtifact = contract.fromArtifact("Registry");
 const ProductArtifact = contract.fromArtifact("Product");
 const MPOArtifact = contract.fromArtifact("MPO");
 
@@ -22,12 +23,14 @@ describe("MPO_Machine", function () {
   ] = accounts;
 
   beforeEach(async function () {
+    this.RegistryContract = await RegistryArtifact.new({ from: Admin });
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     this.MPOContract = await MPOArtifact.new(
       MPOOwner,
       MachineID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: MPOOwner }
     );
     await this.MPOContract.authorizeProcess(ProcessContractAddress, {

@@ -5,7 +5,7 @@ import "./Machine.sol";
 
 contract MockMachine is Machine {
 
-    constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
+    constructor(address _machineOwner, address _machineID, address _productContractAddress, address _regsitryContractAddress) Machine(_machineOwner, _machineID, _productContractAddress, _regsitryContractAddress) public {}
 
     function assignTask(uint processID, address productDID, uint taskType) public override returns (uint){
         if (taskType == 1) {
@@ -35,5 +35,13 @@ contract MockMachine is Machine {
         require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unkown Task Type.");
         if (taskType == 1) return "TaskWithoutProduct";
         if (taskType == 2) return "TaskWithProduct";
+    }
+
+    function getSymbol() public override pure returns (string memory) {
+        return "MMM";
+    }
+
+    function getName() public override pure returns (string memory) {
+        return "MockMachine (MMM)";
     }
 }

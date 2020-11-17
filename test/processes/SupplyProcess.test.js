@@ -9,6 +9,7 @@ const { expect } = require("chai");
 const web3 = require("web3");
 const helper = require("../../utilities/helper");
 
+const RegistryArtifact = contract.fromArtifact("Registry");
 const ProductArtifact = contract.fromArtifact("Product");
 const VGRArtifact = contract.fromArtifact("VGR");
 const HBWArtifact = contract.fromArtifact("HBW");
@@ -25,6 +26,7 @@ describe("SupplyingProcess", function () {
   ] = accounts;
 
   beforeEach(async function () {
+    this.RegistryContract = await RegistryArtifact.new({ from: Admin });
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     await this.ProductContract.createProduct(ProductDID, {
@@ -35,17 +37,20 @@ describe("SupplyingProcess", function () {
       Admin,
       VGR_DID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
     this.HBWContract = await HBWArtifact.new(
       Admin,
       HBW_DID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
     this.SupplyingProcessContract = await SupplyingProcessArtifact.new(
       ProcessOwner,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
 

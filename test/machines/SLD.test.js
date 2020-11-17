@@ -8,6 +8,7 @@ const {
 const { expect } = require("chai");
 const Helper = require("../../utilities/helper");
 
+const RegistryArtifact = contract.fromArtifact("Registry");
 const ProductArtifact = contract.fromArtifact("Product");
 const SLDArtifact = contract.fromArtifact("SLD");
 
@@ -24,6 +25,7 @@ describe("SLD_Machine", function () {
   ] = accounts;
 
   beforeEach(async function () {
+    this.RegistryContract = await RegistryArtifact.new({ from: Admin });
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     await this.ProductContract.createProduct(ProductDID, {
@@ -33,6 +35,7 @@ describe("SLD_Machine", function () {
       SLDOwner,
       SLD_DID,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: SLDOwner }
     );
 

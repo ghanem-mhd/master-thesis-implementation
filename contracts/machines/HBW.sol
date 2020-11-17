@@ -5,7 +5,7 @@ import "./Machine.sol";
 
 contract HBW is Machine {
 
-    constructor(address _machineOwner, address _machineID, address _productContractAddress) Machine(_machineOwner, _machineID, _productContractAddress) public {}
+    constructor(address _machineOwner, address _machineID, address _productContractAddress, address _regsitryContractAddress) Machine(_machineOwner, _machineID, _productContractAddress, _regsitryContractAddress) public {}
 
     function getTaskTypeName(uint taskType) public override pure returns (string memory) {
         require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unkown Task Type.");
@@ -44,5 +44,13 @@ contract HBW is Machine {
 
     function getTasksTypesCount() public override pure returns(uint) {
         return 4;
+    }
+
+    function getSymbol() public override pure returns (string memory) {
+        return "HBW";
+    }
+
+    function getName() public override pure returns (string memory) {
+        return "High-Bay Warehouse (HBW)";
     }
 }

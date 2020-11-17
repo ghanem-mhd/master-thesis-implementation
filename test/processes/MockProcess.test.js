@@ -8,6 +8,7 @@ const {
 const { expect } = require("chai");
 const Helper = require("../../utilities/helper");
 
+const RegistryArtifact = contract.fromArtifact("Registry");
 const ProductArtifact = contract.fromArtifact("Product");
 const MockProcessArtifact = contract.fromArtifact("MockProcess");
 
@@ -24,11 +25,14 @@ describe("MockProcess", function () {
   ] = accounts;
 
   beforeEach(async function () {
+    this.RegistryContract = await RegistryArtifact.new({ from: Admin });
+
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     this.MockProcessContract = await MockProcessArtifact.new(
       ProcessOwner,
       this.ProductContract.address,
+      this.RegistryContract.address,
       { from: Admin }
     );
     await this.ProductContract.createProduct(ProductDID1, {
