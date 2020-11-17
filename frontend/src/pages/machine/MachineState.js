@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { StampCard } from "tabler-react";
+import ContractsLoader from "../utilities/ContractsLoader";
 
 function getStateElement(state) {
   let className = "";
@@ -31,10 +32,22 @@ class MachineState extends React.Component {
     this.state = { machineState: 0 };
   }
   componentDidMount() {
-    this.props.contract.events.TaskStarted(
+    ContractsLoader.loadMachineContract(
+      this.props.web3,
+      this.props.machineContractAddress
+    )
+      .then((result) => {
+        this.setUpListeners(result.wsContract);
+      })
+      .catch((error) => {
+        this.setState({ machineState: -1 });
+      });
+  }
+
+  setUpListeners(MachineContract) {
+    MachineContract.events.TaskStarted(
       { fromBlock: "latest" },
       (error, event) => {
-        console.log(event);
         if (error) {
           this.setState({ machineState: -1 });
         } else {
@@ -42,10 +55,9 @@ class MachineState extends React.Component {
         }
       }
     );
-    this.props.contract.events.TaskFinished(
+    MachineContract.events.TaskFinished(
       { fromBlock: "latest" },
       (error, event) => {
-        console.log(event);
         if (error) {
           this.setState({ machineState: -1 });
         } else {
@@ -61,8 +73,8 @@ class MachineState extends React.Component {
         icon="activity"
         color="blue"
         header={
-          <Link to={"/machine/" + this.props.machineContract}>
-            <small>{this.props.machineContract + " Machine Status"}</small>
+          <Link to={"/machine/" + this.props.machineContractAddress}>
+            <small>{this.props.machineName + " Status"}</small>
           </Link>
         }
         footer={getStateElement(this.state.machineState)}

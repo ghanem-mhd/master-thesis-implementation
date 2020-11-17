@@ -41,9 +41,6 @@ class AddressResolver extends React.Component {
             <React.Fragment>
               <span className="d-none d-lg-block">
                 <span className="text-default">{this.state.value}</span>
-                <small className="text-muted d-block">
-                  {this.props.address}
-                </small>
               </span>
             </React.Fragment>
           );
