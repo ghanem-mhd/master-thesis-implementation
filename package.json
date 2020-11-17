@@ -6,7 +6,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "oz compile && mocha --exit --recursive test",
+    "test": "oz compile && mocha --exit --recursive test --timeout 5000",
     "test-mini": "oz compile && mocha -g 'SLD_Machine' --exit --recursive test",
     "frontend": "cd frontend && yarn start",
     "server": "nodemon server.js",
