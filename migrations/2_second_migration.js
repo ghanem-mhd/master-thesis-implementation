@@ -12,40 +12,46 @@ const Registry = artifacts.require("Registry");
 module.exports = function (deployer) {
   deployer.then(async () => {
     var deployedProductContract = await deployer.deploy(Product);
-    await deployer.deploy(Registry);
+    var deployedRegistryContract = await deployer.deploy(Registry);
     await deployer.deploy(
       SupplyingProcess,
       process.env.PROCESS_OWNER_ADDRESS,
-      deployedProductContract.address
+      deployedProductContract.address,
+      deployedRegistryContract.address
     );
     await deployer.deploy(
       ProductionProcess,
       process.env.PROCESS_OWNER_ADDRESS,
-      deployedProductContract.address
+      deployedProductContract.address,
+      deployedRegistryContract.address
     );
     await deployer.deploy(
       VGR,
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.VGR_ADDRESS,
-      deployedProductContract.address
+      deployedProductContract.address,
+      deployedRegistryContract.address
     );
     await deployer.deploy(
       HBW,
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.HBW_ADDRESS,
-      deployedProductContract.address
+      deployedProductContract.address,
+      deployedRegistryContract.address
     );
     await deployer.deploy(
       MPO,
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.MPO_ADDRESS,
-      deployedProductContract.address
+      deployedProductContract.address,
+      deployedRegistryContract.address
     );
     await deployer.deploy(
       SLD,
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.SLD_ADDRESS,
-      deployedProductContract.address
+      deployedProductContract.address,
+      deployedRegistryContract.address
     );
   });
 };
