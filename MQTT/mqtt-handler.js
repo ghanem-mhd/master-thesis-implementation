@@ -11,6 +11,7 @@ var MPOClient = require("./machines/mpo-client");
 var ReadingClient = require("./readings-client");
 var SupplyingProcessClient = require("./processes/supplying-client");
 var ProductionProcessClient = require("./processes/production-client");
+var StateClient = require("./state-client");
 
 class MQTTHandler {
   constructor() {}
@@ -36,6 +37,7 @@ class MQTTHandler {
     var readingClient = new ReadingClient();
     var supplyingProcessClient = new SupplyingProcessClient();
     var productionProcessClient = new ProductionProcessClient();
+    var stateClient = new StateClient();
 
     simulator.connect();
     hbwClient.connect();
@@ -44,6 +46,7 @@ class MQTTHandler {
     mpoClient.connect();
     supplyingProcessClient.connect();
     productionProcessClient.connect();
+    stateClient.connect();
   }
 }
 

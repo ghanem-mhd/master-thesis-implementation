@@ -1,9 +1,6 @@
 require("dotenv").config();
-
 const mqtt = require("mqtt");
-
 var Logger = require("../utilities/logger");
-
 const helper = require("../utilities/helper");
 
 TOPIC_INPUT_STATE_HBW = "f/i/state/hbw";
@@ -16,39 +13,52 @@ TOPIC_INPUT_STATE_DSO = "f/i/state/dso";
 TOPIC_INPUT_BME680 = "i/bme680";
 TOPIC_INPUT_LDR = "i/ldr";
 
-mqttClient = mqtt.connect(process.env.MQTT_FT);
+class StateClient {
+  constructor() {}
 
-var HBWContract = null;
-
-mqttClient.on("error", (err) => {
-  Logger.error(err);
-  mqttClient.end();
-});
-
-mqttClient.on("connect", () => {
-  Logger.info("State MQTT client connected");
-  mqttClient.subscribe(TOPIC_INPUT_STATE_HBW, { qos: 0 });
-  mqttClient.subscribe(TOPIC_INPUT_STATE_VGR, { qos: 0 });
-  mqttClient.subscribe(TOPIC_INPUT_STATE_MPO, { qos: 0 });
-  mqttClient.subscribe(TOPIC_INPUT_STATE_SLD, { qos: 0 });
-  mqttClient.subscribe(TOPIC_INPUT_STATE_DSI, { qos: 0 });
-  mqttClient.subscribe(TOPIC_INPUT_STATE_DSO, { qos: 0 });
-  mqttClient.subscribe(TOPIC_INPUT_BME680, { qos: 0 });
-  mqttClient.subscribe(TOPIC_INPUT_LDR, { qos: 0 });
-});
-
-mqttClient.on("close", () => {
-  Logger.info("State MQTT client disconnected");
-});
-
-mqttClient.on("message", function (topic, messageBuffer) {
-  var message = JSON.parse(messageBuffer.toString());
-  message["topic"] = topic;
-  Logger.info(JSON.stringify(message));
-  if (topic == "i/ldr") {
-    console.log(message);
+  connect() {
+    this.clientName = this.constructor.name;
+    this.mqttClient = mqtt.connect(process.env.CURRENT_MQTT);
+    this.mqttClient.on("error", (error) => this.onMQTTError(error));
+    this.mqttClient.on("connect", () => this.onMQTTConnect());
+    this.mqttClient.on("close", () => this.onMQTTClose());
+    this.mqttClient.on("message", (topic, messageBuffer) =>
+      this.onMQTTMessage(topic, messageBuffer)
+    );
   }
-  if (topic == "i/bme680") {
-    console.log(message);
+
+  onMQTTError(error) {
+    Logger.logError(error, this.clientName);
+    this.mqttClient.end();
   }
-});
+
+  onMQTTClose() {
+    Logger.logEvent(this.clientName, "MQTT client disconnected");
+  }
+
+  onMQTTConnect() {
+    Logger.logEvent(this.clientName, "MQTT client connected");
+    this.mqttClient.subscribe(TOPIC_INPUT_STATE_HBW, { qos: 0 });
+    this.mqttClient.subscribe(TOPIC_INPUT_STATE_VGR, { qos: 0 });
+    this.mqttClient.subscribe(TOPIC_INPUT_STATE_MPO, { qos: 0 });
+    this.mqttClient.subscribe(TOPIC_INPUT_STATE_SLD, { qos: 0 });
+    this.mqttClient.subscribe(TOPIC_INPUT_STATE_DSI, { qos: 0 });
+    this.mqttClient.subscribe(TOPIC_INPUT_STATE_DSO, { qos: 0 });
+    this.mqttClient.subscribe(TOPIC_INPUT_BME680, { qos: 0 });
+    this.mqttClient.subscribe(TOPIC_INPUT_LDR, { qos: 0 });
+  }
+
+  onMQTTMessage(topic, messageBuffer) {
+    var message = JSON.parse(messageBuffer.toString());
+    message["topic"] = topic;
+    Logger.info(JSON.stringify(message));
+    if (topic == TOPIC_INPUT_LDR) {
+      console.log(message);
+    }
+    if (topic == TOPIC_INPUT_BME680) {
+      console.log(message);
+    }
+  }
+}
+
+module.exports = StateClient;
