@@ -4,11 +4,6 @@ const ContractsManager = require("./contracts-manager");
 const ProviderManager = require("./providers-manager");
 const Logger = require("./logger");
 
-const transactionOption = {
-  from: process.env.PROCESS_OWNER_ADDRESS,
-  gas: process.env.DEFAULT_GAS,
-};
-
 var processOwnerProvider = ProviderManager.getHttpProvider(
   process.env.NETWORK,
   process.env.PROCESS_OWNER_PK
@@ -19,11 +14,17 @@ var productOwnerProvider = ProviderManager.getHttpProvider(
 );
 
 var contractsAsyncGets = [
-  ContractsManager.getTruffleContract(processOwnerProvider, "VGR"),
-  ContractsManager.getTruffleContract(processOwnerProvider, "HBW"),
-  ContractsManager.getTruffleContract(processOwnerProvider, "MPO"),
-  ContractsManager.getTruffleContract(processOwnerProvider, "SLD"),
   ContractsManager.getTruffleContract(productOwnerProvider, "Product"),
+  ContractsManager.getTruffleContract(
+    productOwnerProvider,
+    "ProductionProcess"
+  ),
+  ContractsManager.getTruffleContract(
+    processOwnerProvider,
+    "ProductionProcess"
+  ),
+  ContractsManager.getTruffleContract(productOwnerProvider, "SupplyingProcess"),
+  ContractsManager.getTruffleContract(processOwnerProvider, "SupplyingProcess"),
 ];
 
 function finish() {
@@ -32,11 +33,13 @@ function finish() {
 
 Promise.all(contractsAsyncGets)
   .then(async (contracts) => {
-    var VGRContract = contracts[0];
-    var HBWContract = contracts[1];
-    var MPOContract = contracts[2];
-    var SLDContract = contracts[3];
-    var ProductContract = contracts[4];
+    var clientName = "Task Generator";
+
+    var ProductContract = contracts[0];
+    var ProductionContract1 = contracts[1];
+    var ProductionContract2 = contracts[2];
+    var SupplyingProcess1 = contracts[3];
+    var SupplyingProcess2 = contracts[4];
 
     for (var i = 0; i < process.argv.length; i++) {
       switch (process.argv[i]) {
@@ -52,13 +55,13 @@ Promise.all(contractsAsyncGets)
               assignFetchContainerTask();
               break;
             case "HBW2":
-              assignStoreContainerTask();
-              break;
-            case "HBW3":
               assignStoreProductTask();
               break;
-            case "HBW4":
+            case "HBW3":
               assignFetchProductTask();
+              break;
+            case "HBW4":
+              assignStoreContainerTask();
               break;
             case "VGR1":
               assignedGetInfoTask();
@@ -78,144 +81,204 @@ Promise.all(contractsAsyncGets)
     }
 
     async function assignSortingTask() {
-      await ProductContract.authorizeMachine(
-        process.env.SLD_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await SLDContract.assignSortingTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        transactionOption
-      );
-      Logger.info("Sorting task assigned " + receipt.tx);
-      finish();
+      try {
+        processID = await startProductionProcess();
+        receipt = await ProductionContract2.step4(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned sorting task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignProcessingTask() {
-      await ProductContract.authorizeMachine(
-        process.env.MPO_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await MPOContract.assignProcessingTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        transactionOption
-      );
-      Logger.info("Processing task assigned " + receipt.tx);
-      finish();
+      try {
+        processID = await startProductionProcess();
+        receipt = await ProductionContract2.step3(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned processing task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignFetchContainerTask() {
-      receipt = await HBWContract.assignFetchContainerTask(
-        1,
-        transactionOption
-      );
-      Logger.info("FetchContainer task assigned " + receipt.tx);
-      finish();
-    }
-
-    async function assignStoreContainerTask() {
-      receipt = await HBWContract.assignStoreContainerTask(
-        1,
-        transactionOption
-      );
-      Logger.info("FetchContainer task assigned " + receipt.tx);
-      finish();
+      try {
+        processID = await startSupplyingProcess();
+        receipt = await SupplyingProcess2.step2(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned fetch container task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignStoreProductTask() {
-      await ProductContract.authorizeMachine(
-        process.env.HBW_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await HBWContract.assignStoreProductTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        "1",
-        "11",
-        transactionOption
-      );
-      Logger.info("FetchContainer task assigned " + receipt.tx);
-      finish();
+      try {
+        await ProductContract.saveProductOperation(
+          process.env.DUMMY_PRODUCT,
+          1,
+          "NFCTagReading",
+          "12345",
+          {
+            from: productOwnerProvider.addresses[0],
+          }
+        );
+        await ProductContract.saveProductOperation(
+          process.env.DUMMY_PRODUCT,
+          1,
+          "ColorDetection",
+          "RED",
+          {
+            from: productOwnerProvider.addresses[0],
+          }
+        );
+        processID = await startSupplyingProcess();
+        receipt = await SupplyingProcess2.step4(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned store product task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignFetchProductTask() {
-      await ProductContract.authorizeMachine(
-        process.env.HBW_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await HBWContract.assignFetchProductTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        transactionOption
-      );
-      Logger.info("FetchContainer task assigned " + receipt.tx);
-      finish();
+      try {
+        processID = await startProductionProcess();
+        receipt = await ProductionContract2.step1(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned fetch product task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
+    }
+
+    async function assignStoreContainerTask() {
+      try {
+        processID = await startProductionProcess();
+        receipt = await ProductionContract2.step3(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned store container task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignedGetInfoTask() {
-      await ProductContract.authorizeMachine(
-        process.env.VGR_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await VGRContract.assignGetInfoTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        transactionOption
-      );
-      Logger.info("GetInfo task assigned " + receipt.tx);
-      finish();
+      try {
+        processID = await startSupplyingProcess();
+        receipt = await SupplyingProcess2.step1(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned get info task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignedDropToHBWTask() {
-      await ProductContract.authorizeMachine(
-        process.env.VGR_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await VGRContract.assignDropToHBWTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        transactionOption
-      );
-      Logger.info("DropToHBW task assigned " + receipt.tx);
-      finish();
+      try {
+        processID = await startSupplyingProcess();
+        receipt = await SupplyingProcess2.step3(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned drop to hbw task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignedMoveHBW2MPOTask() {
-      await ProductContract.authorizeMachine(
-        process.env.VGR_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await VGRContract.assignMoveHBW2MPOTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        transactionOption
-      );
-      Logger.info("MoveHBW2MPO task assigned " + receipt.tx);
-      finish();
+      try {
+        processID = await startProductionProcess();
+        receipt = await ProductionContract2.step2(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned move to MPO task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
 
     async function assignedPickSortedTask() {
-      await ProductContract.authorizeMachine(
-        process.env.VGR_ADDRESS,
-        process.env.DUMMY_PRODUCT,
-        { from: process.env.PRODUCT_OWNER_ADDRESS }
-      );
-      receipt = await VGRContract.assignPickSortedTask(
-        1,
-        process.env.DUMMY_PRODUCT,
-        "PINK",
-        transactionOption
-      );
-      Logger.info("PickSorted task assigned " + receipt.tx);
-      finish();
+      try {
+        await ProductContract.saveProductOperation(
+          process.env.DUMMY_PRODUCT,
+          1,
+          "Sorting",
+          "someColor",
+          {
+            from: productOwnerProvider.addresses[0],
+          }
+        );
+        processID = await startProductionProcess();
+        receipt = await ProductionContract2.step5(processID, {
+          from: processOwnerProvider.addresses[0],
+        });
+        Logger.logEvent(clientName, "assigned pick sorted task", receipt);
+        finish();
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
+    }
+
+    async function startProductionProcess() {
+      try {
+        receipt = await ProductionContract1.startProcess(
+          process.env.DUMMY_PRODUCT,
+          {
+            from: productOwnerProvider.addresses[0],
+          }
+        );
+        Logger.logEvent(clientName, "start production process", receipt);
+        processID = parseInt(receipt.logs[0].args[0]);
+        return processID;
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
+    }
+
+    async function startSupplyingProcess() {
+      try {
+        receipt = await SupplyingProcess1.startProcess(
+          process.env.DUMMY_PRODUCT,
+          {
+            from: productOwnerProvider.addresses[0],
+          }
+        );
+        Logger.logEvent(clientName, "start supplying process", receipt);
+        processID = parseInt(receipt.logs[0].args[0]);
+        return processID;
+      } catch (error) {
+        Logger.logError(error, clientName);
+        finish();
+      }
     }
   })
   .catch((error) => {
