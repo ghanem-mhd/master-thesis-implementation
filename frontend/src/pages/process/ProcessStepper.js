@@ -5,7 +5,6 @@ import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
 import ContractsLoader from "../utilities/ContractsLoader";
-import AddressResolver from "../utilities/AddressResolver";
 
 class ProcessStepper extends React.Component {
   constructor(props) {
@@ -18,7 +17,6 @@ class ProcessStepper extends React.Component {
   }
 
   getStepsInfo(ProcessContract, numberOfSteps) {
-    let steps = [];
     for (let index = 1; index <= numberOfSteps; index++) {
       ProcessContract.methods
         .getStepInfo(index)

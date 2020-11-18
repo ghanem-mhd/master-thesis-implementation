@@ -5,6 +5,7 @@ import * as React from "react";
 import { Grid, Card } from "tabler-react";
 import ConnectionContext from "../utilities/ConnectionContext";
 import EventsTable from "./EventsTable";
+import ContractsLoader from "../utilities/ContractsLoader";
 
 class EventsLogStreamTable extends React.Component {
   constructor(props) {
@@ -15,61 +16,152 @@ class EventsLogStreamTable extends React.Component {
   }
 
   componentDidMount() {
-    ["VGR", "HBW", "SLD", "MPO"].forEach((machine) => {
-      this.contracts[machine].events.TaskStarted(
-        { fromBlock: "latest" },
-        (error, event) => {
-          if (error) {
-            console.log(error);
-          } else {
-            this.onNewEvent(machine, event);
-          }
-        }
-      );
-      this.contracts[machine].events.TaskFinished(
-        { fromBlock: "latest" },
-        (error, event) => {
-          if (error) {
-            console.log(error);
-          } else {
-            this.onNewEvent(machine, event);
-          }
-        }
-      );
-    });
+    this.getMachinesList();
+    this.getProcessList();
+  }
 
-    ["ProductionProcess", "SupplyingProcess"].forEach((process) => {
-      this.contracts[process].events.ProcessStarted(
-        { fromBlock: "latest" },
-        (error, event) => {
-          if (error) {
-            console.log(error);
-          } else {
-            this.onNewEvent(process, event);
+  setMachineListeners(machineContract) {
+    machineContract.methods
+      .getName()
+      .call()
+      .then((machineName) => {
+        machineContract.events.TaskAssigned(
+          { fromBlock: "latest" },
+          (error, event) => {
+            if (error) {
+              console.log(error);
+            } else {
+              this.onNewEvent(machineName, event);
+            }
           }
-        }
-      );
-      this.contracts[process].events.ProcessStepStarted(
-        { fromBlock: "latest" },
-        (error, event) => {
-          if (error) {
-            console.log(error);
-          } else {
-            this.onNewEvent(process, event);
+        );
+        machineContract.events.TaskStarted(
+          { fromBlock: "latest" },
+          (error, event) => {
+            if (error) {
+              console.log(error);
+            } else {
+              this.onNewEvent(machineName, event);
+            }
           }
-        }
-      );
-      this.contracts[process].events.ProcessFinished(
-        { fromBlock: "latest" },
-        (error, event) => {
-          if (error) {
-            console.log(error);
-          } else {
-            this.onNewEvent(process, event);
+        );
+        machineContract.events.TaskFinished(
+          { fromBlock: "latest" },
+          (error, event) => {
+            if (error) {
+              console.log(error);
+            } else {
+              this.onNewEvent(machineName, event);
+            }
           }
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  setProcessListeners(processContract) {
+    processContract.methods
+      .getName()
+      .call()
+      .then((processName) => {
+        processContract.events.ProcessStarted(
+          { fromBlock: "latest" },
+          (error, event) => {
+            if (error) {
+              console.log(error);
+            } else {
+              this.onNewEvent(processName, event);
+            }
+          }
+        );
+        processContract.events.ProcessStepStarted(
+          { fromBlock: "latest" },
+          (error, event) => {
+            if (error) {
+              console.log(error);
+            } else {
+              this.onNewEvent(processName, event);
+            }
+          }
+        );
+        processContract.events.ProcessFinished(
+          { fromBlock: "latest" },
+          (error, event) => {
+            if (error) {
+              console.log(error);
+            } else {
+              this.onNewEvent(processName, event);
+            }
+          }
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  getMachinesList() {
+    this.registry.methods
+      .getMachineContractsCount()
+      .call()
+      .then((contractsCount) => {
+        for (let id = 0; id < contractsCount; id++) {
+          this.registry.methods
+            .getMachineContract(id)
+            .call()
+            .then((machineContractInfo) => {
+              ContractsLoader.loadMachineContract(
+                this.web3,
+                machineContractInfo[1]
+              )
+                .then((result) => {
+                  this.setMachineListeners(result.wsContract);
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
         }
-      );
-    });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  getProcessList() {
+    this.registry.methods
+      .getProcessesContractsCount()
+      .call()
+      .then((contractsCount) => {
+        for (let id = 0; id < contractsCount; id++) {
+          this.registry.methods
+            .getProcessContract(id)
+            .call()
+            .then((processContractInfo) => {
+              ContractsLoader.loadProcessContract(
+                this.web3,
+                processContractInfo[1]
+              )
+                .then((result) => {
+                  this.setProcessListeners(result.wsContract);
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   onNewEvent(contractName, ethereumEvent) {
@@ -92,7 +184,8 @@ class EventsLogStreamTable extends React.Component {
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
-          this.contracts = connectionContext.wsContracts;
+          this.registry = connectionContext.registry;
+          this.web3 = connectionContext.web3;
           return (
             <Grid.Row>
               <Grid.Col>
