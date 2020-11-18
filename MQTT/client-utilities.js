@@ -106,9 +106,10 @@ module.exports = {
     message["ts"] = new Date().toISOString();
     return message;
   },
-  getSoundMessage: function (code) {
+  getSoundMessage: function (soundID) {
     var message = {};
-    message["code"] = code;
+    message["soundID"] = soundID;
+    message["code"] = 1;
     message["ts"] = new Date().toISOString();
     return message;
   },
