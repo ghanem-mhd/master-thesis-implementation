@@ -48,7 +48,7 @@ class VGRClient {
   onMQTTConnect() {
     Logger.logEvent(this.clientName, "MQTT client connected");
     this.mqttClient.subscribe(Topics.TOPIC_VGR_ACK, { qos: 0 });
-    if (process.env.MACHINE_CLIENTS_STATE == true) {
+    if (process.env.MACHINE_CLIENTS_STATE) {
       this.mqttClient.subscribe(Topics.TOPIC_VGR_STATE, { qos: 0 });
     }
     ClientUtils.registerCallbackForEvent(
@@ -185,24 +185,24 @@ class VGRClient {
   }
 
   async handleGetInfoTask(task) {
-    var taskMessage = ClientUtils.getTaskMessageObject(task, 1);
-    this.sendTask(task.taskID, task.taskName, taskMessage);
-  }
-
-  async handleDropToHBWTask(task) {
     var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
     this.sendTask(task.taskID, task.taskName, taskMessage);
   }
 
+  async handleDropToHBWTask(task) {
+    var taskMessage = ClientUtils.getTaskMessageObject(task, 3);
+    this.sendTask(task.taskID, task.taskName, taskMessage);
+  }
+
   async handleMoveHBW2MPOTask(task) {
-    var taskMessage = ClientUtils.getTaskMessageObject(task, 5);
+    var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
     this.sendTask(task.taskID, task.taskName, taskMessage);
   }
 
   async handlePickSortedTask(task) {
     ClientUtils.getTaskInputs(this.Contract, task.taskID, ["color"])
       .then((inputValues) => {
-        var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
+        var taskMessage = ClientUtils.getTaskMessageObject(task, 5);
         taskMessage["type"] = inputValues[0];
         this.sendTask(task.taskID, task.taskName, taskMessage);
       })

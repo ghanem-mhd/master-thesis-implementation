@@ -62,7 +62,13 @@ logger.logEvent = function (eventLocation, eventDescription, payload = null) {
     );
   } else {
     logger.info(`${eventLocation} - ${eventDescription}`);
+    if (payload) {
+      logger.info(`${JSON.stringify(payload)}`);
+    }
   }
+  console.log(
+    "----------------------------------------------------------------------------------------------------------"
+  );
   const IO = require("./socket.js").getIO();
   const DB = require("./db.js").getEventsLogDB();
   if (DB) {

@@ -46,7 +46,7 @@ class MPOClient {
     Logger.logEvent(this.clientName, "MQTT client connected");
     this.mqttClient.subscribe(Topics.TOPIC_MPO_ACK, { qos: 0 });
     this.mqttClient.subscribe(Topics.TOPIC_MPO_OPERATIONS, { qos: 0 });
-    if (process.env.MACHINE_CLIENTS_STATE == true) {
+    if (process.env.MACHINE_CLIENTS_STATE) {
       this.mqttClient.subscribe(Topics.TOPIC_MPO_STATE, { qos: 0 });
     }
     ClientUtils.registerCallbackForEvent(
@@ -204,7 +204,7 @@ class MPOClient {
   }
 
   async handleProcessTask(task) {
-    var taskMessage = ClientUtils.getTaskMessageObject(task, 7);
+    var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
     this.sendTask(task.taskID, task.taskName, taskMessage);
   }
 

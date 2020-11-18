@@ -48,8 +48,9 @@ class HBWClient {
   onMQTTConnect() {
     Logger.logEvent(this.clientName, "MQTT client connected");
     this.mqttClient.subscribe(Topics.TOPIC_HBW_ACK, { qos: 0 });
-    if (process.env.MACHINE_CLIENTS_STATE == true) {
+    if (process.env.MACHINE_CLIENTS_STATE) {
       this.mqttClient.subscribe(Topics.TOPIC_HBW_STATE, { qos: 0 });
+      this.mqttClient.subscribe(Topics.TOPIC_INPUT_STOCK, { qos: 0 });
     }
     ClientUtils.registerCallbackForEvent(
       this.clientName,
@@ -83,6 +84,10 @@ class HBWClient {
 
     if (topic == Topics.TOPIC_HBW_STATE) {
       Logger.logEvent(this.clientName, "Status", incomingMessage);
+    }
+
+    if (topic == Topics.TOPIC_INPUT_STOCK) {
+      Logger.logEvent(this.clientName, "Stock", incomingMessage);
     }
 
     if (topic == Topics.TOPIC_HBW_ACK) {
@@ -176,14 +181,14 @@ class HBWClient {
   }
 
   async handleFetchContainerTask(task) {
-    var taskMessage = ClientUtils.getTaskMessageObject(task, 1);
+    var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
     this.sendTask(task.taskID, task.taskName, taskMessage);
   }
 
   async handleStoreWBTask(task) {
     ClientUtils.getTaskInputs(this.Contract, task.taskID, ["color", "id"])
       .then((inputValues) => {
-        var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
+        var taskMessage = ClientUtils.getTaskMessageObject(task, 3);
         taskMessage["workpiece"] = {
           type: inputValues[0],
           id: inputValues[1],
@@ -197,23 +202,17 @@ class HBWClient {
   }
 
   async handleFetchWBTask(task) {
-    ClientUtils.getTaskInputs(this.Contract, task.taskID, ["color"])
-      .then((inputValues) => {
-        var taskMessage = ClientUtils.getTaskMessageObject(task, 3);
-        taskMessage["workpiece"] = {
-          id: "",
-          type: inputValues[0],
-          status: "RAW",
-        };
-        this.sendTask(task.taskID, task.taskName, taskMessage);
-      })
-      .catch((error) => {
-        Logger.logError(error, this.clientName);
-      });
+    var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
+    taskMessage["workpiece"] = {
+      type: "",
+      id: "",
+      status: "",
+    };
+    this.sendTask(task.taskID, task.taskName, taskMessage);
   }
 
   async handleStoreContainerTask(task) {
-    var taskMessage = ClientUtils.getTaskMessageObject(task, 4);
+    var taskMessage = ClientUtils.getTaskMessageObject(task, 5);
     this.sendTask(task.taskID, task.taskName, taskMessage);
   }
 

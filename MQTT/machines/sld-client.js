@@ -45,7 +45,7 @@ class SLDClient {
   onMQTTConnect() {
     Logger.logEvent(this.clientName, "MQTT client connected");
     this.mqttClient.subscribe(Topics.TOPIC_SLD_ACK, { qos: 0 });
-    if (process.env.MACHINE_CLIENTS_STATE == true) {
+    if (process.env.MACHINE_CLIENTS_STATE) {
       this.mqttClient.subscribe(Topics.TOPIC_SLD_STATE, { qos: 0 });
     }
 
@@ -169,13 +169,13 @@ class SLDClient {
       null
     );
     this.mqttClient.publish(
-      Topics.TOPIC_SLD_S,
+      Topics.TOPIC_SLD_DO,
       JSON.stringify(ClientUtils.getSoundMessage(2))
     );
   }
 
   async handleSortTask(task) {
-    var taskMessage = ClientUtils.getTaskMessageObject(task, 8);
+    var taskMessage = ClientUtils.getTaskMessageObject(task, 2);
     this.sendTaskToMachine(task.taskID, task.taskName, taskMessage);
   }
 

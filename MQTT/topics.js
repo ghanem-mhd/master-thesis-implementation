@@ -3,7 +3,6 @@ module.exports = (function () {
     TOPIC_SLD_STATE: "f/i/state/sld",
     TOPIC_SLD_ACK: "fl/sld/ack",
     TOPIC_SLD_DO: "fl/sld/do",
-    TOPIC_SLD_S: "fl/sld/sound",
     TOPIC_MPO_STATE: "f/i/state/mpo",
     TOPIC_MPO_ACK: "fl/mpo/ack",
     TOPIC_MPO_DO: "fl/mpo/do",
@@ -14,5 +13,6 @@ module.exports = (function () {
     TOPIC_VGR_STATE: "f/i/state/vgr",
     TOPIC_VGR_ACK: "fl/vgr/ack",
     TOPIC_VGR_DO: "fl/vgr/do2",
+    TOPIC_INPUT_STOCK: "f/i/stock",
   };
 })();
