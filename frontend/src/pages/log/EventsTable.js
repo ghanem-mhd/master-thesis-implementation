@@ -7,28 +7,24 @@ import EventLogDetails from "./EventLogDetails";
 const columns = [
   {
     name: "Contract Name",
-    cell: (row) => <Table.Col>{row.contractName}</Table.Col>,
     center: true,
     selector: "contractName",
     sortable: true,
   },
   {
     name: "Event Name",
-    cell: (row) => <Table.Col>{row.eventName}</Table.Col>,
     center: true,
     selector: "eventName",
     sortable: true,
   },
   {
     name: "Block Number",
-    cell: (row) => <Table.Col>{row.blockNumber}</Table.Col>,
     center: true,
     selector: "blockNumber",
     sortable: true,
   },
   {
     name: "Transaction Hash",
-    cell: (row) => <Table.Col>{row.transactionHash}</Table.Col>,
     left: true,
     grow: 3,
     selector: "transactionHash",

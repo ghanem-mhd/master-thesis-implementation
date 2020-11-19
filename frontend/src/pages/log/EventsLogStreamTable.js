@@ -167,7 +167,7 @@ class EventsLogStreamTable extends React.Component {
   onNewEvent(contractName, ethereumEvent) {
     let row = {
       contractName: contractName,
-      _id: ethereumEvent.transactionHash,
+      _id: ethereumEvent.transactionHash + ethereumEvent.id,
       payload: ethereumEvent,
       eventName: ethereumEvent.event,
       blockNumber: ethereumEvent.blockNumber,

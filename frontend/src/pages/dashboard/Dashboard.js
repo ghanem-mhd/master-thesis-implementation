@@ -4,12 +4,11 @@ import * as React from "react";
 
 import ProcessStepper from "../process/ProcessStepper";
 import { Page, Grid, Dimmer } from "tabler-react";
-import Misc from "../utilities/Misc";
 import EventsLogStreamTable from "../log/EventsLogStreamTable";
 import ConnectionContext from "../utilities/ConnectionContext";
 import MachineState from "../machine/MachineState";
-import ContractsLoader from "../utilities/ContractsLoader";
 import ErrorPage from "../utilities/ErrorPage";
+import Stock from "./Stock";
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -96,6 +95,7 @@ class Dashboard extends React.Component {
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
           this.registry = connectionContext.registry;
+          this.socket = connectionContext.socket;
           return (
             <Page.Content
               title="Dashboard"
@@ -130,6 +130,11 @@ class Dashboard extends React.Component {
                   </Grid.Row>
                 ))}
                 <EventsLogStreamTable title={"Events Log"} />
+                <Stock
+                  registry={this.registry}
+                  socket={this.socket}
+                  web3={this.web3}
+                />
               </Dimmer>
             </Page.Content>
           );

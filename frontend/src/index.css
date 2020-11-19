@@ -13,3 +13,9 @@ body {
   text-align: center !important;
   color: #9aa0ac !important;
 }
+
+.imgClassName {
+  width: 30%;
+  display: block;
+  margin: auto;
+}

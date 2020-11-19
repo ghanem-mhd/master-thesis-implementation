@@ -33,6 +33,7 @@ import ConnectionContext from "./pages/utilities/ConnectionContext";
 import ContractsLoader from "./pages/utilities/ContractsLoader";
 
 import ErrorPage from "./pages/utilities/ErrorPage";
+import socketIOClient from "socket.io-client";
 
 import "tabler-react/dist/Tabler.css";
 import "react-notifications-component/dist/theme.css";
@@ -92,6 +93,12 @@ class App extends React.Component {
           loading: false,
         });
       });
+
+    this.socket = socketIOClient(process.env.REACT_APP_BACKEND_BASE_URL);
+  }
+
+  componentWillUnmount() {
+    this.socket.close();
   }
 
   render() {
@@ -117,6 +124,7 @@ class App extends React.Component {
           contracts: this.state.contracts,
           registry: this.state.contracts["Registry"],
           wsContracts: this.state.wsContracts,
+          socket: this.socket,
         }}
       >
         <Router>
