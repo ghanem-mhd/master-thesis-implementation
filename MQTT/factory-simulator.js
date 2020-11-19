@@ -9,6 +9,7 @@ var ClientUtils = require("./client-utilities");
 class FactorySimulator {
   static DELAY = 1000;
   static ReadingsFreq = 5000;
+  static StockFreq = 5000;
 
   constructor() {}
 
@@ -30,6 +31,7 @@ class FactorySimulator {
       this.sendBrightnessSensorReadings.bind(this),
       FactorySimulator.ReadingsFreq
     );
+    setInterval(this.sendStock.bind(this), FactorySimulator.StockFreq);
   }
 
   sendEnvironmentSensorReadings() {
@@ -44,7 +46,7 @@ class FactorySimulator {
     newReading["aq"] = this.getRandomInt(0, 3);
     newReading["gr"] = this.getRandomInt(15000, 170000);
 
-    this.mqttClient.publish("i/bme680", JSON.stringify(newReading));
+    this.mqttClient.publish(Topics.TOPIC_BME680, JSON.stringify(newReading));
   }
 
   sendBrightnessSensorReadings() {
@@ -52,7 +54,72 @@ class FactorySimulator {
     newReading["ts"] = new Date().toISOString();
     newReading["br"] = this.getRandomInt(0, 60);
     newReading["ldr"] = this.getRandomInt(15000, 170000);
-    this.mqttClient.publish("i/ldr", JSON.stringify(newReading));
+    this.mqttClient.publish(Topics.TOPIC_LDR, JSON.stringify(newReading));
+  }
+
+  sendStock() {
+    var newStock = {};
+    newStock["ts"] = new Date().toISOString();
+    newStock.stockItems = [
+      { location: "A1", workpiece: null },
+      {
+        location: "A2",
+        workpiece: {
+          id: "04963f92186580",
+          state: "RAW",
+          type: "BLUE",
+          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+        },
+      },
+      {
+        location: "A3",
+        workpiece: {
+          id: "041c3f92186581",
+          state: "RAW",
+          type: "RED",
+          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+        },
+      },
+      { location: "B1", workpiece: null },
+      {
+        location: "B2",
+        workpiece: {
+          id: "04333f92186581",
+          state: "RAW",
+          type: "RED",
+          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+        },
+      },
+      { location: "B3", workpiece: null },
+      {
+        location: "C1",
+        workpiece: {
+          id: "04323f92186581",
+          state: "RAW",
+          type: "RED",
+          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+        },
+      },
+      {
+        location: "C2",
+        workpiece: {
+          id: "04063f92186581",
+          state: "RAW",
+          type: "BLUE",
+          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+        },
+      },
+      {
+        location: "C3",
+        workpiece: {
+          id: "04ad3f92186580",
+          state: "RAW",
+          type: "BLUE",
+          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+        },
+      },
+    ];
+    this.mqttClient.publish(Topics.TOPIC_STOCK, JSON.stringify(newStock));
   }
 
   onMQTTError(error) {
