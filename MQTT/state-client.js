@@ -2,16 +2,7 @@ require("dotenv").config();
 const mqtt = require("mqtt");
 var Logger = require("../utilities/logger");
 const helper = require("../utilities/helper");
-
-TOPIC_INPUT_STATE_HBW = "f/i/state/hbw";
-TOPIC_INPUT_STATE_VGR = "f/i/state/vgr";
-TOPIC_INPUT_STATE_MPO = "f/i/state/mpo";
-TOPIC_INPUT_STATE_SLD = "f/i/state/sld";
-TOPIC_INPUT_STATE_DSI = "f/i/state/dsi";
-TOPIC_INPUT_STATE_DSO = "f/i/state/dso";
-
-TOPIC_INPUT_BME680 = "i/bme680";
-TOPIC_INPUT_LDR = "i/ldr";
+const Topics = require("./topics");
 
 class StateClient {
   constructor() {}
@@ -25,6 +16,7 @@ class StateClient {
     this.mqttClient.on("message", (topic, messageBuffer) =>
       this.onMQTTMessage(topic, messageBuffer)
     );
+    this.IO = require("../utilities/socket.js").getIO();
   }
 
   onMQTTError(error) {
@@ -38,25 +30,23 @@ class StateClient {
 
   onMQTTConnect() {
     Logger.logEvent(this.clientName, "MQTT client connected");
-    this.mqttClient.subscribe(TOPIC_INPUT_STATE_HBW, { qos: 0 });
-    this.mqttClient.subscribe(TOPIC_INPUT_STATE_VGR, { qos: 0 });
-    this.mqttClient.subscribe(TOPIC_INPUT_STATE_MPO, { qos: 0 });
-    this.mqttClient.subscribe(TOPIC_INPUT_STATE_SLD, { qos: 0 });
-    this.mqttClient.subscribe(TOPIC_INPUT_STATE_DSI, { qos: 0 });
-    this.mqttClient.subscribe(TOPIC_INPUT_STATE_DSO, { qos: 0 });
-    this.mqttClient.subscribe(TOPIC_INPUT_BME680, { qos: 0 });
-    this.mqttClient.subscribe(TOPIC_INPUT_LDR, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_HBW_STATE, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_VGR_STATE, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_MPO_STATE, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_SLD_STATE, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_DSI_STATE, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_DSO_STATE, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_BME680, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_LDR, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_STOCK, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_NFC, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_CAMERA, { qos: 0 });
   }
 
   onMQTTMessage(topic, messageBuffer) {
     var message = JSON.parse(messageBuffer.toString());
-    message["topic"] = topic;
-    Logger.info(JSON.stringify(message));
-    if (topic == TOPIC_INPUT_LDR) {
-      console.log(message);
-    }
-    if (topic == TOPIC_INPUT_BME680) {
-      console.log(message);
+    if (this.IO) {
+      this.IO.in("data_from_mqtt").emit(topic, message);
     }
   }
 }

@@ -13,6 +13,12 @@ module.exports = (function () {
     TOPIC_VGR_STATE: "f/i/state/vgr",
     TOPIC_VGR_ACK: "fl/vgr/ack",
     TOPIC_VGR_DO: "fl/vgr/do2",
-    TOPIC_INPUT_STOCK: "f/i/stock",
+    TOPIC_STOCK: "f/i/stock",
+    TOPIC_DSI_STATE: "f/i/state/dsi",
+    TOPIC_DSO_STATE: "f/i/state/dso",
+    TOPIC_BME680: "i/bme680",
+    TOPIC_LDR: "i/ldr",
+    TOPIC_NFC: "f/i/nfc/ds",
+    TOPIC_CAMERA: "i/cam",
   };
 })();
