@@ -106,8 +106,9 @@ module.exports = {
     message["ts"] = new Date().toISOString();
     return message;
   },
-  getSoundMessage: function (soundID) {
+  getSoundMessage: function (soundID, repeat = 1) {
     var message = {};
+    message["repeat"] = repeat;
     message["soundID"] = soundID;
     message["code"] = 1;
     message["ts"] = new Date().toISOString();
