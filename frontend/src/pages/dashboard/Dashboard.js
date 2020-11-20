@@ -14,76 +14,13 @@ class Dashboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      machines: [],
       processes: [],
-      loading: true,
+      loading: false,
     };
   }
 
   componentDidMount() {
     document.title = "Dashboard";
-    this.getMachinesList();
-    this.getProcessList();
-  }
-
-  getMachinesList() {
-    this.registry.methods
-      .getMachineContractsCount()
-      .call()
-      .then((contractsCount) => {
-        for (let id = 0; id < contractsCount; id++) {
-          this.registry.methods
-            .getMachineContract(id)
-            .call()
-            .then((machineContractInfo) => {
-              let machine = {};
-              machine.name = machineContractInfo[0];
-              machine.machineContractAddress = machineContractInfo[1];
-              this.setState((state, props) => {
-                return {
-                  loading: false,
-                  machines: [...this.state.machines, machine],
-                };
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-
-  getProcessList() {
-    this.registry.methods
-      .getProcessesContractsCount()
-      .call()
-      .then((contractsCount) => {
-        for (let id = 0; id < contractsCount; id++) {
-          this.registry.methods
-            .getProcessContract(id)
-            .call()
-            .then((processContractInfo) => {
-              let process = {};
-              process.name = processContractInfo[0];
-              process.processContractAddress = processContractInfo[1];
-              this.setState((state, props) => {
-                return {
-                  loading: false,
-                  processes: [...this.state.processes, process],
-                };
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
   }
 
   render() {
@@ -103,32 +40,34 @@ class Dashboard extends React.Component {
             >
               <Dimmer active={this.state.loading} loader>
                 <Grid.Row cards={true}>
-                  {this.state.machines.map((machine, index) => (
-                    <Grid.Col
-                      sm={12}
-                      lg={6}
-                      key={machine.machineContractAddress}
-                    >
+                  {[
+                    "Vacuum Gripper Robot (VGR)",
+                    "High-Bay Warehouse (HBW)",
+                    "Multi-Processing Station (MPO)",
+                    "Sorting Line with Color Detection (SLD)",
+                  ].map((machineName, index) => (
+                    <Grid.Col sm={12} lg={6} key={machineName}>
                       <MachineState
+                        registry={this.registry}
                         web3={this.web3}
-                        machineName={machine.name}
-                        machineContractAddress={machine.machineContractAddress}
+                        machineName={machineName}
                       />
                     </Grid.Col>
                   ))}
                 </Grid.Row>
-                {this.state.processes.map((process, index) => (
-                  <Grid.Row key={process.processContractAddress}>
-                    <Grid.Col>
-                      <ProcessStepper
-                        registry={this.registry}
-                        web3={this.web3}
-                        processName={process.name}
-                        processContractAddress={process.processContractAddress}
-                      />
-                    </Grid.Col>
-                  </Grid.Row>
-                ))}
+                {["Supplying Process", "Production Process"].map(
+                  (processName, index) => (
+                    <Grid.Row key={processName}>
+                      <Grid.Col>
+                        <ProcessStepper
+                          registry={this.registry}
+                          web3={this.web3}
+                          processName={processName}
+                        />
+                      </Grid.Col>
+                    </Grid.Row>
+                  )
+                )}
                 <EventsLogStreamTable title={"Events Log"} />
                 <Stock
                   registry={this.registry}

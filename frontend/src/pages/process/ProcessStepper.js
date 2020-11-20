@@ -16,36 +16,36 @@ class ProcessStepper extends React.Component {
     };
   }
 
-  getStepsInfo(ProcessContract, numberOfSteps) {
-    for (let index = 1; index <= numberOfSteps; index++) {
-      ProcessContract.methods
-        .getStepInfo(index)
-        .call()
-        .then((result) => {
-          var step = {};
-          step.machineName = result[0];
-          step.taskName = result[1];
-          this.setState((state, props) => {
-            return {
-              steps: [...this.state.steps, step],
-            };
-          });
-        });
+  async getStepsInfo(ProcessContract, numberOfSteps) {
+    let steps = [];
+    try {
+      for (let index = 1; index <= numberOfSteps; index++) {
+        var result = await ProcessContract.methods.getStepInfo(index).call();
+        let step = {};
+        step.machineName = result[0];
+        step.taskName = result[1];
+        steps.push(step);
+      }
+      this.setState({ steps: steps });
+    } catch (error) {
+      console.log(error);
     }
   }
 
-  componentDidMount() {
-    ContractsLoader.loadProcessContract(
-      this.props.web3,
-      this.props.processContractAddress
-    )
-      .then((result) => {
-        this.setUpListeners(result.wsContract);
-      })
-      .catch((error) => {
-        console.log(error);
-        this.setState({ fatalError: error.message });
-      });
+  async componentDidMount() {
+    try {
+      let processContractAddress = await this.props.registry.methods
+        .resolveName(this.props.processName)
+        .call();
+      let result = await ContractsLoader.loadProcessContract(
+        this.props.web3,
+        processContractAddress
+      );
+      this.setUpListeners(result.wsContract);
+    } catch (error) {
+      console.log(error);
+      this.setState({ fatalError: error.message });
+    }
   }
 
   setUpListeners(ProcessContract) {
