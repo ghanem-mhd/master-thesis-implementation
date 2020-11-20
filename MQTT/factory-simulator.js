@@ -68,7 +68,7 @@ class FactorySimulator {
           id: "04963f92186580",
           state: "RAW",
           type: "BLUE",
-          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
         },
       },
       {
@@ -77,7 +77,7 @@ class FactorySimulator {
           id: "041c3f92186581",
           state: "RAW",
           type: "RED",
-          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
         },
       },
       { location: "B1", workpiece: null },
@@ -87,7 +87,7 @@ class FactorySimulator {
           id: "04333f92186581",
           state: "RAW",
           type: "RED",
-          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
         },
       },
       { location: "B3", workpiece: null },
@@ -97,7 +97,7 @@ class FactorySimulator {
           id: "04323f92186581",
           state: "RAW",
           type: "RED",
-          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
         },
       },
       {
@@ -106,7 +106,7 @@ class FactorySimulator {
           id: "04063f92186581",
           state: "RAW",
           type: "BLUE",
-          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
         },
       },
       {
@@ -115,7 +115,7 @@ class FactorySimulator {
           id: "04ad3f92186580",
           state: "RAW",
           type: "BLUE",
-          productDID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
         },
       },
     ];

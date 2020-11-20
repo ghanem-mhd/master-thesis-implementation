@@ -230,7 +230,7 @@ Promise.all(contractsAsyncGets)
           process.env.DUMMY_PRODUCT,
           1,
           "Sorting",
-          "someColor",
+          "WHITE",
           {
             from: productOwnerProvider.addresses[0],
           }
@@ -247,14 +247,13 @@ Promise.all(contractsAsyncGets)
       }
     }
 
-    async function startProductionProcess() {
+    async function startProductionProcess(
+      productDID = process.env.DUMMY_PRODUCT
+    ) {
       try {
-        receipt = await ProductionContract1.startProcess(
-          process.env.DUMMY_PRODUCT,
-          {
-            from: productOwnerProvider.addresses[0],
-          }
-        );
+        receipt = await ProductionContract1.startProcess(productDID, {
+          from: productOwnerProvider.addresses[0],
+        });
         Logger.logEvent(clientName, "start production process", receipt);
         processID = parseInt(receipt.logs[0].args[0]);
         return processID;

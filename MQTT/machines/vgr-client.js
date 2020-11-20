@@ -101,6 +101,22 @@ class VGRClient {
         return;
       }
       this.currentTaskID = 0;
+
+      if (code == 8 || code == 9 || code == 10) {
+        this.mqttClient.publish(
+          Topics.TOPIC_VGR_DO,
+          JSON.stringify(ClientUtils.getSoundMessage(2, 3))
+        );
+        ClientUtils.sendFinishTaskTransaction(
+          this.clientName,
+          this.Contract,
+          this.machineAddress,
+          taskID,
+          3
+        );
+        return;
+      }
+
       if (code == 1) {
         var workpiece = incomingMessage["workpiece"];
         if (workpiece) {
@@ -223,7 +239,7 @@ class VGRClient {
   getInfoTaskFinished(taskID, color, id) {
     this.Contract.getTask(taskID)
       .then((task) => {
-        this.Contract.finishGetInfoTask(taskID, color, id, {
+        this.Contract.finishGetInfoTask(taskID, id, color, {
           from: this.machineAddress,
           gas: process.env.DEFAULT_GAS,
         })

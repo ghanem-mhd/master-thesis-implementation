@@ -50,7 +50,7 @@ class HBWClient {
     this.mqttClient.subscribe(Topics.TOPIC_HBW_ACK, { qos: 0 });
     if (process.env.MACHINE_CLIENTS_STATE) {
       this.mqttClient.subscribe(Topics.TOPIC_HBW_STATE, { qos: 0 });
-      this.mqttClient.subscribe(Topics.TOPIC_INPUT_STOCK, { qos: 0 });
+      this.mqttClient.subscribe(Topics.TOPIC_STOCK, { qos: 0 });
     }
     ClientUtils.registerCallbackForEvent(
       this.clientName,
@@ -86,7 +86,7 @@ class HBWClient {
       Logger.logEvent(this.clientName, "Status", incomingMessage);
     }
 
-    if (topic == Topics.TOPIC_INPUT_STOCK) {
+    if (topic == Topics.TOPIC_STOCK) {
       Logger.logEvent(this.clientName, "Stock", incomingMessage);
     }
 
@@ -96,21 +96,38 @@ class HBWClient {
         "Received Ack message from HBW",
         incomingMessage
       );
-      var {
-        taskID,
-        productDID,
-        processID,
-        code,
-      } = ClientUtils.getAckMessageInfo(incomingMessage);
-      this.currentTaskID = 0;
+      this.onNewAckReceived(incomingMessage);
+    }
+  }
+
+  async onNewAckReceived(ackMessage) {
+    var { taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(
+      ackMessage
+    );
+    this.currentTaskID = 0;
+
+    if (code == 5 || code == 6) {
+      this.mqttClient.publish(
+        Topics.TOPIC_HBW_DO,
+        JSON.stringify(ClientUtils.getSoundMessage(2, 3))
+      );
       ClientUtils.sendFinishTaskTransaction(
         this.clientName,
         this.Contract,
         this.machineAddress,
         taskID,
-        2
+        3
       );
+      return;
     }
+
+    ClientUtils.sendFinishTaskTransaction(
+      this.clientName,
+      this.Contract,
+      this.machineAddress,
+      taskID,
+      2
+    );
   }
 
   async onNewTaskAssigned(taskAssignedEvent) {

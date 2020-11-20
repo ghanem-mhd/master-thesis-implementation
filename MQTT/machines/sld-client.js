@@ -89,18 +89,34 @@ class SLDClient {
       Logger.logEvent(this.clientName, "Status", incomingMessage);
     }
     if (topic == Topics.TOPIC_SLD_ACK) {
+      Logger.logEvent(
+        this.clientName,
+        "Received Ack message from SLD",
+        incomingMessage
+      );
+
       var {
         taskID,
         productDID,
         processID,
         code,
       } = ClientUtils.getAckMessageInfo(incomingMessage);
-      if (code == 2) {
-        Logger.logEvent(
-          this.clientName,
-          "Received Ack message from SLD",
-          incomingMessage
+
+      if (code == 4) {
+        this.mqttClient.publish(
+          Topics.TOPIC_SLD_DO,
+          JSON.stringify(ClientUtils.getSoundMessage(2, 3))
         );
+        ClientUtils.sendFinishTaskTransaction(
+          this.clientName,
+          this.Contract,
+          this.machineAddress,
+          taskID,
+          3
+        );
+      }
+
+      if (code == 2) {
         this.currentTaskID = 0;
         var color = incomingMessage["type"];
         this.sortingTaskFinished(taskID, color);
