@@ -72,7 +72,7 @@ abstract contract Machine is Ownable {
         return info[infoName];
     }
 
-    enum TaskStatus {Assinged, Started, FinishedSuccessfully, FinishedUnsuccessfully, Killed }
+    enum TaskStatus {Assigned, Started, FinishedSuccessfully, FinishedUnsuccessfully, Killed }
 
     struct Task{
         address productDID;
@@ -110,7 +110,7 @@ abstract contract Machine is Ownable {
         task.processID              = processID;
         task.processOwner           = tx.origin;
         task.processContractAddress = _msgSender();
-        task.status                 = TaskStatus.Assinged;
+        task.status                 = TaskStatus.Assigned;
         if(productDID != address(0)){
             productsTasks[productDID].push(newtaskID);
         }
