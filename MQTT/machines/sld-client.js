@@ -103,17 +103,15 @@ class SLDClient {
       } = ClientUtils.getAckMessageInfo(incomingMessage);
 
       if (code == 4) {
-        this.mqttClient.publish(
-          Topics.TOPIC_SLD_DO,
-          JSON.stringify(ClientUtils.getSoundMessage(2, 3))
-        );
         ClientUtils.sendFinishTaskTransaction(
           this.clientName,
           this.Contract,
           this.machineAddress,
           taskID,
-          3
+          3,
+          "Can not detect color"
         );
+        return;
       }
 
       if (code == 2) {

@@ -117,7 +117,7 @@ describe("MockMachine", function () {
     savedTask = await this.MockMachineContract.getTask(1);
     expect(savedTask[0]).to.equal(constants.ZERO_ADDRESS);
     expect(savedTask[1]).to.equal("TaskWithoutProduct");
-    expect(savedTask[4]).to.deep.equal([]);
+    expect(savedTask[4]).to.equal("");
     expect(savedTask[5].toString()).to.equal("0");
 
     receipt = await this.MockMachineContract.assignTask(1, ProductDID, 2, {
@@ -126,7 +126,7 @@ describe("MockMachine", function () {
     savedTask = await this.MockMachineContract.getTask(2);
     expect(savedTask[0]).to.equal(ProductDID);
     expect(savedTask[1]).to.equal("TaskWithProduct");
-    expect(savedTask[4]).to.deep.equal([Helper.toHex("taskInput")]);
+    expect(savedTask[4]).to.equal("");
     expect(savedTask[5].toString()).to.equal("0");
   });
 
@@ -159,7 +159,7 @@ describe("MockMachine", function () {
     await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: ProcessContractAddress,
     });
-    taskFinishedEvent = await this.MockMachineContract.finishTask(1, 2, {
+    taskFinishedEvent = await this.MockMachineContract.finishTask(1, 2, "", {
       from: MachineDID,
     });
     expectEvent(taskFinishedEvent, "TaskFinished", {
@@ -174,7 +174,7 @@ describe("MockMachine", function () {
     await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: ProcessContractAddress,
     });
-    receipt = this.MockMachineContract.finishTask(1, 2, { from: anyone });
+    receipt = this.MockMachineContract.finishTask(1, 2, "", { from: anyone });
     await expectRevert(receipt, "Only machine can call this function.");
   });
 
@@ -194,7 +194,7 @@ describe("MockMachine", function () {
     });
     taskStatus = await this.MockMachineContract.getTaskStatus(1);
     expect(taskStatus.toString()).to.equal("1");
-    await this.MockMachineContract.finishTask(1, 2, {
+    await this.MockMachineContract.finishTask(1, 2, "", {
       from: MachineDID,
     });
     taskStatus = await this.MockMachineContract.getTaskStatus(1);
@@ -218,7 +218,7 @@ describe("MockMachine", function () {
     taskStatus = await this.MockMachineContract.getTaskStatus(1);
     expect(taskStatus.toString()).to.equal("1");
 
-    await this.MockMachineContract.finishTask(1, 3, {
+    await this.MockMachineContract.finishTask(1, 3, "", {
       from: MachineDID,
     });
     taskStatus = await this.MockMachineContract.getTaskStatus(1);

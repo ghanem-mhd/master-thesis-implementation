@@ -91,47 +91,59 @@ class VGRClient {
         "Received Ack message from VGR",
         incomingMessage
       );
-      var {
-        taskID,
-        productDID,
-        processID,
-        code,
-      } = ClientUtils.getAckMessageInfo(incomingMessage);
-      if (code == 3) {
-        return;
-      }
+
+      this.onNewAckReceived(incomingMessage);
+
       this.currentTaskID = 0;
-
-      if (code == 8 || code == 9 || code == 10) {
-        this.mqttClient.publish(
-          Topics.TOPIC_VGR_DO,
-          JSON.stringify(ClientUtils.getSoundMessage(2, 3))
-        );
-        ClientUtils.sendFinishTaskTransaction(
-          this.clientName,
-          this.Contract,
-          this.machineAddress,
-          taskID,
-          3
-        );
-        return;
-      }
-
-      if (code == 1) {
-        var workpiece = incomingMessage["workpiece"];
-        if (workpiece) {
-          this.getInfoTaskFinished(taskID, workpiece["type"], workpiece["id"]);
-        }
-      } else {
-        ClientUtils.sendFinishTaskTransaction(
-          this.clientName,
-          this.Contract,
-          this.machineAddress,
-          taskID,
-          2
-        );
-      }
     }
+  }
+
+  async onNewAckReceived(ackMessage) {
+    var { taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(
+      ackMessage
+    );
+
+    if (code == 8 || code == 9 || code == 10) {
+      var note = "";
+
+      if (code == 8) {
+        note = "Unknown color";
+      }
+
+      if (code == 9) {
+        note = "No product";
+      }
+
+      if (code == 10) {
+        note = "NFC identification failed";
+      }
+
+      ClientUtils.sendFinishTaskTransaction(
+        this.clientName,
+        this.Contract,
+        this.machineAddress,
+        taskID,
+        3,
+        note
+      );
+      return;
+    }
+
+    if (code == 1) {
+      var workpiece = incomingMessage["workpiece"];
+      if (workpiece) {
+        this.getInfoTaskFinished(taskID, workpiece["type"], workpiece["id"]);
+      }
+      return;
+    }
+
+    ClientUtils.sendFinishTaskTransaction(
+      this.clientName,
+      this.Contract,
+      this.machineAddress,
+      taskID,
+      2
+    );
   }
 
   async onNewTaskAssigned(taskAssignedEvent) {

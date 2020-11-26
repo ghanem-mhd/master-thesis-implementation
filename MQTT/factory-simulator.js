@@ -142,6 +142,10 @@ class FactorySimulator {
   onMQTTMessage(incomingMessageTopic, messageBuffer) {
     var incomingMessage = JSON.parse(messageBuffer.toString());
 
+    if (incomingMessage.code == 1) {
+      return;
+    }
+
     Logger.logEvent(
       this.clientName,
       `Received task for topic: ${incomingMessageTopic}`,
@@ -152,20 +156,12 @@ class FactorySimulator {
 
     if (incomingMessageTopic == Topics.TOPIC_SLD_DO) {
       setTimeout(
-        () => this.sendSortingAck(incomingMessage, "1"),
-        FactorySimulator.DELAY
-      );
-      setTimeout(
         () => this.sendSortingAck(incomingMessage, "2"),
         FactorySimulator.DELAY * 2
       );
     }
 
     if (incomingMessageTopic == Topics.TOPIC_MPO_DO) {
-      setTimeout(
-        () => this.sendProcessingAck(incomingMessage, "1"),
-        FactorySimulator.DELAY
-      );
       setTimeout(
         () => this.sendProcessingAck(incomingMessage, "2"),
         FactorySimulator.DELAY * 2
@@ -180,7 +176,7 @@ class FactorySimulator {
     }
 
     if (incomingMessageTopic == Topics.TOPIC_VGR_DO) {
-      if (incomingMessage.code == 1) {
+      if (incomingMessage.code == 2) {
         setTimeout(
           () => this.sendGetInfoAck(incomingMessage),
           FactorySimulator.DELAY

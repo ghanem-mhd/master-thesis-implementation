@@ -155,13 +155,14 @@ module.exports = {
     contract,
     machineAddress,
     taskID,
-    status
+    status,
+    finishNote = ""
   ) {
     contract
       .getTask(taskID)
       .then((task) => {
         contract
-          .finishTask(taskID, status, {
+          .finishTask(taskID, status, finishNote, {
             from: machineAddress,
             gas: process.env.DEFAULT_GAS,
           })

@@ -104,19 +104,25 @@ class HBWClient {
     var { taskID, productDID, processID, code } = ClientUtils.getAckMessageInfo(
       ackMessage
     );
-    this.currentTaskID = 0;
 
     if (code == 5 || code == 6) {
-      this.mqttClient.publish(
-        Topics.TOPIC_HBW_DO,
-        JSON.stringify(ClientUtils.getSoundMessage(2, 3))
-      );
+      var note = "";
+
+      if (code == 5) {
+        note = "Product does not exist";
+      }
+
+      if (code == 6) {
+        note = "No empty container";
+      }
+
       ClientUtils.sendFinishTaskTransaction(
         this.clientName,
         this.Contract,
         this.machineAddress,
         taskID,
-        3
+        3,
+        note
       );
       return;
     }
@@ -128,6 +134,7 @@ class HBWClient {
       taskID,
       2
     );
+    this.currentTaskID = 0;
   }
 
   async onNewTaskAssigned(taskAssignedEvent) {

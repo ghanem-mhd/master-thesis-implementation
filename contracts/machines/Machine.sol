@@ -85,6 +85,7 @@ abstract contract Machine is Ownable {
         address processContractAddress;
         address processOwner;
         TaskStatus status;
+        string finishNote;
     }
     Counters.Counter private taskIDCounter;
     UintSet.Set private tasksIds;
@@ -127,11 +128,16 @@ abstract contract Machine is Ownable {
         emit TaskStarted(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress);
     }
 
-    function finishTask(uint taskID, TaskStatus status) public taskExists(taskID) onlyMachine {
+    function finishTask(uint taskID, TaskStatus status, string memory finishNote) public taskExists(taskID) onlyMachine {
         require(tasks[taskID].finishTimestamp == 0, "Task already finished.");
 
         tasks[taskID].status = status;
         tasks[taskID].finishTimestamp = now;
+        tasks[taskID].finishNote = finishNote;
+
+        if (status == TaskStatus.FinishedUnsuccessfully) {
+            saveAlert(taskID, finishNote, AlertType.Minor);
+        }
 
         emit TaskFinished(taskID, getTaskName(taskID), tasks[taskID].productDID, tasks[taskID].processID, tasks[taskID].processContractAddress, status);
     }
@@ -158,12 +164,12 @@ abstract contract Machine is Ownable {
         return (tasks[taskID].params[inputName]);
     }
 
-    function getTask(uint taskID) public taskExists(taskID) view returns(address, string memory, uint, uint, bytes32 [] memory, TaskStatus){
+    function getTask(uint taskID) public taskExists(taskID) view returns(address, string memory, uint, uint, string memory, TaskStatus){
         return (tasks[taskID].productDID,
             tasks[taskID].taskName,
             tasks[taskID].startTimestamp,
             tasks[taskID].finishTimestamp,
-            tasks[taskID].paramsNames,
+            tasks[taskID].finishNote,
             tasks[taskID].status
         );
     }
@@ -267,7 +273,7 @@ abstract contract Machine is Ownable {
     }
     struct Alert{
         uint time;
-        uint readingID;
+        uint taskID;
         string reason;
         string alertType;
     }
@@ -276,7 +282,7 @@ abstract contract Machine is Ownable {
     mapping (uint => Alert) private alerts;
     event NewAlert(uint indexed alertID, string reason, string alertType);
 
-    function saveAlert(uint readingID, string memory reason, AlertType alertType) internal onlyMachine {
+    function saveAlert(uint taskID, string memory reason, AlertType alertType) internal onlyMachine {
         alertIDCounter.increment();
         uint newAlertID = alertIDCounter.current();
 
@@ -284,7 +290,7 @@ abstract contract Machine is Ownable {
 
         Alert storage alert = alerts[newAlertID];
         alert.time = now;
-        alert.readingID = readingID;
+        alert.taskID = taskID;
         alert.reason = reason;
 
         string memory alertTypeName = getAlertType(alertType);
@@ -296,7 +302,7 @@ abstract contract Machine is Ownable {
     function getAlert(uint alertID) public view returns (uint, uint, string memory, string memory) {
         require(alertsIds.exists(alertID), "Alert doesn't exist.");
         return (alerts[alertID].time,
-            alerts[alertID].readingID,
+            alerts[alertID].taskID,
             alerts[alertID].reason,
             alerts[alertID].alertType
         );
