@@ -8,6 +8,7 @@ import ConnectionContext from "../utilities/ConnectionContext";
 import ContractsLoader from "../utilities/ContractsLoader";
 import AddressResolver from "../utilities/AddressResolver";
 import ErrorPage from "../utilities/ErrorPage";
+import Tooltip from "@material-ui/core/Tooltip";
 
 function getStatusLabel(status) {
   if (status === "0") {
@@ -43,6 +44,7 @@ class MachineTasks extends React.Component {
     task.startingTime = Misc.formatTimestamp(TaskResult[2]);
     task.finishingTime = Misc.formatTimestamp(TaskResult[3]);
     task.status = getStatusLabel(TaskResult[5].toString());
+    task.note = TaskResult[4];
     return task;
   }
 
@@ -139,7 +141,12 @@ class MachineTasks extends React.Component {
                                   <Table.Col>{task.ID}</Table.Col>
                                   <Table.Col>{task.name}</Table.Col>
                                   <Table.Col alignContent="center">
-                                    {task.status}
+                                    <Tooltip
+                                      title={task.note}
+                                      placement="top-end"
+                                    >
+                                      <div>{task.status}</div>
+                                    </Tooltip>
                                   </Table.Col>
                                   <Table.Col alignContent="center">
                                     {task.startingTime}

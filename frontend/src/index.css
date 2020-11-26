@@ -15,7 +15,13 @@ body {
 }
 
 .imgClassName {
-  width: 30%;
-  display: block;
-  margin: auto;
+  width: 15%;
+}
+
+.whiteAndBlack {
+  filter: grayscale(100%);
+}
+
+.machineMainImage {
+  width: 35%;
 }

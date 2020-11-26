@@ -89,7 +89,13 @@ class Product extends React.Component {
       <Grid.Col lg={4} sm={4}>
         <Card>
           <Card.Body className="text-center">
-            <div className="imgClassName mb-6">
+            <div
+              className={
+                this.props.stockItem.workpiece == null
+                  ? "imgClassName mb-6 whiteAndBlack"
+                  : "imgClassName mb-6"
+              }
+            >
               <img
                 src={getStockItemImage(this.props.stockItem)}
                 alt={getStockItemTitle(this.props.stockItem)}
@@ -98,13 +104,15 @@ class Product extends React.Component {
             <Text className="card-subtitle">
               {getStockItemTitle(this.props.stockItem)}
             </Text>
-            <Button
-              color="primary"
-              size="sm"
-              onClick={this.onButtonClick.bind(this)}
-            >
-              Produce
-            </Button>
+            {this.props.stockItem && (
+              <Button
+                color="primary"
+                size="sm"
+                onClick={this.onButtonClick.bind(this)}
+              >
+                Produce
+              </Button>
+            )}
           </Card.Body>
         </Card>
       </Grid.Col>

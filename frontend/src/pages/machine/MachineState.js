@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { StampCard, Grid, Avatar, Text, Header, Card } from "tabler-react";
+import { Grid, Avatar, Text, Header, Card } from "tabler-react";
 import ContractsLoader from "../utilities/ContractsLoader";
 
 function getStateElement(state) {
@@ -89,7 +89,7 @@ class MachineState extends React.Component {
             <Grid.Col auto>
               <Avatar size="xxl" imageURL={"/" + this.state.symbol + ".jpg"} />
             </Grid.Col>
-            <Grid.Col>
+            <Grid.Col className="align-self-center">
               <Header size={4} className="m-0">
                 <Link to={"/machine/" + this.state.machineContractAddress}>
                   <small>{this.props.machineName + " Status"}</small>

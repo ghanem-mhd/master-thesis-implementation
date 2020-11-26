@@ -55,6 +55,9 @@ const ContractsLoader = {
   },
   loadContract(web3, contractAddress, abi) {
     return new Promise(function (resolve, reject) {
+      if (contractAddress == null) {
+        reject("Address is null");
+      }
       var wsProvider = new Web3(process.env.REACT_APP_WS_NETWORK);
       web3.eth.net
         .getId()

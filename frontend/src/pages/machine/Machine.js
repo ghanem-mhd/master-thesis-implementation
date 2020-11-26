@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { withRouter } from "react-router-dom";
-import { Page, Dimmer } from "tabler-react";
+import { Page, Dimmer, Grid, GalleryCard } from "tabler-react";
 
 import ConnectionContext from "../utilities/ConnectionContext";
 import MachineInfo from "./MachineInfo";
@@ -30,9 +30,22 @@ class Machine extends React.Component {
     )
       .then((result) => {
         this.setState({ machineContract: result.metaMaskContract });
+        this.getSymbol(result.metaMaskContract);
       })
       .catch((error) => {
         this.setState({ fatalError: error.message });
+      });
+  }
+
+  getSymbol(machineContract) {
+    machineContract.methods
+      .getSymbol()
+      .call()
+      .then((symbol) => {
+        this.setState({ symbol: symbol });
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }
 
@@ -53,6 +66,19 @@ class Machine extends React.Component {
               <Dimmer active={this.state.machineContract == null} loader>
                 {this.state.machineContract && (
                   <React.Fragment>
+                    {this.state.symbol && (
+                      <Grid.Row>
+                        <Grid.Col>
+                          <GalleryCard className="align-items-center">
+                            <img
+                              src={`/${this.state.symbol}.jpg`}
+                              alt={`${this.state.symbol}`}
+                              className="machineMainImage"
+                            />
+                          </GalleryCard>
+                        </Grid.Col>
+                      </Grid.Row>
+                    )}
                     <MachineMetrics
                       MachineContract={this.state.machineContract}
                     />
