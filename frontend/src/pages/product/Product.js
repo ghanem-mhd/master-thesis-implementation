@@ -1,6 +1,7 @@
 // @flow
 
 import * as React from "react";
+import { withRouter } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 import { Page, Grid, Card, Table, Alert } from "tabler-react";
@@ -18,8 +19,8 @@ class Product extends React.Component {
     this.state = {};
   }
   componentDidMount() {
-    document.title = "Products";
-    //this.initiateGetProductData("0xbc437717e7bfc77fbd26d94ef9fc3901291e2482");
+    document.title = "Product Digital Twin";
+    this.initiateGetProductData(this.props.match.params.address);
   }
 
   getProductData(productDID) {
@@ -102,6 +103,9 @@ class Product extends React.Component {
   }
 
   initiateGetProductData(productDID) {
+    if (productDID == null) {
+      return;
+    }
     var ProductContract = this.contracts["Product"];
     ProductContract.methods["getProductOwner"](productDID)
       .call()
@@ -146,14 +150,11 @@ class Product extends React.Component {
           this.web3 = connectionContext.web3;
           this.contracts = connectionContext.contracts;
           return (
-            <Page.Content
-              title="Product Digital Twin"
-              subTitle="Look for a product by DID or NFC Tag"
-            >
-              <ProductDIDInput
+            <Page.Content title="Product Digital Twin" subTitle="">
+              {/*               <ProductDIDInput
                 onFindButtonClicked={this.initiateGetProductData.bind(this)}
                 web3={this.web3}
-              />
+              /> */}
 
               {this.state.error && (
                 <Grid.Row className="justify-content-center">
@@ -213,7 +214,6 @@ class Product extends React.Component {
                     contracts={this.contracts}
                     productDID={this.state.productDID}
                   />
-                  />
                   <SaveProductInfo
                     contracts={this.contracts}
                     web3={this.web3}
@@ -230,4 +230,4 @@ class Product extends React.Component {
   }
 }
 
-export default Product;
+export default withRouter(Product);

@@ -52,22 +52,10 @@ const navBarItems: Array<navItem> = [
   {
     value: "Products",
     icon: "shopping-bag",
-    subItems: [
-      {
-        value: "Create Product",
-        to: "/create-product",
-        LinkComponent: withRouter(({ staticContext, ...props }) => {
-          return <NavLink {...props} />;
-        }),
-      },
-      {
-        value: "Look Product",
-        to: "/product",
-        LinkComponent: withRouter(({ staticContext, ...props }) => {
-          return <NavLink {...props} />;
-        }),
-      },
-    ],
+    to: "/products",
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
   },
   {
     value: "Processes",

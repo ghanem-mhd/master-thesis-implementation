@@ -9,6 +9,7 @@ import Web3 from "web3";
 import SiteWrapper from "./pages/SiteWrapper.react";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Product from "./pages/product/Product";
+import Products from "./pages/product/Products";
 
 import ProcessesRegistry from "./pages/process/ProcessesRegistry";
 import Process from "./pages/process/Process";
@@ -155,8 +156,11 @@ class App extends React.Component {
               <Route exact path="/machine/:address/operations">
                 <MachineMaintenanceOperations />
               </Route>
-              <Route exact path="/product">
+              <Route exact path="/product/:address">
                 <Product />
+              </Route>
+              <Route exact path="/products">
+                <Products />
               </Route>
               <Route exact path="/processes">
                 <ProcessesRegistry />
