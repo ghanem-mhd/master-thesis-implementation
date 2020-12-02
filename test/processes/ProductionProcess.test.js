@@ -267,4 +267,41 @@ describe("ProductionProcess", function () {
     expect(processInstance[3].toString()).to.equal("0");
     expect(processInstance[4].toString()).to.equal("5");
   });
+
+  it("should get the symbol", async function () {
+    symbol = await this.ProductionProcessContract.getSymbol();
+    expect(symbol).to.equal("PP");
+  });
+
+  it("should revert for wrong step in getStepTaskType", async function () {
+    var receipt = this.ProductionProcessContract.getStepTaskType(0);
+    await expectRevert(receipt, "Wrong step number.");
+  });
+
+  it("should revert for wrong step in getMachineNumber", async function () {
+    var receipt = this.ProductionProcessContract.getMachineNumber(0);
+    await expectRevert(receipt, "Wrong step number.");
+  });
+
+  it("should get the first machine DID", async function () {
+    var receipt = await this.ProductionProcessContract.getMachineDID(1);
+    expect(receipt).to.equal(HBW_DID);
+  });
+
+  it("should get the second machine DID", async function () {
+    var receipt = await this.ProductionProcessContract.getMachineDID(2);
+    expect(receipt).to.equal(VGR_DID);
+  });
+
+  it("should get the step info 1", async function () {
+    var receipt = await this.ProductionProcessContract.getStepInfo(1);
+    expect(receipt[0]).to.equal("HBW");
+    expect(receipt[1]).to.equal("FetchProduct");
+  });
+
+  it("should get the step info 2", async function () {
+    var receipt = await this.ProductionProcessContract.getStepInfo(2);
+    expect(receipt[0]).to.equal("VGR");
+    expect(receipt[1]).to.equal("MoveHBW2MPO");
+  });
 });

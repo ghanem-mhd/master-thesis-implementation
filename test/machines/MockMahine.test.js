@@ -17,7 +17,7 @@ describe("MockMachine", function () {
     MachineOwner,
     MachineDID,
     ProductDID,
-    anyone,
+    Anyone,
     ProcessContractAddress,
     ProductContractAddress,
   ] = accounts;
@@ -59,7 +59,7 @@ describe("MockMachine", function () {
     var receipt = this.MockMachineContract.saveMachineInfo(
       Helper.toHex(""),
       Helper.toHex(""),
-      { from: anyone }
+      { from: Anyone }
     );
     await expectRevert(receipt, "Only machine owner can call this function.");
   });
@@ -105,6 +105,8 @@ describe("MockMachine", function () {
       processID: "1",
       processContractAddress: ProcessContractAddress,
     });
+    receipt = this.MockMachineContract.startTask(1, { from: MachineDID });
+    await expectRevert(receipt, "Task already started.");
   });
 
   it("should get the task information", async function () {
@@ -128,6 +130,10 @@ describe("MockMachine", function () {
     expect(savedTask[1]).to.equal("TaskWithProduct");
     expect(savedTask[4]).to.equal("");
     expect(savedTask[5].toString()).to.equal("0");
+    productTasks = await this.MockMachineContract.getProductTasks(ProductDID);
+    expect(productTasks[0].toString()).to.equal("2");
+    storedProductDID = await this.MockMachineContract.getProductID(2);
+    expect(storedProductDID).to.equal(ProductDID);
   });
 
   it("should save task input", async function () {
@@ -168,13 +174,17 @@ describe("MockMachine", function () {
       productDID: constants.ZERO_ADDRESS,
       status: "2",
     });
+    receipt = this.MockMachineContract.finishTask(1, 2, "", {
+      from: MachineDID,
+    });
+    await expectRevert(receipt, "Task already finished.");
   });
 
   it("only machine can finish the task", async function () {
     await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
       from: ProcessContractAddress,
     });
-    receipt = this.MockMachineContract.finishTask(1, 2, "", { from: anyone });
+    receipt = this.MockMachineContract.finishTask(1, 2, "", { from: Anyone });
     await expectRevert(receipt, "Only machine can call this function.");
   });
 
@@ -263,18 +273,132 @@ describe("MockMachine", function () {
     expectEvent(receipt, "NewAlert", {
       alertID: "1",
       reason: "critical temperature threshold exceeded",
-      alertType: "Critical",
+      alertType: "3",
     });
     var savedAlert = await this.MockMachineContract.getAlert(1);
     expect(savedAlert[1].toString()).to.equal("1");
     expect(savedAlert[2].toString()).to.equal(
       "critical temperature threshold exceeded"
     );
-    expect(savedAlert[3].toString()).to.equal("Critical");
+    expect(savedAlert[3].toString()).to.equal("3");
   });
 
   it("should getAuthorizedProcesses", async function () {
     var receipt = await this.MockMachineContract.getAuthorizedProcesses();
     expect(receipt[0]).to.equal(ProcessContractAddress);
+  });
+
+  it("should get the symbol", async function () {
+    symbol = await this.MockMachineContract.getSymbol();
+    expect(symbol).to.equal("MMM");
+  });
+
+  it("should revert for wrong task type in getTaskTypeName", async function () {
+    var receipt = this.MockMachineContract.getTaskTypeName(0);
+    await expectRevert(receipt, "Unknown Task Type.");
+  });
+
+  it("get machine owner", async function () {
+    var receipt = await this.MockMachineContract.getMachineOwner();
+    expect(receipt).to.equal(MachineOwner);
+  });
+
+  it("should emit TaskKilled event", async function () {
+    await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
+      from: ProcessContractAddress,
+    });
+    taskKilledEvent = await this.MockMachineContract.killTask(1, {
+      from: MachineOwner,
+    });
+    expectEvent(taskKilledEvent, "TaskKilled", {
+      taskID: "1",
+      taskName: "TaskWithoutProduct",
+      productDID: constants.ZERO_ADDRESS,
+    });
+    receipt = this.MockMachineContract.killTask(1, {
+      from: MachineOwner,
+    });
+    await expectRevert(receipt, "Task already finished.");
+  });
+
+  it("should get the task status", async function () {
+    await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
+      from: ProcessContractAddress,
+    });
+    isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
+    expect(isTaskFinished).to.equal(false);
+    await this.MockMachineContract.finishTask(1, 2, "", {
+      from: MachineDID,
+    });
+    isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
+    expect(isTaskFinished).to.equal(true);
+  });
+
+  it("should get the task status", async function () {
+    await this.MockMachineContract.assignTask(1, constants.ZERO_ADDRESS, 1, {
+      from: ProcessContractAddress,
+    });
+    isTaskFinished = await this.MockMachineContract.isTaskFinished(1);
+    expect(isTaskFinished).to.equal(false);
+  });
+
+  it("should deauthorize process", async function () {
+    await this.MockMachineContract.deauthorizeProcess(ProcessContractAddress, {
+      from: MachineOwner,
+    });
+    receipt = await this.MockMachineContract.getAuthorizedProcesses();
+    expect(receipt).to.deep.equal([]);
+  });
+
+  it("should revert when authorize process twice", async function () {
+    receipt = this.MockMachineContract.authorizeProcess(
+      ProcessContractAddress,
+      {
+        from: MachineOwner,
+      }
+    );
+    await expectRevert(receipt, "Process already exist.");
+  });
+
+  it("should revert when deauthorize non exist process", async function () {
+    receipt = this.MockMachineContract.deauthorizeProcess(Anyone, {
+      from: MachineOwner,
+    });
+    await expectRevert(receipt, "Process doesn't exist.");
+  });
+
+  it("should revert when getting non exist alert", async function () {
+    receipt = this.MockMachineContract.getAlert(1);
+    await expectRevert(receipt, "Alert doesn't exist.");
+  });
+
+  it("should revert when getting non exist reading", async function () {
+    receipt = this.MockMachineContract.getReading(1);
+    await expectRevert(receipt, "Reading doesn't exist.");
+  });
+
+  it("should revert when getting non exist task", async function () {
+    receipt = this.MockMachineContract.getTask(1);
+    await expectRevert(receipt, "Task doesn't exist.");
+  });
+
+  it("should revert when non authorized process assign task", async function () {
+    receipt = this.MockMachineContract.assignTask(
+      1,
+      constants.ZERO_ADDRESS,
+      1,
+      { from: Anyone }
+    );
+    await expectRevert(
+      receipt,
+      "Only authorized process can call this function."
+    );
+  });
+  it("should do nothing when assign unknown task type", async function () {
+    receipt = await this.MockMachineContract.assignTask(1, ProductDID, 100, {
+      from: ProcessContractAddress,
+    });
+    tasksCount = await this.MockMachineContract.getTasksCount();
+    expect(tasksCount.toString()).to.equal("0");
   });
 });

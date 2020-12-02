@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
-import "../../contracts/Registry.sol";
-import "../../contracts/Product.sol";
-import "../../contracts/setTypes/UintSet.sol";
-import "../../contracts/setTypes/AddressSet.sol";
-import "../../contracts/setTypes/Bytes32Set.sol";
+import "../contracts/Registry.sol";
+import "../contracts/Product.sol";
+import "../contracts/setTypes/UintSet.sol";
+import "../contracts/setTypes/AddressSet.sol";
+import "../contracts/setTypes/Bytes32Set.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -264,23 +264,16 @@ abstract contract Machine is Ownable {
 
     enum AlertType {Minor, Major, Urgent, Critical}
 
-    function getAlertType(AlertType alertType) internal pure returns (string memory) {
-        require(uint8(alertType) <= 4);
-        if (AlertType.Minor == alertType) return "Minor";
-        if (AlertType.Major == alertType) return "Major";
-        if (AlertType.Urgent == alertType) return "Urgent";
-        if (AlertType.Critical == alertType) return "Critical";
-    }
     struct Alert{
         uint time;
         uint taskID;
         string reason;
-        string alertType;
+        AlertType alertType;
     }
     Counters.Counter private alertIDCounter;
     UintSet.Set private alertsIds;
     mapping (uint => Alert) private alerts;
-    event NewAlert(uint indexed alertID, string reason, string alertType);
+    event NewAlert(uint indexed alertID, string reason, AlertType alertType);
 
     function saveAlert(uint taskID, string memory reason, AlertType alertType) internal onlyMachine {
         alertIDCounter.increment();
@@ -292,14 +285,12 @@ abstract contract Machine is Ownable {
         alert.time = now;
         alert.taskID = taskID;
         alert.reason = reason;
+        alert.alertType = alertType;
 
-        string memory alertTypeName = getAlertType(alertType);
-        alert.alertType = alertTypeName;
-
-        emit NewAlert(newAlertID, reason, alertTypeName);
+        emit NewAlert(newAlertID, reason, alertType);
     }
 
-    function getAlert(uint alertID) public view returns (uint, uint, string memory, string memory) {
+    function getAlert(uint alertID) public view returns (uint, uint, string memory, AlertType) {
         require(alertsIds.exists(alertID), "Alert doesn't exist.");
         return (alerts[alertID].time,
             alerts[alertID].taskID,

@@ -3,7 +3,7 @@ const { runCoverage } = require("@openzeppelin/test-environment");
 
 async function main() {
   await runCoverage(
-    ["setTypes", "Migration", "processes/MockProcess"],
+    ["setTypes", "Migration", "MockProcess"],
     "npm run compile",
     "./node_modules/.bin/mocha --exit --timeout 10000 --recursive".split(" ")
   );

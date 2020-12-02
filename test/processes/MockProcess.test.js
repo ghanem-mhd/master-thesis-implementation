@@ -152,4 +152,64 @@ describe("MockProcess", function () {
     });
     await expectRevert(receipt, "Unknown Machine Number.");
   });
+
+  it("should revert when non owner finish a process", async function () {
+    await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    receipt = this.MockProcessContract.finishProcess(1, 1, {
+      from: RandomAddress,
+    });
+    await expectRevert(receipt, "Only process owner can call this function.");
+  });
+
+  it("should revert when finishing a finished process", async function () {
+    await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.finishProcess(1, 1, {
+      from: ProcessOwner,
+    });
+    receipt = this.MockProcessContract.finishProcess(1, 1, {
+      from: ProcessOwner,
+    });
+    await expectRevert(receipt, "Process already finished.");
+  });
+
+  it("should revert when killing a finished process", async function () {
+    await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.finishProcess(1, 1, {
+      from: ProcessOwner,
+    });
+    receipt = this.MockProcessContract.killProcess(1, {
+      from: ProcessOwner,
+    });
+    await expectRevert(receipt, "Process already finished.");
+  });
+
+  it("should authorize/unauthorize machine", async function () {
+    await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.authorizeMachine(1, 1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.unauthorizeCurrentMachine(1, {
+      from: ProductOwner,
+    });
+  });
+
+  it("should authorize/unauthorize machine", async function () {
+    await this.MockProcessContract.startMockProcess(ProductDID1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.authorizeMachine(1, 1, {
+      from: ProductOwner,
+    });
+    await this.MockProcessContract.unauthorizeCurrentMachine(1, {
+      from: ProductOwner,
+    });
+  });
 });

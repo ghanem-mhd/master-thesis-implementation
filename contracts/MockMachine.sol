@@ -32,7 +32,7 @@ contract MockMachine is Machine {
     }
 
     function getTaskTypeName(uint taskType) public override pure returns (string memory) {
-        require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unkown Task Type.");
+        require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unknown Task Type.");
         if (taskType == 1) return "TaskWithoutProduct";
         if (taskType == 2) return "TaskWithProduct";
     }

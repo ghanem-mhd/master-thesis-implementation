@@ -104,11 +104,41 @@ describe("SLD_Machine", function () {
     expectEvent(receipt, "NewAlert", {
       alertID: "1",
       reason: "Brightness is too low",
-      alertType: "Major",
+      alertType: "1",
     });
+    var alertsCount = await this.SLDContract.getAlertsCount();
+    expect(alertsCount.toString()).to.equal("1");
     var savedAlert = await this.SLDContract.getAlert(1);
     expect(savedAlert[1].toString()).to.equal("1");
     expect(savedAlert[2].toString()).to.equal("Brightness is too low");
-    expect(savedAlert[3].toString()).to.equal("Major");
+    expect(savedAlert[3].toString()).to.equal("1");
+  });
+
+  it("should save reading", async function () {
+    var receipt = await this.SLDContract.saveReadingSLD(0, 0, 0, {
+      from: SLD_DID,
+    });
+    var savedReading = await this.SLDContract.getReading(1);
+    expect(savedReading[1].toString()).to.equal("0");
+    expect(savedReading[2].toString()).to.equal("0");
+    expect(savedReading[3].toString()).to.equal("0");
+  });
+
+  it("should get the symbol", async function () {
+    symbol = await this.SLDContract.getSymbol();
+    expect(symbol).to.equal("SLD");
+  });
+
+  it("should revert for wrong task type in getTaskTypeName", async function () {
+    var receipt = this.SLDContract.getTaskTypeName(0);
+    await expectRevert(receipt, "Unknown Task Type.");
+  });
+
+  it("should do nothing when assign unknown task type", async function () {
+    receipt = await this.SLDContract.assignTask(1, ProductDID, 100, {
+      from: ProcessContractAddress,
+    });
+    tasksCount = await this.SLDContract.getTasksCount();
+    expect(tasksCount.toString()).to.equal("0");
   });
 });

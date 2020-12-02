@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
-import "../../contracts/machines/Machine.sol";
-import "../../contracts/Registry.sol";
-import "../../contracts/Product.sol";
-import "../../contracts/setTypes/UintSet.sol";
-import "../../contracts/setTypes/AddressSet.sol";
+import "./Machine.sol";
+import "./Registry.sol";
+import "./Product.sol";
+import "../contracts/setTypes/UintSet.sol";
+import "../contracts/setTypes/AddressSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -130,18 +130,6 @@ abstract contract Process is Ownable {
     function unauthorizeCurrentMachine(uint processID) public {
         address productDID  = getProductDID(processID);
         productContract.unauthorizeCurrentMachine(productDID);
-    }
-
-    function getProductOperation(uint opeationID) public view returns (address, uint, uint, string memory, string memory) {
-        return productContract.getProductOperation(opeationID);
-    }
-
-    function getProductOperations(address productDID) public view returns(uint [] memory) {
-        return productContract.getProductOperations(productDID);
-    }
-
-    function getProductOperationResult(address productDID, string memory operationName) public view returns (string memory) {
-        return productContract.getProductOperationResult(productDID, operationName);
     }
 
     mapping(uint => Machine) machines;

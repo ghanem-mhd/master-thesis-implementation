@@ -54,6 +54,14 @@ describe("Product", function () {
     expect(AcutalProductCount.toString()).to.equal("2");
   });
 
+  it("should get the product creation time", async function () {
+    await this.ProductContract.createProduct(ProductDID1, { from: Owner });
+    creationTime = await this.ProductContract.getProductCreationTime(
+      ProductDID1
+    );
+    expect(creationTime.toString()).to.not.equal("0");
+  });
+
   it("should let owner authorize a process", async function () {
     await this.ProductContract.createProduct(ProductDID1, { from: Owner });
     await this.ProductContract.authorizeProcess(
@@ -272,5 +280,20 @@ describe("Product", function () {
       { from: Owner }
     );
     await expectRevert(receipt, "Product doesn't exist.");
+  });
+
+  it("should revert for non existing operation", async function () {
+    var receipt = this.ProductContract.getProductOperation(1);
+    await expectRevert(receipt, "Operation doesn't exist.");
+  });
+
+  it("should revert for non existing product", async function () {
+    var receipt = this.ProductContract.getProductDID(0);
+    await expectRevert(receipt, "Wrong product ID");
+  });
+
+  it("should revert for non existing product", async function () {
+    var receipt = this.ProductContract.getProductDID(1);
+    await expectRevert(receipt, "Product doesn't exist");
   });
 });

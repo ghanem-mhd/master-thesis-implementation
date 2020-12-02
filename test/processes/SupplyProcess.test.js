@@ -170,4 +170,19 @@ describe("SupplyingProcess", function () {
     );
     expect(AuthorizedMachine).to.equal(this.HBWContract.address);
   });
+
+  it("should get the symbol", async function () {
+    symbol = await this.SupplyingProcessContract.getSymbol();
+    expect(symbol).to.equal("SP");
+  });
+
+  it("should revert for wrong step in getStepTaskType", async function () {
+    var receipt = this.SupplyingProcessContract.getStepTaskType(0);
+    await expectRevert(receipt, "Wrong step number.");
+  });
+
+  it("should revert for wrong step in getMachineNumber", async function () {
+    var receipt = this.SupplyingProcessContract.getMachineNumber(0);
+    await expectRevert(receipt, "Wrong step number.");
+  });
 });

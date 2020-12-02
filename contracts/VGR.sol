@@ -3,19 +3,25 @@ pragma solidity >=0.4.21 <0.7.0;
 
 import "./Machine.sol";
 
-contract HBW is Machine {
+contract VGR is Machine {
 
     constructor(address _machineOwner, address _machineID, address _productContractAddress, address _regsitryContractAddress) Machine(_machineOwner, _machineID, _productContractAddress, _regsitryContractAddress) public {}
 
     function getTaskTypeName(uint taskType) public override pure returns (string memory) {
-        require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unkown Task Type.");
-        if (taskType == 1) return "FetchContainer";
-        if (taskType == 2) return "StoreContainer";
-        if (taskType == 3) return "StoreProduct";
-        if (taskType == 4) return "FetchProduct";
+        require(1 <= taskType &&  taskType <= getTasksTypesCount(), "Unknown Task Type.");
+        if (taskType == 1) return "GetInfo";
+        if (taskType == 2) return "DropToHBW";
+        if (taskType == 3) return "PickSorted";
+        if (taskType == 4) return "MoveHBW2MPO";
     }
 
-    function assignTask(uint processID, address productDID, uint taskType) public override returns (uint){
+    function finishGetInfoTask(uint taskID, string memory nfcTag, string memory color) public {
+        super.saveProductOperation(taskID, "NFCTagReading", nfcTag);
+        super.saveProductOperation(taskID, "ColorDetection", color);
+        super.finishTask(taskID, TaskStatus.FinishedSuccessfully, "");
+    }
+
+    function assignTask(uint processID, address productDID, uint taskType) public override returns (uint) {
         if (taskType == 1) {
             return super.assignTask(processID, productDID, taskType);
         }
@@ -25,10 +31,8 @@ contract HBW is Machine {
         }
 
         if (taskType == 3) {
-            string memory color = super.getProductOperationResult(productDID, "ColorDetection");
-            string memory id = super.getProductOperationResult(productDID, "NFCTagReading");
+            string memory color = super.getProductOperationResult(productDID, "Sorting");
             uint taskID = super.assignTask(processID, productDID, taskType);
-            super.saveTaskParam(taskID, "id", id);
             super.saveTaskParam(taskID, "color", color);
             return taskID;
         }
@@ -38,7 +42,7 @@ contract HBW is Machine {
         }
     }
 
-    function saveReadingHBW(uint taskID, ReadingType readingType, int readingValue) public {
+    function saveReadingVGR(uint taskID, ReadingType readingType, int readingValue) public {
         super.saveReading(taskID, readingType, readingValue);
     }
 
@@ -47,10 +51,10 @@ contract HBW is Machine {
     }
 
     function getSymbol() public override pure returns (string memory) {
-        return "HBW";
+        return "VGR";
     }
 
     function getName() public override pure returns (string memory) {
-        return "High-Bay Warehouse (HBW)";
+        return "Vacuum Gripper Robot (VGR)";
     }
 }

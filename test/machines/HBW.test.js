@@ -24,7 +24,7 @@ describe("HBW_Machine", function () {
   ] = accounts;
 
   beforeEach(async function () {
-    this.RegistryContract = await RegistryArtifact.new({ from:Admin});
+    this.RegistryContract = await RegistryArtifact.new({ from: Admin });
     this.ProductContract = await ProductArtifact.new({ from: Admin });
 
     await this.ProductContract.createProduct(ProductDID, {
@@ -117,5 +117,33 @@ describe("HBW_Machine", function () {
       processID: "1",
       processContractAddress: ProcessContractAddress,
     });
+  });
+
+  it("should get the symbol", async function () {
+    symbol = await this.HBWContract.getSymbol();
+    expect(symbol).to.equal("HBW");
+  });
+
+  it("should revert for wrong task type in getTaskTypeName", async function () {
+    var receipt = this.HBWContract.getTaskTypeName(0);
+    await expectRevert(receipt, "Unknown Task Type.");
+  });
+
+  it("should save reading", async function () {
+    var receipt = await this.HBWContract.saveReadingHBW(0, 0, 0, {
+      from: MachineID,
+    });
+    var savedReading = await this.HBWContract.getReading(1);
+    expect(savedReading[1].toString()).to.equal("0");
+    expect(savedReading[2].toString()).to.equal("0");
+    expect(savedReading[3].toString()).to.equal("0");
+  });
+
+  it("should do nothing when assign unknown task type", async function () {
+    receipt = await this.HBWContract.assignTask(1, ProductDID, 100, {
+      from: ProcessContractAddress,
+    });
+    tasksCount = await this.HBWContract.getTasksCount();
+    expect(tasksCount.toString()).to.equal("0");
   });
 });
