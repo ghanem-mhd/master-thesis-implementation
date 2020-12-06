@@ -130,7 +130,7 @@ class VGRClient {
     }
 
     if (code == 1) {
-      var workpiece = incomingMessage["workpiece"];
+      var workpiece = ackMessage["workpiece"];
       if (workpiece) {
         this.getInfoTaskFinished(taskID, workpiece["type"], workpiece["id"]);
       }

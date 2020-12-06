@@ -3,6 +3,19 @@ require("winston-socket.io");
 
 const winston = require("winston");
 
+winston.loggers.add("GasLogger", {
+  transports: [
+    new winston.transports.File({
+      level: "info",
+      format: winston.format.combine(winston.format.prettyPrint()),
+      filename: "logs/GasUsed.log",
+      options: { flags: "w" },
+    }),
+  ],
+});
+
+const GasLogger = winston.loggers.get("GasLogger");
+
 const logger = winston.createLogger({
   transports: [
     new winston.transports.File({
@@ -50,9 +63,17 @@ logger.logEvent = function (eventLocation, eventDescription, payload = null) {
   if (payload) {
     if (payload.hasOwnProperty("transactionHash")) {
       logMessage.transactionHash = payload.transactionHash;
+      GasLogger.info({
+        eventDescription: eventDescription,
+        gasUsed: payload.receipt.gasUsed,
+      });
     }
     if (payload.hasOwnProperty("tx")) {
       logMessage.transactionHash = payload.tx;
+      GasLogger.info({
+        eventDescription: eventDescription,
+        gasUsed: payload.receipt.gasUsed,
+      });
     }
   }
   logger.verbose(logMessage);

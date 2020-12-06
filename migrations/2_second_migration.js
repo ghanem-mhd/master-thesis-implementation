@@ -1,57 +1,74 @@
 require("dotenv").config();
-
-const Product = artifacts.require("Product");
-const SupplyingProcess = artifacts.require("SupplyingProcess");
-const ProductionProcess = artifacts.require("ProductionProcess");
-const HBW = artifacts.require("HBW");
-const VGR = artifacts.require("VGR");
-const MPO = artifacts.require("MPO");
-const SLD = artifacts.require("SLD");
-const Registry = artifacts.require("Registry");
-
+var Web3 = require("web3");
+var ProvidersManager = require("../utilities/providers-manager");
+let contractsGasUsed = [];
 module.exports = function (deployer) {
+  async function customDeploy() {
+    var web3 = new Web3(ProvidersManager.getWSProvider(process.env.NETWORK));
+    var args = Array.prototype.slice.call(arguments);
+    var contractName = args.shift();
+    return new Promise(function (resolve, reject) {
+      const contract = artifacts.require(contractName);
+      deployer.deploy(contract, ...args).then((deployContract) => {
+        web3.eth
+          .getTransactionReceipt(deployContract.transactionHash)
+          .then((receipt) => {
+            contractsGasUsed.push({
+              contract: contractName,
+              gasUsed: receipt.gasUsed,
+            });
+            resolve(deployContract);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      });
+    });
+  }
+
   deployer.then(async () => {
-    var deployedProductContract = await deployer.deploy(Product);
-    var deployedRegistryContract = await deployer.deploy(Registry);
-    await deployer.deploy(
-      SupplyingProcess,
+    var deployedProductContract = await customDeploy("Product");
+    var deployedRegistryContract = await customDeploy("Registry");
+    await customDeploy(
+      "SupplyingProcess",
       process.env.PROCESS_OWNER_ADDRESS,
       deployedProductContract.address,
       deployedRegistryContract.address
     );
-    await deployer.deploy(
-      ProductionProcess,
+    await customDeploy(
+      "ProductionProcess",
       process.env.PROCESS_OWNER_ADDRESS,
       deployedProductContract.address,
       deployedRegistryContract.address
     );
-    await deployer.deploy(
-      VGR,
+    await customDeploy(
+      "VGR",
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.VGR_ADDRESS,
       deployedProductContract.address,
       deployedRegistryContract.address
     );
-    await deployer.deploy(
-      HBW,
+    await customDeploy(
+      "HBW",
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.HBW_ADDRESS,
       deployedProductContract.address,
       deployedRegistryContract.address
     );
-    await deployer.deploy(
-      MPO,
+    await customDeploy(
+      "MPO",
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.MPO_ADDRESS,
       deployedProductContract.address,
       deployedRegistryContract.address
     );
-    await deployer.deploy(
-      SLD,
+    await customDeploy(
+      "SLD",
       process.env.MACHINE_OWNER_ADDRESS,
       process.env.SLD_ADDRESS,
       deployedProductContract.address,
       deployedRegistryContract.address
     );
+    console.log(contractsGasUsed);
   });
 };

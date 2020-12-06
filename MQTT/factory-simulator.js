@@ -229,6 +229,7 @@ class FactorySimulator {
   sendGetInfoAck(incomingMassage) {
     var ackTopic = Topics.TOPIC_VGR_ACK;
     var outgoingMessage = incomingMassage;
+    outgoingMessage["code"] = 1;
     outgoingMessage["workpiece"] = { id: "2222", type: "green" };
     Logger.logEvent(
       this.clientName,
