@@ -34,14 +34,20 @@ class ProcessStepper extends React.Component {
 
   async componentDidMount() {
     try {
-      let processContractAddress = await this.props.registry.methods
-        .resolveName(this.props.processName)
-        .call();
-      let result = await ContractsLoader.loadProcessContract(
-        this.props.web3,
-        processContractAddress
-      );
-      this.setUpListeners(result.wsContract);
+      if (this.props.contract) {
+        this.setUpListeners(this.props.contract);
+        return;
+      }
+      if (this.props.processName) {
+        let processContractAddress = await this.props.registry.methods
+          .resolveName(this.props.processName)
+          .call();
+        let contract = await ContractsLoader.loadProcessContract(
+          this.props.web3,
+          processContractAddress
+        );
+        this.setUpListeners(contract.wsContract);
+      }
     } catch (error) {
       console.log(error);
       this.setState({ fatalError: error.message });
@@ -98,7 +104,11 @@ class ProcessStepper extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title={this.props.processName + " Execution"} isCollapsible>
+          <Card
+            title={this.props.processName + " Execution"}
+            isCollapsible
+            isFullscreenable
+          >
             {this.state.fatalError !== null ? (
               <Card.Body>
                 <div className="emptyListStatus">{this.state.fatalError}</div>

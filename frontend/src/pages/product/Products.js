@@ -1,10 +1,10 @@
 import React from "react";
 
 import { withRouter } from "react-router";
-import { Link } from "react-router-dom";
-
 import { Table, Grid, Card, Page, Dimmer } from "tabler-react";
+import ProductDIDResolver from "./ProductDIDResolver";
 import ConnectionContext from "../utilities/ConnectionContext";
+import DIDLink from "../utilities/DIDLink";
 
 class Products extends React.Component {
   constructor(props) {
@@ -15,37 +15,29 @@ class Products extends React.Component {
     };
   }
 
-  getProducts() {
-    this.productContract.methods["getProductsCount"]()
-      .call()
-      .then((productsCount) => {
-        this.setState({ loading: false });
-        for (let productID = 1; productID <= productsCount; productID++) {
-          this.productContract.methods["getProductDID"](productID)
-            .call()
-            .then((productDID) => {
-              var product = {};
-              product.ID = productID;
-              product.productDID = productDID;
-              this.setState((state, props) => {
-                return {
-                  products: [...this.state.products, product],
-                };
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  async getProducts(c) {
+    try {
+      let productsCount = await c.methods["getProductsCount"]().call();
+      this.setState({ loading: false });
+      for (let productID = 1; productID <= productsCount; productID++) {
+        let productDID = await c.methods["getProductDID"](productID).call();
+        this.setState((state, props) => {
+          return {
+            products: [
+              ...this.state.products,
+              { ID: productID, DID: productDID },
+            ],
+          };
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   componentDidMount() {
     document.title = "Products";
-    this.getProducts();
+    this.getProducts(this.productContract);
   }
 
   render() {
@@ -76,7 +68,7 @@ class Products extends React.Component {
                                   ID
                                 </Table.ColHeader>
                                 <Table.ColHeader alignContent="center">
-                                  Product Symbol
+                                  Product Name
                                 </Table.ColHeader>
                                 <Table.ColHeader alignContent="center">
                                   Product DID
@@ -90,15 +82,12 @@ class Products extends React.Component {
                                     {product.ID}
                                   </Table.Col>
                                   <Table.Col alignContent="center">
-                                    {"PR" + product.ID}
+                                    <ProductDIDResolver
+                                      productDID={product.DID}
+                                    />
                                   </Table.Col>
                                   <Table.Col alignContent="center">
-                                    <Link
-                                      to={"/product/" + product.productDID}
-                                      target="_blank"
-                                    >
-                                      {"did:ethr:" + product.productDID}
-                                    </Link>
+                                    <DIDLink DID={product.DID} />
                                   </Table.Col>
                                 </Table.Row>
                               ))}

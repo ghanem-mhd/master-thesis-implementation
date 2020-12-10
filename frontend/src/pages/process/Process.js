@@ -6,6 +6,7 @@ import { Page, Dimmer } from "tabler-react";
 
 import ProcessInfo from "./ProcessInfo";
 import StartProcess from "./StartProcess";
+import ProcessStepper from "./ProcessStepper";
 import ConnectionContext from "../utilities/ConnectionContext";
 import ContractsLoader from "../utilities/ContractsLoader";
 import AddressResolver from "../utilities/AddressResolver";
@@ -42,6 +43,7 @@ class Process extends React.Component {
       <ConnectionContext.Consumer>
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
+          this.registry = connectionContext.registry;
           return (
             <Page.Content
               title={
@@ -55,6 +57,12 @@ class Process extends React.Component {
                     <StartProcess
                       web3={this.web3}
                       ProcessContract={this.state.processContract}
+                    />
+                    <ProcessStepper
+                      registry={this.registry}
+                      web3={this.web3}
+                      processName="Process "
+                      contract={this.state.processContract}
                     />
                   </React.Fragment>
                 )}

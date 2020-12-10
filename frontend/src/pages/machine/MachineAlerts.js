@@ -9,6 +9,21 @@ import ContractsLoader from "../utilities/ContractsLoader";
 import AddressResolver from "../utilities/AddressResolver";
 import ErrorPage from "../utilities/ErrorPage";
 
+function getAlertType(alertTypeID) {
+  switch (alertTypeID) {
+    case "0":
+      return "Minor";
+    case "1":
+      return "Major";
+    case "2":
+      return "Urgent";
+    case "3":
+      return "Critical";
+    default:
+      return alertTypeID;
+  }
+}
+
 class MachineAlerts extends React.Component {
   constructor(props) {
     super(props);
@@ -124,7 +139,7 @@ class MachineAlerts extends React.Component {
                                     {alert.ID}
                                   </Table.Col>
                                   <Table.Col alignContent="center">
-                                    {alert.type}
+                                    {getAlertType(alert.type)}
                                   </Table.Col>
                                   <Table.Col alignContent="center">
                                     {alert.reason}

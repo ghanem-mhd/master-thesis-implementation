@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Table, Grid, Card, Button } from "tabler-react";
+import AddressResolver from "../utilities/AddressResolver";
 
 import Misc from "../utilities/Misc";
 
@@ -74,12 +75,14 @@ class ProductOperations extends React.Component {
                       <Table.ColHeader alignContent="center">
                         Operation
                       </Table.ColHeader>
-                      <Table.ColHeader>Result</Table.ColHeader>
+                      <Table.ColHeader alignContent="center">
+                        Result
+                      </Table.ColHeader>
                       <Table.ColHeader alignContent="center">
                         Time
                       </Table.ColHeader>
                       <Table.ColHeader alignContent="center">
-                        Machine ID
+                        Machine
                       </Table.ColHeader>
                       <Table.ColHeader alignContent="center">
                         Task ID
@@ -89,7 +92,7 @@ class ProductOperations extends React.Component {
                   </Table.Header>
                   <Table.Body>
                     {this.state.operations.map((object, i) => (
-                      <Table.Row key={this.state.operations.ID}>
+                      <Table.Row key={i}>
                         <Table.Col
                           alignContent="center"
                           className="table-center"
@@ -102,12 +105,18 @@ class ProductOperations extends React.Component {
                         >
                           {this.state.operations[i].name}
                         </Table.Col>
-                        <Table.Col>{this.state.operations[i].result}</Table.Col>
+                        <Table.Col alignContent="center">
+                          {this.state.operations[i].result}
+                        </Table.Col>
                         <Table.Col alignContent="center">
                           {this.state.operations[i].time}
                         </Table.Col>
                         <Table.Col alignContent="center">
-                          {this.state.operations[i].machine}
+                          <AddressResolver
+                            address={this.state.operations[
+                              i
+                            ].machine.toString()}
+                          />
                         </Table.Col>
                         <Table.Col alignContent="center">
                           {this.state.operations[i].taskID}

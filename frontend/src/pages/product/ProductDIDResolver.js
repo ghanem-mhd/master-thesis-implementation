@@ -3,31 +3,34 @@
 import * as React from "react";
 
 import ConnectionContext from "../utilities/ConnectionContext";
+import { Link } from "react-router-dom";
 
-class AddressResolver extends React.Component {
+class ProductDIDResolver extends React.Component {
   constructor(props) {
     super(props);
     this.state = { value: "loading" };
   }
 
   componentDidMount() {
+    console.log(this.props.productDID);
     try {
-      this.registry.methods
-        .resolveAddress(this.props.address)
+      this.productContract.methods
+        .getProductID(this.props.productDID)
         .call()
         .then((result) => {
           if (result.toString() === "") {
-            this.setState({ value: this.props.address });
+            this.setState({ value: this.props.productDID });
           } else {
             this.setState({ value: result });
           }
         })
         .catch((error) => {
-          this.setState({ value: this.props.address });
+          this.setState({ value: this.props.productDID });
         });
     } catch (error) {
+      console.log(error);
       this.setState({
-        value: "Invalid ethereum address: '" + this.props.address + "'",
+        value: "Invalid product DID: '" + this.props.address + "'",
       });
     }
   }
@@ -36,13 +39,11 @@ class AddressResolver extends React.Component {
     return (
       <ConnectionContext.Consumer>
         {(connectionContext) => {
-          this.registry = connectionContext.registry;
+          this.productContract = connectionContext.contracts["Product"];
           return (
-            <React.Fragment>
-              <span className="d-none d-lg-block">
-                <span>{this.state.value}</span>
-              </span>
-            </React.Fragment>
+            <Link to={"/product/" + this.props.productDID} target="_blank">
+              {"Product " + this.state.value}
+            </Link>
           );
         }}
       </ConnectionContext.Consumer>
@@ -50,4 +51,4 @@ class AddressResolver extends React.Component {
   }
 }
 
-export default AddressResolver;
+export default ProductDIDResolver;

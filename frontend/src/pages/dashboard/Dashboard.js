@@ -41,10 +41,10 @@ class Dashboard extends React.Component {
               <Dimmer active={this.state.loading} loader>
                 <Grid.Row cards={true}>
                   {[
-                    "Vacuum Gripper Robot (VGR)",
-                    "High-Bay Warehouse (HBW)",
-                    "Multi-Processing Station (MPO)",
-                    "Sorting Line with Color Detection (SLD)",
+                    "Vacuum Gripper Robot (VGR) - FIT",
+                    "High-Bay Warehouse (HBW) - FIT",
+                    "Multi-Processing Station (MPO) - FIT",
+                    "Sorting Line with Color Detection (SLD) - FIT",
                   ].map((machineName, index) => (
                     <Grid.Col sm={12} lg={6} key={machineName}>
                       <MachineState

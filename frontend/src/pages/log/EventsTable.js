@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Table } from "tabler-react";
 import DataTable from "react-data-table-component";
 
 import EventLogDetails from "./EventLogDetails";
@@ -40,13 +39,13 @@ class EventsTable extends React.Component {
         columns={columns}
         data={this.props.rows}
         pagination={true}
-        paginationPerPage={10}
+        paginationPerPage={5}
         expandableRows
         noHeader={true}
         noDataComponent={<div className="emptyListStatus">{"No Events"}</div>}
         expandableRowDisabled={(row) => row.payload == null}
         expandableRowsComponent={<EventLogDetails />}
-        paginationRowsPerPageOptions={[10, 20, 50, 100, 200]}
+        paginationRowsPerPageOptions={[5, 10, 20, 50, 100, 200]}
       />
     );
   }

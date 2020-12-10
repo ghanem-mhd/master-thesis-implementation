@@ -7,6 +7,8 @@ import Misc from "../utilities/Misc";
 import ConnectionContext from "../utilities/ConnectionContext";
 import ContractsLoader from "../utilities/ContractsLoader";
 import AddressResolver from "../utilities/AddressResolver";
+import { Link } from "react-router-dom";
+import ProductDIDResolver from "../product/ProductDIDResolver";
 import ErrorPage from "../utilities/ErrorPage";
 import Tooltip from "@material-ui/core/Tooltip";
 
@@ -37,42 +39,41 @@ class MachineTasks extends React.Component {
     };
   }
 
-  getTaskObject(TaskResult) {
+  getTaskObject(taskID, taskResult, taskProcessInfo) {
     var task = {};
-    task.product = TaskResult[0];
-    task.name = TaskResult[1];
-    task.startingTime = Misc.formatTimestamp(TaskResult[2]);
-    task.finishingTime = Misc.formatTimestamp(TaskResult[3]);
-    task.status = getStatusLabel(TaskResult[5].toString());
-    task.note = TaskResult[4];
+    task.ID = taskID;
+    task.product = taskResult[0];
+    task.name = taskResult[1];
+    task.startingTime = Misc.formatTimestamp(taskResult[2]);
+    task.finishingTime = Misc.formatTimestamp(taskResult[3]);
+    task.status = getStatusLabel(taskResult[5].toString());
+    task.note = taskResult[4];
+
+    task.processID = taskProcessInfo[0];
+    task.processContract = taskProcessInfo[1];
+    task.processOwner = taskProcessInfo[2];
     return task;
   }
 
-  getMachineTasks(MachineContract) {
-    MachineContract.methods["getTasksCount"]()
-      .call()
-      .then((tasksCount) => {
-        this.setState({ loading: false });
-        for (let taskID = 1; taskID <= tasksCount; taskID++) {
-          MachineContract.methods["getTask"](taskID)
-            .call()
-            .then((taskResult) => {
-              let task = this.getTaskObject(taskResult);
-              task.ID = taskID;
-              this.setState((state, props) => {
-                return {
-                  tasks: [...this.state.tasks, task],
-                };
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  async getMachineTasks(Contract) {
+    try {
+      let tasksCount = await Contract.methods["getTasksCount"]().call();
+      this.setState({ loading: false });
+      for (let taskID = 1; taskID <= tasksCount; taskID++) {
+        let taskResult = await Contract.methods["getTask"](taskID).call();
+        let processInfo = await Contract.methods["getTaskProcessInfo"](
+          taskID
+        ).call();
+        let task = this.getTaskObject(taskID, taskResult, processInfo);
+        this.setState((state, props) => {
+          return {
+            tasks: [...this.state.tasks, task],
+          };
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   componentDidMount() {
@@ -121,8 +122,12 @@ class MachineTasks extends React.Component {
                           <Table>
                             <Table.Header>
                               <Table.Row>
-                                <Table.ColHeader>Task ID</Table.ColHeader>
-                                <Table.ColHeader>Task Name</Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Task ID
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Task Name
+                                </Table.ColHeader>
                                 <Table.ColHeader alignContent="center">
                                   Task Status
                                 </Table.ColHeader>
@@ -132,14 +137,26 @@ class MachineTasks extends React.Component {
                                 <Table.ColHeader alignContent="center">
                                   Finishing Time
                                 </Table.ColHeader>
-                                <Table.ColHeader>Product</Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Product
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Process
+                                </Table.ColHeader>
+                                <Table.ColHeader alignContent="center">
+                                  Process ID
+                                </Table.ColHeader>
                               </Table.Row>
                             </Table.Header>
                             <Table.Body>
                               {this.state.tasks.map((task, i) => (
                                 <Table.Row key={task.ID}>
-                                  <Table.Col>{task.ID}</Table.Col>
-                                  <Table.Col>{task.name}</Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {task.ID}
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {task.name}
+                                  </Table.Col>
                                   <Table.Col alignContent="center">
                                     <Tooltip
                                       title={task.note}
@@ -154,7 +171,23 @@ class MachineTasks extends React.Component {
                                   <Table.Col alignContent="center">
                                     {task.finishingTime}
                                   </Table.Col>
-                                  <Table.Col>{task.product}</Table.Col>
+                                  <Table.Col alignContent="center">
+                                    <ProductDIDResolver
+                                      productDID={task.product}
+                                    />
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    <Link
+                                      to={"/process/" + task.processContract}
+                                    >
+                                      <AddressResolver
+                                        address={task.processContract}
+                                      />
+                                    </Link>
+                                  </Table.Col>
+                                  <Table.Col alignContent="center">
+                                    {task.processID}
+                                  </Table.Col>
                                 </Table.Row>
                               ))}
                             </Table.Body>

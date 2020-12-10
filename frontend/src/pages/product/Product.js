@@ -2,14 +2,14 @@
 
 import * as React from "react";
 import { withRouter } from "react-router-dom";
-import { Link } from "react-router-dom";
 
 import { Page, Grid, Card, Table, Alert } from "tabler-react";
 
 import ConnectionContext from "../utilities/ConnectionContext";
-import ProductDIDInput from "./ProductDIDInput";
 import ProductOperations from "./ProductOperations";
 import Misc from "../utilities/Misc";
+import AddressResolver from "../utilities/AddressResolver";
+import DIDLink from "../utilities/DIDLink";
 import SaveProductInfo from "./SaveProductInfo";
 
 class Product extends React.Component {
@@ -19,126 +19,117 @@ class Product extends React.Component {
     this.state = {};
   }
   componentDidMount() {
-    document.title = "Product Digital Twin";
     this.initiateGetProductData(this.props.match.params.address);
   }
 
-  getProductData(productDID) {
-    var ProductContract = this.contracts["Product"];
-    ProductContract.methods["getAuthorizeProcess"](productDID)
-      .call()
-      .then((result) => {
-        this.setState((state, props) => {
-          var product = this.state.product;
-          if (
-            result.toString() === "0x0000000000000000000000000000000000000000"
-          ) {
-            product.info.push({
-              infoName: "Authorized Process",
-              infoValue: "None",
-            });
-          } else {
-            product.info.push({
-              infoName: "Authorized Process",
-              infoValue: result,
-            });
-          }
-          return {
-            product: product,
-          };
+  async getProductData(productDID) {
+    try {
+      var contract = this.ProductContract;
+      let createAt = await contract.methods["getProductCreationTime"](
+        productDID
+      ).call();
+      let id = await contract.methods["getProductID"](productDID).call();
+
+      this.setState((state, props) => {
+        let product = this.state.product;
+        product.info.push({
+          infoName: "Product Name",
+          infoValue: "Product " + id,
         });
-      })
-      .catch((error) => {
-        console.log(error);
+        product.info.push({
+          infoName: "Created At",
+          infoValue: Misc.formatTimestamp(createAt),
+        });
+        return {
+          product: product,
+        };
       });
 
-    ProductContract.methods["getProductCreationTime"](productDID)
-      .call()
-      .then((result) => {
-        this.setState((state, props) => {
-          var product = this.state.product;
-          product.info.push({
-            infoName: "Created At",
-            infoValue: Misc.formatTimestamp(result),
+      let infoNames = await contract.methods["getProductInfoNames"](
+        productDID
+      ).call();
+      if (infoNames.length > 0) {
+        for (let infoName of infoNames) {
+          let infoValue = await contract.methods["getProductInfo"](
+            productDID,
+            infoName
+          ).call();
+          let infoNameString = Misc.toString(this.web3, infoName);
+          let infoValueString = Misc.toString(this.web3, infoValue);
+          this.setState((state, props) => {
+            let product = this.state.product;
+            product.info.push({
+              infoName: infoNameString,
+              infoValue: infoValueString,
+            });
+            return {
+              product: product,
+            };
           });
-          return {
-            product: product,
-          };
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    ProductContract.methods["getProductInfoNames"](productDID)
-      .call()
-      .then((infoNames) => {
-        if (infoNames.length > 0) {
-          for (let infoName of infoNames) {
-            ProductContract.methods["getProductInfo"](productDID, infoName)
-              .call()
-              .then((infoValue) => {
-                var infoNameString = Misc.toString(this.web3, infoName);
-                var infoValueString = Misc.toString(this.web3, infoValue);
-                this.setState((state, props) => {
-                  var product = this.state.product;
-                  product.info.push({
-                    infoName: infoNameString,
-                    infoValue: infoValueString,
-                  });
-                  return {
-                    product: product,
-                  };
-                });
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          }
         }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  initiateGetProductData(productDID) {
+  async initiateGetProductData(productDID) {
     if (productDID == null) {
       return;
     }
-    var ProductContract = this.contracts["Product"];
-    ProductContract.methods["getProductOwner"](productDID)
-      .call()
-      .then((result) => {
-        var newState = {};
-        newState.productDID = productDID;
-        newState.error = null;
-        newState.product = {};
-        newState.product.info = [];
-        newState.product.operations = [];
+    try {
+      let productOwner = await this.ProductContract.methods["getProductOwner"](
+        productDID
+      ).call();
+      var newState = {};
+      newState.productDID = productDID;
+      newState.error = null;
+      newState.product = {};
+      newState.product.info = [];
+      newState.product.operations = [];
 
-        var fullProductDID = "did:ethr:" + productDID;
-        newState.product.info.push({
-          infoName: "Product DID",
-          infoValue: fullProductDID,
-          link: "/did-resolver/" + productDID,
-        });
-        newState.product.info.push({
-          infoName: "Product Owner",
-          infoValue: result,
-        });
-        this.setState(newState);
-        this.getProductData(productDID);
-      })
-      .catch((error) => {
-        console.log(error);
-        if (error.message.includes("Product doesn't exist.")) {
-          this.setState({
-            error: `Product did:ethr:${productDID} doesn't exist.`,
-            product: null,
-          });
-        }
+      var fullProductDID = "did:ethr:" + productDID;
+      newState.product.info.push({
+        infoName: "Product DID",
+        infoValue: fullProductDID,
+        type: "DID",
       });
+      newState.product.info.push({
+        infoName: "Product Owner",
+        infoValue: productOwner,
+        type: "address",
+      });
+      this.setState(newState);
+      this.getProductData(productDID);
+    } catch (error) {
+      console.log(error);
+      if (error.message.includes("Product doesn't exist.")) {
+        this.setState({
+          error: `Product did:ethr:${productDID} doesn't exist.`,
+          product: null,
+        });
+      }
+    }
+  }
+
+  getInfoValueElement(infoObject) {
+    if (infoObject.type == null) {
+      return <Table.Col>{infoObject.infoValue}</Table.Col>;
+    }
+    if (infoObject.type === "address") {
+      return (
+        <Table.Col>
+          <AddressResolver address={infoObject.infoValue} />
+        </Table.Col>
+      );
+    }
+    if (infoObject.type === "DID") {
+      return (
+        <Table.Col>
+          <DIDLink DID={infoObject.infoValue} />
+        </Table.Col>
+      );
+    }
   }
 
   updateCallback() {}
@@ -149,13 +140,9 @@ class Product extends React.Component {
         {(connectionContext) => {
           this.web3 = connectionContext.web3;
           this.contracts = connectionContext.contracts;
+          this.ProductContract = this.contracts["Product"];
           return (
             <Page.Content title="Product Digital Twin" subTitle="">
-              {/*               <ProductDIDInput
-                onFindButtonClicked={this.initiateGetProductData.bind(this)}
-                web3={this.web3}
-              /> */}
-
               {this.state.error && (
                 <Grid.Row className="justify-content-center">
                   <Grid.Col sm={12} lg={6}>
@@ -163,7 +150,6 @@ class Product extends React.Component {
                   </Grid.Col>
                 </Grid.Row>
               )}
-
               {this.state.product && this.state.product.info && (
                 <Grid.Row>
                   <Grid.Col>
@@ -184,20 +170,8 @@ class Product extends React.Component {
                                 <Table.Col>
                                   {this.state.product.info[i].infoName}
                                 </Table.Col>
-                                {this.state.product.info[i].link && (
-                                  <Table.Col>
-                                    <Link
-                                      to={this.state.product.info[i].link}
-                                      target="_blank"
-                                    >
-                                      {this.state.product.info[i].infoValue}
-                                    </Link>
-                                  </Table.Col>
-                                )}
-                                {!this.state.product.info[i].link && (
-                                  <Table.Col>
-                                    {this.state.product.info[i].infoValue}
-                                  </Table.Col>
+                                {this.getInfoValueElement(
+                                  this.state.product.info[i]
                                 )}
                               </Table.Row>
                             ))}
@@ -214,12 +188,14 @@ class Product extends React.Component {
                     contracts={this.contracts}
                     productDID={this.state.productDID}
                   />
-                  <SaveProductInfo
-                    contracts={this.contracts}
-                    web3={this.web3}
-                    productDID={this.state.productDID}
-                    updateCallback={this.updateCallback.bind(this)}
-                  />
+                  {false && (
+                    <SaveProductInfo
+                      contracts={this.contracts}
+                      web3={this.web3}
+                      productDID={this.state.productDID}
+                      updateCallback={this.updateCallback.bind(this)}
+                    />
+                  )}
                 </div>
               )}
             </Page.Content>
