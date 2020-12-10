@@ -61,7 +61,6 @@ class FactorySimulator {
     var newStock = {};
     newStock["ts"] = new Date().toISOString();
     newStock.stockItems = [
-      { location: "A1", workpiece: null },
       {
         location: "A2",
         workpiece: {
@@ -77,45 +76,16 @@ class FactorySimulator {
           id: "041c3f92186581",
           state: "RAW",
           type: "RED",
-          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
-        },
-      },
-      { location: "B1", workpiece: null },
-      {
-        location: "B2",
-        workpiece: {
-          id: "04333f92186581",
-          state: "RAW",
-          type: "RED",
-          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
-        },
-      },
-      { location: "B3", workpiece: null },
-      {
-        location: "C1",
-        workpiece: {
-          id: "04323f92186581",
-          state: "RAW",
-          type: "RED",
-          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          product_DID: "0x6b6b9266E98AFa468E60ce93DBC65eCb92c7f936",
         },
       },
       {
-        location: "C2",
+        location: "A3",
         workpiece: {
-          id: "04063f92186581",
+          id: "041c3f92186581",
           state: "RAW",
-          type: "BLUE",
-          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
-        },
-      },
-      {
-        location: "C3",
-        workpiece: {
-          id: "04ad3f92186580",
-          state: "RAW",
-          type: "BLUE",
-          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
+          type: "WHITE",
+          product_DID: "0x8333CcEa4069C22E1BdC9b0B30A69315f96a164E",
         },
       },
     ];
@@ -230,7 +200,7 @@ class FactorySimulator {
     var ackTopic = Topics.TOPIC_VGR_ACK;
     var outgoingMessage = incomingMassage;
     outgoingMessage["code"] = 1;
-    outgoingMessage["workpiece"] = { id: "2222", type: "green" };
+    outgoingMessage["workpiece"] = { id: "04963f92186580", type: "WHITE" };
     Logger.logEvent(
       this.clientName,
       `Sending ack message to ${ackTopic}`,

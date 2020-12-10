@@ -210,56 +210,44 @@ Promise.all(contractsAsyncGets)
     }
 
     try {
-      receipt = await Helper.sendTransaction(
-        registryContract.registerName("Admin", process.env.ADMIN_ADDRESS, {
-          from: adminProvider.addresses[0],
-        })
-      );
-      Logger.info("Register admin address " + receipt.transactionHash);
-
-      receipt = await Helper.sendTransaction(
-        registryContract.registerName(
-          "Fischertechnik GmbH",
-          process.env.MAINTAINER_ADDRESS,
-          {
+      var RegistryRequests = [
+        { name: "Admin", address: process.env.ADMIN_ADDRESS },
+        {
+          name: "Fraunhofer FIT - Processes Department",
+          address: process.env.PROCESS_OWNER_ADDRESS,
+        },
+        {
+          name: "Fraunhofer FIT - Machines Department",
+          address: process.env.MACHINE_OWNER_ADDRESS,
+        },
+        {
+          name: "Fraunhofer FIT - Products Department",
+          address: process.env.PRODUCT_OWNER_ADDRESS,
+        },
+        { name: "High-Bay Warehouse (HBW)", address: process.env.HBW_ADDRESS },
+        {
+          name: "Vacuum Gripper Robot (VGR)",
+          address: process.env.VGR_ADDRESS,
+        },
+        {
+          name: "Multi-Processing Station (MPO)",
+          address: process.env.MPO_ADDRESS,
+        },
+        {
+          name: "Sorting Line with Color Detection (SLD)",
+          address: process.env.SLD_ADDRESS,
+        },
+      ];
+      for (let i = 0; i < RegistryRequests.length; i++) {
+        let name = RegistryRequests[i].name;
+        let address = RegistryRequests[i].address;
+        let receipt = await Helper.sendTransaction(
+          registryContract.registerName(name, address, {
             from: adminProvider.addresses[0],
-          }
-        )
-      );
-      Logger.info("Register maintainer address " + receipt.transactionHash);
-
-      receipt = await Helper.sendTransaction(
-        registryContract.registerName(
-          "Process Owner",
-          process.env.PROCESS_OWNER_ADDRESS,
-          {
-            from: adminProvider.addresses[0],
-          }
-        )
-      );
-      Logger.info("Register process owner address " + receipt.transactionHash);
-
-      receipt = await Helper.sendTransaction(
-        registryContract.registerName(
-          "Fraunhofer FIT - Machines Department",
-          process.env.MACHINE_OWNER_ADDRESS,
-          {
-            from: adminProvider.addresses[0],
-          }
-        )
-      );
-      Logger.info("Register machine owner address " + receipt.transactionHash);
-
-      receipt = await Helper.sendTransaction(
-        registryContract.registerName(
-          "Fraunhofer FIT - Products Department",
-          process.env.PRODUCT_OWNER_ADDRESS,
-          {
-            from: adminProvider.addresses[0],
-          }
-        )
-      );
-      Logger.info("Register product owner address " + receipt.transactionHash);
+          })
+        );
+        Logger.info(`Register ${name} address ` + receipt.transactionHash);
+      }
     } catch (error) {
       Logger.logError(error, "Seed");
     } finally {
