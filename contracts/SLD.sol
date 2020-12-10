@@ -40,6 +40,6 @@ contract SLD is Machine {
     }
 
     function getName() public override pure returns (string memory) {
-        return "Sorting Line with Color Detection (SLD)";
+        return "Sorting Line with Color Detection (SLD) - FIT";
     }
 }

@@ -55,6 +55,6 @@ contract VGR is Machine {
     }
 
     function getName() public override pure returns (string memory) {
-        return "Vacuum Gripper Robot (VGR)";
+        return "Vacuum Gripper Robot (VGR) - FIT";
     }
 }

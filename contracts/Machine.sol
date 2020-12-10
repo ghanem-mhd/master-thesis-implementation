@@ -174,6 +174,14 @@ abstract contract Machine is Ownable {
         );
     }
 
+    function getTaskProcessInfo(uint taskID) public taskExists(taskID) view returns(uint, address, address){
+        return (
+            tasks[taskID].processID,
+            tasks[taskID].processContractAddress,
+            tasks[taskID].processOwner
+        );
+    }
+
     function getTaskStatus(uint taskID) public taskExists(taskID) view returns(TaskStatus) {
         return tasks[taskID].status;
     }

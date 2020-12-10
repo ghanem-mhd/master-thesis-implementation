@@ -51,6 +51,6 @@ contract HBW is Machine {
     }
 
     function getName() public override pure returns (string memory) {
-        return "High-Bay Warehouse (HBW)";
+        return "High-Bay Warehouse (HBW) - FIT";
     }
 }

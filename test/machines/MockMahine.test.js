@@ -121,6 +121,10 @@ describe("MockMachine", function () {
     expect(savedTask[1]).to.equal("TaskWithoutProduct");
     expect(savedTask[4]).to.equal("");
     expect(savedTask[5].toString()).to.equal("0");
+    savedTaskProcessInfo = await this.MockMachineContract.getTaskProcessInfo(1);
+    expect(savedTaskProcessInfo[0].toString()).to.equal("1");
+    expect(savedTaskProcessInfo[1]).to.equal(ProcessContractAddress);
+    expect(savedTaskProcessInfo[2]).to.equal(ProcessContractAddress);
 
     receipt = await this.MockMachineContract.assignTask(1, ProductDID, 2, {
       from: ProcessContractAddress,

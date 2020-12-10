@@ -31,6 +31,6 @@ contract MPO is Machine {
     }
 
     function getName() public override pure returns (string memory) {
-        return "Multi-Processing Station (MPO)";
+        return "Multi-Processing Station (MPO) - FIT";
     }
 }
