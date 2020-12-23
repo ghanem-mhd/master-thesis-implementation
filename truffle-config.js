@@ -66,9 +66,9 @@ module.exports = {
       network_id: 4,
     },
     quorum: {
-      host: "127.0.0.1",
-      port: 22000,
-      wsPort: 23000,
+      host: "node2",
+      port: 8545,
+      wsPort: 8546,
       network_id: "*",
       type: "quorum",
       gasPrice: 0,
