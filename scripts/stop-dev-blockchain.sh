@@ -1,1 +1,0 @@
-pkill -f ganache-cli # stop the running instance if
