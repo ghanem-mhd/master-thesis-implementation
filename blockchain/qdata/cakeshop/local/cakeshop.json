@@ -1,0 +1,12 @@
+[
+  {
+    "name": "node1",
+    "rpcUrl": "http://node1:8545",
+    "transactionManagerUrl": ""
+  },
+  {
+    "name": "node2",
+    "rpcUrl": "http://node2:8545",
+    "transactionManagerUrl": ""
+  }
+]

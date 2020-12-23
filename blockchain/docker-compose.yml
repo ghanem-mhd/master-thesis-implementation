@@ -1,0 +1,174 @@
+# The following environment variables are substituted if present
+# * QUORUM_CONSENSUS: default to istanbul
+# * QUORUM_DOCKER_IMAGE: default to quorumengineering/quorum:2.5.0
+# * QUORUM_TX_MANAGER_DOCKER_IMAGE: default to quorumengineering/tessera:0.10.2
+# * QUORUM_GETH_ARGS: extra geth arguments to be included when running geth
+# To use Constellation, set QUORUM_TX_MANAGER_DOCKER_IMAGE to Constellation docker image,
+# e.g.: QUORUM_TX_MANAGER_DOCKER_IMAGE=quorumengineering/constellation:0.3.2 docker-compose up -d
+# To use Remix, set QUORUM_GETH_ARGS="--rpccorsdomain https://remix.ethereum.org"
+version: "2.3"
+x-quorum-def: &quorum-def
+  restart: "on-failure"
+  image: "${DOCKER_REGISTRY:-}${QUORUM_DOCKER_IMAGE:-quorumengineering/quorum:2.5.0}"
+  healthcheck:
+    test:
+      [
+        "CMD",
+        "wget",
+        "--spider",
+        "--proxy",
+        "off",
+        "http://localhost:${QUORUM_RPC_PORT:-8545}",
+      ]
+    interval: 3s
+    timeout: 3s
+    retries: 10
+    start_period: 5s
+  labels:
+    com.quorum.consensus: ${QUORUM_CONSENSUS:-istanbul}
+  entrypoint:
+    - /bin/sh
+    - -c
+    - |
+      UDS_WAIT=10
+      if [ "$${PRIVATE_CONFIG}" != "ignore" ]; then
+      for i in $$(seq 1 100)
+      do
+        set -e
+        if [ -S $${PRIVATE_CONFIG} ] && \
+          [ "I'm up!" == "$$(wget --timeout $${UDS_WAIT} -qO- --proxy off txmanager$${NODE_ID}:${TESSERA_P2P_PORT:-9000}/upcheck)" ];
+        then break
+        else
+          echo "Sleep $${UDS_WAIT} seconds. Waiting for TxManager."
+          sleep $${UDS_WAIT}
+        fi
+      done
+      fi
+      DDIR=/qdata/dd
+      rm -rf $${DDIR}
+      mkdir -p $${DDIR}
+      cp -r /examples/dd$${NODE_ID}/* $${DDIR}
+      cp /examples/dd$${NODE_ID}/permissioned-nodes.json $${DDIR}/static-nodes.json
+      cp $${DDIR}/static-nodes.json $${DDIR}/permissioned-nodes.json
+      cat $${DDIR}/static-nodes.json
+      GENESIS_FILE="/examples/dd$${NODE_ID}/genesis.json"
+      NETWORK_ID=$$(cat $${GENESIS_FILE} | grep chainId | awk -F " " '{print $$2}' | awk -F "," '{print $$1}')
+      GETH_ARGS_raft="--raft --raftport ${QUORUM_RAFT_PORT:-50400}"
+      GETH_ARGS_istanbul="--emitcheckpoints --istanbul.blockperiod 1 --mine --minerthreads 1 --syncmode full"
+      EXTRA_ARGS="${QUORUM_GETH_ARGS:-}"
+      geth --datadir $${DDIR} init $${GENESIS_FILE}
+      geth \
+        --identity node$${NODE_ID}-${QUORUM_CONSENSUS:-istanbul} \
+        --datadir $${DDIR} \
+        --permissioned \
+        --nodiscover \
+        --verbosity 5 \
+        --networkid $${NETWORK_ID} \
+        --rpc \
+        --rpccorsdomain "*" \
+        --rpcvhosts "*" \
+        --rpcaddr 0.0.0.0 \
+        --rpcport ${QUORUM_RPC_PORT:-8545} \
+        --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,${QUORUM_CONSENSUS:-istanbul} \
+        --ws \
+        --wsaddr 0.0.0.0 \
+        --wsorigins "*" \
+        --wsport ${QUORUM_WS_PORT:-8546} \
+        --wsapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,${QUORUM_CONSENSUS:-istanbul} \
+        --port ${QUORUM_P2P_PORT:-21000} \
+        --unlock 0 \
+        --password $${DDIR}/keystore/password.txt \
+        $${GETH_ARGS_${QUORUM_CONSENSUS:-istanbul}} \
+        $$EXTRA_ARGS
+  expose:
+    - "${QUORUM_P2P_PORT:-21000}"
+    - "${QUORUM_RAFT_PORT:-50400}"
+x-cakeshop-def: &cakeshop-def
+  image: "${DOCKER_REGISTRY:-}${CAKESHOP_DOCKER_IMAGE:-quorumengineering/cakeshop:0.11.0}"
+  expose:
+    - "8999"
+  restart: "no"
+  healthcheck:
+    test:
+      [
+        "CMD",
+        "wget",
+        "--spider",
+        "--proxy=off",
+        "http://localhost:8999/actuator/health",
+      ]
+    interval: 5s
+    timeout: 5s
+    retries: 20
+    start_period: 5s
+  entrypoint:
+    - /bin/sh
+    - -c
+    - |
+      DDIR=/qdata/cakeshop/local
+      rm -rf $${DDIR}
+      mkdir -p $${DDIR}
+      DOCKER_IMAGE="${CAKESHOP_DOCKER_IMAGE:-quorumengineering/cakeshop:0.11.0}"
+      cp /examples/cakeshop/local/application.properties $${DDIR}/application.properties
+      cp /examples/cakeshop/local/cakeshop.json $${DDIR}/cakeshop.json
+      java -Xms128M -Xmx128M -Dcakeshop.config.dir=/qdata/cakeshop -Dlogging.path=/qdata/logs/cakeshop -jar /opt/cakeshop/cakeshop.war
+      ;;
+services:
+  node1:
+    <<: *quorum-def
+    container_name: node1-network
+    hostname: node1
+    ports:
+      - "22000:8545"
+      - "23000:8546"
+      - "24000:8547"
+    volumes:
+      - vol1:/qdata
+      - ./qdata:/examples:ro
+    environment:
+      - PRIVATE_CONFIG=ignore
+      - NODE_ID=1
+    networks:
+      studious-enigma-net:
+        ipv4_address: 172.16.28.11
+  node2:
+    <<: *quorum-def
+    container_name: node2-network
+    hostname: node2
+    ports:
+      - "22001:8545"
+      - "23001:8546"
+      - "24001:8547"
+    volumes:
+      - vol2:/qdata
+      - ./qdata:/examples:ro
+    environment:
+      - PRIVATE_CONFIG=ignore
+      - NODE_ID=2
+    networks:
+      studious-enigma-net:
+        ipv4_address: 172.16.28.12
+  cakeshop:
+    <<: *cakeshop-def
+    container_name: cakeshop-network
+    hostname: cakeshop
+    ports:
+      - "8999:8999"
+    volumes:
+      - cakeshopvol:/qdata
+      - ./qdata:/examples:ro
+    networks:
+      studious-enigma-net:
+        ipv4_address: 172.16.28.75
+networks:
+  studious-enigma-net:
+    name: studious-enigma-net
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.28.0/24
+volumes:
+  "vol1":
+  "vol2":
+  "cakeshopvol":
