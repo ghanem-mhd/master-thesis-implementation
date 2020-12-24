@@ -46,27 +46,13 @@ module.exports = {
     // You should run a client (like ganache-cli, geth or parity) in a separate terminal
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
-
-    dev_gui: {
-      host: "127.0.0.1",
-      port: 7545,
-      network_id: "*",
-    },
-    dev_cli: {
-      host: "127.0.0.1",
+    "ganache-cli": {
+      host: "node1",
       port: 8545,
       network_id: "*",
     },
-    rinkeby: {
-      provider: () =>
-        new HDWalletProvider(
-          process.env.ADMIN_MNEMONIC,
-          "https://rinkeby.infura.io/v3/" + infuraProjectId
-        ),
-      network_id: 4,
-    },
     quorum: {
-      host: "node2",
+      host: "node1",
       port: 8545,
       wsPort: 8546,
       network_id: "*",

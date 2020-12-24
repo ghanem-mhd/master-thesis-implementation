@@ -1,9 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+IFS='
+'
+export $(egrep -v '^#' ./.env | xargs -0) # load env
+IFS=
 
-cd blockchain
+if [[ "$NETWORK" = "ganache-cli" ]] ; then
+    cd blockchain/ganache-cli
+    docker-compose up -d
+    cd ../..
+fi
 
-docker-compose up -d
-
-cd ..
+if [[ "$NETWORK" = "quorum" ]] ; then
+    cd blockchain/quorum
+    docker-compose up -d
+    cd ../..
+fi
 
 docker-compose up
