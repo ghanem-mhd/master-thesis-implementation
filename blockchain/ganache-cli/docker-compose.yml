@@ -1,0 +1,13 @@
+version: "2.3"
+services:
+  node1:
+    image: trufflesuite/ganache-cli:latest
+    ports:
+      - "23000:8545"
+    command: "--account=${ADMIN_PRIVATE_KEY},1344395000000000000000000 --blockTime=1"
+    networks:
+      - studious-enigma-net
+networks:
+  studious-enigma-net:
+    name: studious-enigma-net
+    driver: bridge
