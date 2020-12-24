@@ -6,7 +6,5 @@ build/
 logs/
 .openzeppelin/.session
 .openzeppelin/dev-*.json
-.env
 .vscode
-!frontend/.env
 frontend/src/contracts
