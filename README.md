@@ -45,3 +45,23 @@ This section presents the tools used in the development and implementation of th
 - **MetaMask:** A browser extension to interact with any Ethereum network . It handles account management and connecting the user to the blockchain. With this extension, the web application users can manage their accounts and keys and send/sign transactions.
 
 ## Project Structure
+
+- Server.js: NodeJS with express framework represents the gateway.
+
+- MQTT: JS scripts run by the server to handle the communication between the gateway and other system compounds.
+
+- blockchain: Docker files for running local blockchain networks.
+
+- contracts: Smart contract of the system written in Solidity.
+
+- ethr-did-registry: Ethereum registry (ERC-1056) Implementation for ethr DID method.
+
+- frontend: Frontend React application.
+
+- migrations: Scripts for deploying the smart contracts into the blockchain.
+
+- scripts: JS and bash scripts for starting, stopping, and seeding.
+
+- test: Unit test for smart contracts code.
+
+- utilities: JS utility scripts used inside the gateway both by the server and MQTT scripts.
