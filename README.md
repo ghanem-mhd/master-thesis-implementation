@@ -16,7 +16,7 @@ The Fischertechnik component includes the four machines mentioned in the last se
 
 The Fischertechnik and the gateway communicate with each other by sending MQTT messages. The gateway clients send transactions to smart contracts and listen to events. The Web application also sends transactions to the smart contract and uses read-only functions to display the smart contracts' information. There are contract-to-contract functions calls between the blockchain contracts, but for simplicity, they have been omitted.
 
-## Development Tools and Framework
+## Development Tools and Frameworks
 
 ### Blockchain and Smart Contracts
 
@@ -54,7 +54,7 @@ This section presents the tools used in the development and implementation of th
 
 - contracts: Smart contract of the system written in Solidity.
 
-- ethr-did-registry: Ethereum registry (ERC-1056) Implementation for ethr DID method.
+- ethr-did-registry: Ethereum registry (ERC-1056) implementation for [ethr DID method](https://github.com/uport-project/ethr-did-registry).
 
 - frontend: Frontend React application.
 
@@ -65,3 +65,32 @@ This section presents the tools used in the development and implementation of th
 - test: Unit test for smart contracts code.
 
 - utilities: JS utility scripts used inside the gateway both by the server and MQTT scripts.
+
+## Project Setup
+
+There are two methods to set up and run the project, either by running the pre-configured docker containers or running locally. All the project configurations and environment variables are defined in the [.env](./.env) file.
+
+| Environment Variable |                      Description                       |          Values          |
+| :------------------: | :----------------------------------------------------: | :----------------------: |
+|       NETWORK        |                Blockchain network type                 |   ganache-cli, quorum    |
+|     MQTT_BROKER      |               MQTT broker host and port                | mqtt://xxx.xx.xx.xx:xxxx |
+| DEPLOY_NEW_INSTANCE  | Boolean to deploy new instances of the smart contracts |       false, true        |
+
+### Running Containers
+
+Each compound of the project is wrapped with a docker container defined by the following [docker-compose](https://docs.docker.com/compose/) files. Bash scripts are provided to [start](scripts/start.sh) and [stop](scripts/stop.sh) the containers.
+
+#### [Docker-compose.yaml](./docker-compose.yaml)
+
+This compose file define the following containers:
+
+- Gateway container: runs the NodeJS server. The image for this container is defined [here](./Dockerfile).
+- Frontend container: runs the development server for the react application. The image for this container is defined [here](./frontend/Dockerfile).
+- Broker container: runs an MQTT broker container from the [eclipse-mosquitto](https://hub.docker.com/_/eclipse-mosquitto) docker image. This broker is used only while development to replace the broker provided by the Fischertechnik factory.
+
+#### [Blockchain/\*/docker-compose.yaml](./blockchain/)
+
+Two blockchain networks can be used. To choose the blockchain network, modify the environment variable NETWORK in the [.env](./.env) file to one of the values (ganache-cli or quorum).
+
+- [Ganache-CLI](https://github.com/trufflesuite/ganache-cli) defined in the [blockchain/ganache-cli/docker-compose.yaml].
+- [Quorum](https://github.com/ConsenSys/quorum) defined in the [blockchain/quorum]. It is a two node network generated using the [quorum-wizard](https://github.com/ConsenSys/quorum-wizard). It uses the istanbul consensus algorithm.
