@@ -4,7 +4,7 @@ IFS='
 export $(egrep -v '^#' ./.env | xargs -0) # load env
 IFS=
 
-if $DEPLOY
+if $DEPLOY_NEW_INSTANCE
 then
     rm -r build
     rm -r frontend/src/contracts

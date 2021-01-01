@@ -16,7 +16,7 @@ class MPOClient {
 
   connect() {
     this.clientName = this.constructor.name;
-    this.mqttClient = mqtt.connect(process.env.CURRENT_MQTT);
+    this.mqttClient = mqtt.connect(process.env.MQTT_BROKER);
     this.mqttClient.on("error", (error) => this.onMQTTError(error));
     this.mqttClient.on("connect", () => this.onMQTTConnect());
     this.mqttClient.on("close", () => this.onMQTTClose());

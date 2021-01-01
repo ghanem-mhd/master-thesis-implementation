@@ -17,13 +17,13 @@ class MQTTHandler {
   constructor() {}
 
   connect() {
-    this.mqttClient = mqtt.connect(process.env.CURRENT_MQTT);
+    this.mqttClient = mqtt.connect(process.env.MQTT_BROKER);
     this.mqttClient.on("error", (error) => this.onMQTTError(error));
     this.mqttClient.on("connect", () => this.onMQTTConnect());
   }
 
   onMQTTError(error) {
-    Logger.error(`Can't connect to MQTT broker ${process.env.CURRENT_MQTT}`);
+    Logger.error(`Can't connect to MQTT broker ${process.env.MQTT_BROKER}`);
     Logger.logError(error, "MQTT Handler");
     this.mqttClient.end();
   }
