@@ -7,11 +7,11 @@ module.exports = {
   init: function () {
     db = {};
     db.events_log = new Datastore({
-      filename: `./${process.env.EVENTS_DB_PATH}`,
+      filename: "./logs/events_log.json",
       autoload: true,
     });
     db.credentials = new Datastore({
-      filename: `./${process.env.CREDENTIALS_DB_PATH}`,
+      filename: "./logs/credentials.json",
       autoload: true,
     });
     return db;

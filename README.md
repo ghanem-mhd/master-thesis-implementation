@@ -70,22 +70,24 @@ This section presents the tools used in the development and implementation of th
 
 There are two methods to set up and run the project, either by running the pre-configured docker containers or running locally. All the project configurations and environment variables are defined in the [.env](./.env) file.
 
-| Environment Variable |                      Description                       |          Values          |
-| :------------------: | :----------------------------------------------------: | :----------------------: |
-|       NETWORK        |                Blockchain network type                 |   ganache-cli, quorum    |
-|     MQTT_BROKER      |               MQTT broker host and port                | mqtt://xxx.xx.xx.xx:xxxx |
-| DEPLOY_NEW_INSTANCE  | Boolean to deploy new instances of the smart contracts |       false, true        |
+| Environment Variable |                 Description                 |          Values          |
+| :------------------: | :-----------------------------------------: | :----------------------: |
+|       NETWORK        |           Blockchain network type           |   ganache-cli, quorum    |
+|     MQTT_BROKER      |          MQTT broker host and port          | mqtt://xxx.xx.xx.xx:xxxx |
+| DEPLOY_NEW_INSTANCE  | Deploy new instances of the smart contracts |       false, true        |
+|    BUILD_FRONTEND    |       Build the frontend application        |       false, true        |
 
-### Running Containers
+The .env file contains other variables and public/private key pairs used in the gateway.
 
-Each compound of the project is wrapped with a docker container defined by the following [docker-compose](https://docs.docker.com/compose/) files. Bash scripts are provided to [start](scripts/start.sh) and [stop](scripts/stop.sh) the containers.
+### Setup with Docker
+
+Each compound of the project is wrapped with a docker container defined by the following [docker-compose](https://docs.docker.com/compose/) files.
 
 #### [Docker-compose.yaml](./docker-compose.yaml)
 
 This compose file define the following containers:
 
-- Gateway container: runs the NodeJS server. The image for this container is defined [here](./Dockerfile).
-- Frontend container: runs the development server for the react application. The image for this container is defined [here](./frontend/Dockerfile).
+- Gateway container: runs the NodeJS server. The image for this container is defined [here](./Dockerfile). The root directory is mounted as a volume, which means there is no need to build the image if there is a change in the code. The image execute the [run.sh](./scripts/run.sh) every time it started.
 - Broker container: runs an MQTT broker container from the [eclipse-mosquitto](https://hub.docker.com/_/eclipse-mosquitto) docker image. This broker is used only while development to replace the broker provided by the Fischertechnik factory.
 
 #### [Blockchain/\*/docker-compose.yaml](./blockchain/)
@@ -93,4 +95,24 @@ This compose file define the following containers:
 Two blockchain networks can be used. To choose the blockchain network, modify the environment variable NETWORK in the [.env](./.env) file to one of the values (ganache-cli or quorum).
 
 - [Ganache-CLI](https://github.com/trufflesuite/ganache-cli) defined in the [blockchain/ganache-cli/docker-compose.yaml].
-- [Quorum](https://github.com/ConsenSys/quorum) defined in the [blockchain/quorum]. It is a two node network generated using the [quorum-wizard](https://github.com/ConsenSys/quorum-wizard). It uses the istanbul consensus algorithm.
+- [Quorum](https://github.com/ConsenSys/quorum) defined in the [blockchain/quorum](blockchain/quorum). It is a two node network generated using the [quorum-wizard](https://github.com/ConsenSys/quorum-wizard). It uses the istanbul consensus algorithm.
+
+#### Running Containers
+
+Bash scripts are provided to [start](scripts/start.sh) and [stop](scripts/stop.sh) the containers. Before executing the scripts, make sure the environment variables are set properly, as explained in the table above.
+
+#### Starting Containers
+
+The [start](scripts/start.sh) script starts the blockchain container in the background depending on the value of the environment variable NETWORK. Then it starts the gateway and broker containers in the foreground. The gateway container executes the [run.sh](./scripts/run.sh) script, which first checks if a new instance of the contracts should be deployed, and then it checks if the frontend application should be built. In case you do not want to build the frontend application, you can use the development server of the react application after installing the frontend dependencies.
+
+```sh
+cd frontend
+yarn install
+# or
+npm install
+npm run start
+```
+
+#### Stopping Containers
+
+As the gateway and broker containers are running in the foreground, pressing Ctrl+C will stop them. However, to stop the blockchain containers running in the background, the [stop](scripts/stop.sh) can be used. This script also deletes all the containers, volumes, and networks created previously, which means all the data stored in the blockchain is erased. The next time the containers are started again, the DEPLOY_NEW_INSTANCE should be set to true; otherwise, the gateway will not run properly.
