@@ -99,11 +99,11 @@ Two blockchain networks can be used. To choose the blockchain network, modify th
 
 #### Running Containers
 
-Bash scripts are provided to [start](scripts/start.sh) and [stop](scripts/stop.sh) the containers. Before executing the scripts, make sure the environment variables are set properly, as explained in the table above.
+Bash scripts are provided to [start.sh](scripts/start.sh) and [stop.sh](scripts/stop.sh) the containers. Before executing the scripts, make sure the environment variables are set properly, as explained in the table above.
 
 #### Starting Containers
 
-The [start](scripts/start.sh) script starts the blockchain container in the background depending on the value of the environment variable NETWORK. Then it starts the gateway and broker containers in the foreground. The gateway container executes the [run.sh](./scripts/run.sh) script, which first checks if a new instance of the contracts should be deployed, and then it checks if the frontend application should be built. In case you do not want to build the frontend application, you can use the development server of the react application after installing the frontend dependencies.
+The [start.sh](scripts/start.sh) script starts the blockchain container in the background depending on the value of the environment variable NETWORK. Then it starts the gateway and broker containers in the foreground. The gateway container executes the [run.sh](./scripts/run.sh) script, which first checks if a new instance of the contracts should be deployed, and then it checks if the frontend application should be built. In case you do not want to build the frontend application, you can use the development server of the react application after installing the frontend dependencies.
 
 ```sh
 cd frontend
@@ -115,4 +115,4 @@ npm run start
 
 #### Stopping Containers
 
-As the gateway and broker containers are running in the foreground, pressing Ctrl+C will stop them. However, to stop the blockchain containers running in the background, the [stop](scripts/stop.sh) can be used. This script also deletes all the containers, volumes, and networks created previously, which means all the data stored in the blockchain is erased. The next time the containers are started again, the DEPLOY_NEW_INSTANCE should be set to true; otherwise, the gateway will not run properly.
+As the gateway and broker containers are running in the foreground, pressing Ctrl+C will stop them. However, to stop the blockchain containers running in the background, the [stop.sh](scripts/stop.sh) can be used. This script also deletes all the containers, volumes, and networks created previously, which means all the data stored in the blockchain is erased. The next time the containers are started again, the DEPLOY_NEW_INSTANCE should be set to true; otherwise, the gateway will not run properly.
