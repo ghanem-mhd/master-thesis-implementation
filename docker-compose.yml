@@ -13,22 +13,9 @@ services:
     volumes:
       - ./:/usr/src/app
       - gateway_node_modules:/usr/src/app/node_modules
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:3000"
-    container_name: frontend
-    stdin_open: true
-    volumes:
-      - ./frontend:/usr/src/app
-      - frontend_node_modules:/usr/src/app/node_modules
-    depends_on:
-      - "gateway"
 networks:
   default:
     external:
       name: studious-enigma-net
 volumes:
   "gateway_node_modules":
-  "frontend_node_modules":

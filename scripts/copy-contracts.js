@@ -1,7 +1,12 @@
+require("dotenv").config();
+const Logger = require("../utilities/logger");
+
 var fs = require("fs");
 
 DISTENTION_DIR_PATH = "frontend/src/contracts";
 var contractsToCopy = ["Product", "Process", "Machine", "Registry"];
+
+Logger.info("Copying contracts into the frontend...");
 
 if (!fs.existsSync(DISTENTION_DIR_PATH)) {
   fs.mkdirSync(DISTENTION_DIR_PATH);

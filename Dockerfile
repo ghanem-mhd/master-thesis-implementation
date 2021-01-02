@@ -11,4 +11,4 @@ RUN npm install -g truffle@5.1.50 --silent
 
 EXPOSE 5000
 
-CMD ["/bin/sh", "./scripts/deploy.sh"]
+CMD ["/bin/sh", "./scripts/run.sh"]

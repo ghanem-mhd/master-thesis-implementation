@@ -16,9 +16,18 @@ then
     truffle migrate --network $NETWORK # deploy EthereumDIDRegistry contract
 
     cd ..
-
-    node scripts/seed.js
     node scripts/copy-contracts.js
+    node scripts/seed.js
+fi
+
+if $BUILD_FRONTEND
+then
+    node scripts/copy-contracts.js
+    cd frontend
+    echo "npm install for frontend"
+    npm install --silent
+    npm run build
+    cd ..
 fi
 
 node server.js

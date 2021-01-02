@@ -19,13 +19,10 @@ const Logger = require("./utilities/logger");
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "frontend/build")));
-  app.get("*", function (req, res) {
-    res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
-  });
-}
+app.use(express.static(path.join(__dirname, "frontend/build")));
+app.get("*", function (req, res) {
+  res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
+});
 
 app.get("/events", function (req, res) {
   let page = req.query.page;
