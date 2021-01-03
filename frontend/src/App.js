@@ -36,6 +36,9 @@ import ContractsLoader from "./pages/utilities/ContractsLoader";
 import ErrorPage from "./pages/utilities/ErrorPage";
 import socketIOClient from "socket.io-client";
 
+import Settings from "./pages/Settings";
+import LocalStorage from "./pages/utilities/LocalStorage";
+
 import "tabler-react/dist/Tabler.css";
 import "react-notifications-component/dist/theme.css";
 
@@ -80,7 +83,13 @@ class App extends React.Component {
           });
         } else {
           provider.autoRefreshOnNetworkChange = false;
-          var web3 = new Web3(provider || process.env.REACT_APP_WS_NETWORK);
+          var web3 = new Web3(
+            provider ||
+              LocalStorage.getItemFromLocalStorage(
+                "wsNetwork",
+                process.env.REACT_APP_WS_NETWORK
+              )
+          );
           web3.eth.handleRevert = true;
           this.setState({ provider: provider, loading: true, web3: web3 });
           provider.on("chainChanged", this.handleChainChanged.bind(this));
@@ -185,6 +194,9 @@ class App extends React.Component {
               </Route>
               <Route exact path="/operation-vc-resolver/:operationID?">
                 <VCResolver />
+              </Route>
+              <Route exact path="/settings">
+                <Settings />
               </Route>
             </Switch>
           </SiteWrapper>

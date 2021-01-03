@@ -201,16 +201,21 @@ class SiteWrapper extends React.Component<Props, State> {
                     <Grid.Col auto={true}>
                       <List className="list-inline list-inline-dots mb-0">
                         <List.Item className="list-inline-item">
-                          <a href="./docs/index.html">Documentation</a>
-                        </List.Item>
-                        <List.Item className="list-inline-item">
-                          <a href="./faq.html">FAQ</a>
+                          <a
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href="https://github.com/ghanem-mhd/master-thesis-implementation/blob/master/README.md"
+                          >
+                            Documentation
+                          </a>
                         </List.Item>
                       </List>
                     </Grid.Col>
                     <Grid.Col auto={true}>
                       <Button
-                        href="https://github.com/tabler/tabler-react"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href="https://github.com/ghanem-mhd/master-thesis-implementation"
                         size="sm"
                         outline
                         color="primary"

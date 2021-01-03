@@ -5,12 +5,19 @@ import Machine from "../../contracts/Machine.json";
 import Process from "../../contracts/Process.json";
 import Web3 from "web3";
 
+import LocalStorage from "./LocalStorage";
+
 const ContractsArtifactsList = [Product, EthereumDIDRegistry, Registry];
 
 const ContractsLoader = {
   load: function (web3) {
     return new Promise(function (resolve, reject) {
-      var wsProvider = new Web3(process.env.REACT_APP_WS_NETWORK);
+      var wsProvider = new Web3(
+        LocalStorage.getItemFromLocalStorage(
+          "wsNetwork",
+          process.env.REACT_APP_WS_NETWORK
+        )
+      );
       web3.eth.net
         .getId()
         .then((networkID) => {
@@ -58,7 +65,12 @@ const ContractsLoader = {
       if (contractAddress == null) {
         reject("Address is null");
       }
-      var wsProvider = new Web3(process.env.REACT_APP_WS_NETWORK);
+      var wsProvider = new Web3(
+        LocalStorage.getItemFromLocalStorage(
+          "wsNetwork",
+          process.env.REACT_APP_WS_NETWORK
+        )
+      );
       web3.eth.net
         .getId()
         .then((networkID) => {
