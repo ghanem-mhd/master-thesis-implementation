@@ -10,6 +10,8 @@ class ProcessStepper extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      processInstanceID: "N/A",
+      productDID: "N/A",
       steps: [],
       activeStep: -1,
       fatalError: null,
@@ -72,7 +74,13 @@ class ProcessStepper extends React.Component {
         if (error) {
           console.log(error);
         } else {
-          this.setState({ activeStep: 0 });
+          var processInstanceID = event.returnValues["processID"];
+          var productDID = event.returnValues["productDID"];
+          this.setState({
+            activeStep: 0,
+            processInstanceID: processInstanceID,
+            productDID: "did:ethr:" + productDID,
+          });
         }
       }
     );
@@ -82,9 +90,15 @@ class ProcessStepper extends React.Component {
         if (error) {
           console.log(error);
         } else {
+          var processInstanceID = event.returnValues["processID"];
+          var productDID = event.returnValues["productDID"];
           var step = parseInt(event.returnValues["step"]);
           step--;
-          this.setState({ activeStep: step });
+          this.setState({
+            activeStep: step,
+            processInstanceID: processInstanceID,
+            productDID: "did:ethr:" + productDID,
+          });
         }
       }
     );
@@ -94,7 +108,20 @@ class ProcessStepper extends React.Component {
         if (error) {
           console.log(error);
         } else {
-          this.setState({ activeStep: this.state.steps.length });
+          var processInstanceID = event.returnValues["processID"];
+          var productDID = event.returnValues["productDID"];
+          this.setState({
+            activeStep: this.state.steps.length,
+            processInstanceID: processInstanceID,
+            productDID: "did:ethr:" + productDID,
+          });
+          setTimeout(() => {
+            this.setState({
+              activeStep: -1,
+              processInstanceID: "N/A",
+              productDID: "N/A",
+            });
+          }, 3000);
         }
       }
     );
@@ -114,27 +141,44 @@ class ProcessStepper extends React.Component {
                 <div className="emptyListStatus">{this.state.fatalError}</div>
               </Card.Body>
             ) : (
-              <Card.Body>
-                {this.state.steps.length === 0 ? (
-                  <div className="emptyListStatus">
-                    {"No info about process steps."}
-                  </div>
-                ) : (
-                  <Stepper activeStep={this.state.activeStep} alternativeLabel>
-                    {this.state.steps.map((step, index) => {
-                      return (
-                        <Step key={step.taskName}>
-                          <StepLabel>
-                            {step.taskName}
-                            <br />
-                            {step.machineName}
-                          </StepLabel>
-                        </Step>
-                      );
-                    })}
-                  </Stepper>
-                )}
-              </Card.Body>
+              <React.Fragment>
+                <Card.Body>
+                  {this.state.steps.length === 0 ? (
+                    <div className="emptyListStatus">
+                      {"No info about process steps."}
+                    </div>
+                  ) : (
+                    <Stepper
+                      activeStep={this.state.activeStep}
+                      alternativeLabel
+                    >
+                      {this.state.steps.map((step, index) => {
+                        return (
+                          <Step key={step.taskName}>
+                            <StepLabel>
+                              {step.taskName}
+                              <br />
+                              {step.machineName}
+                            </StepLabel>
+                          </Step>
+                        );
+                      })}
+                    </Stepper>
+                  )}
+                </Card.Body>
+                <Card.Footer>
+                  <Grid.Row>
+                    <Grid.Col sm={6}>
+                      <b>Product DID: </b>
+                      {this.state.productDID}
+                    </Grid.Col>
+                    <Grid.Col sm={6}>
+                      <b>Process ID: </b>
+                      {this.state.processInstanceID}
+                    </Grid.Col>
+                  </Grid.Row>
+                </Card.Footer>
+              </React.Fragment>
             )}
           </Card>
         </Grid.Col>
