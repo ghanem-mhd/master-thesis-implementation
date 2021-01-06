@@ -11,24 +11,34 @@ class AddressResolver extends React.Component {
   }
 
   componentDidMount() {
+    this.resolveAddress(this.props.address);
+  }
+
+  resolveAddress(address) {
     try {
       this.registry.methods
-        .resolveAddress(this.props.address)
+        .resolveAddress(address)
         .call()
         .then((result) => {
           if (result.toString() === "") {
-            this.setState({ value: this.props.address });
+            this.setState({ value: address });
           } else {
             this.setState({ value: result });
           }
         })
         .catch((error) => {
-          this.setState({ value: this.props.address });
+          this.setState({ value: address });
         });
     } catch (error) {
       this.setState({
-        value: "Invalid ethereum address: '" + this.props.address + "'",
+        value: "Invalid ethereum address: '" + address + "'",
       });
+    }
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (this.props.address !== nextProps.address) {
+      this.resolveAddress(nextProps.address);
     }
   }
 

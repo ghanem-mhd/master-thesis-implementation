@@ -82,45 +82,6 @@ const Misc = {
       return new Date(timestamp.toString() * 1000).toLocaleString();
     }
   },
-  getAccountName(account) {
-    let mapping = {
-      "0xed9d02e382b34818e88b88a309c7fe71e65f419d": "Admin",
-      "0x8A765573d859c4b7d3764B943ba0F69dB5019BbC": "Maintainer",
-      "0x5F97Cbad3783F7c4c93808F0167a24f61c40e549": "Process Owner",
-      "0x8EFbbBC49A970D4BeA13F0Bd16E62F79168FD68d": "Machine Owner",
-      "0x588CF9C29562A9ED033961346dDf57a6AdeB9202": "Product Owner",
-    };
-    if (account in mapping) {
-      return mapping[account];
-    } else {
-      return "Unknown Account";
-    }
-  },
-  getSupplyingSteps() {
-    return [
-      { taskName: "Get Info Task", machineName: "VGR" },
-      { taskName: "Fetch Container Task", machineName: "HBW" },
-      { taskName: "Drop to Container Task", machineName: "VGR" },
-      { taskName: "Store Container Task", machineName: "HBW" },
-    ];
-  },
-  getProductionSteps() {
-    return [
-      { taskName: "Fetch Product", machineName: "HBW" },
-      { taskName: "Move Product", machineName: "VGR" },
-      { taskName: "Process Product", machineName: "MPO" },
-      { taskName: "Sort Product", machineName: "SLD" },
-      { taskName: "Deliver Product", machineName: "VGR" },
-    ];
-  },
-  getMachines() {
-    return {
-      VGR: "Vacuum Gripper Robot",
-      HBW: "High-Bay Warehouse",
-      MPO: "Multi-Processing Station with Oven",
-      SLD: "Sorting Line with Color Detection",
-    };
-  },
 };
 
 module.exports = Misc;

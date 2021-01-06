@@ -6,6 +6,7 @@ import { NavLink, withRouter } from "react-router-dom";
 import { Site, Nav, Button, Grid, List } from "tabler-react";
 
 import ConnectionContext from "./utilities/ConnectionContext";
+import AddressResolver from "./utilities/AddressResolver";
 import { store } from "react-notifications-component";
 import Misc from "./utilities/Misc";
 
@@ -171,7 +172,9 @@ class SiteWrapper extends React.Component<Props, State> {
                       <React.Fragment>
                         <span className="ml-2 d-none d-lg-block">
                           <span className="text-default">
-                            {Misc.getAccountName(this.state.currentAccount)}
+                            <AddressResolver
+                              address={this.state.currentAccount}
+                            />
                           </span>
                           <small className="text-muted d-block mt-1">
                             {this.state.currentAccount}
