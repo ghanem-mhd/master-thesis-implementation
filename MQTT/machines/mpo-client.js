@@ -73,7 +73,6 @@ class MPOClient {
         this.Contract = Contract;
       }
     );
-    setInterval(this.sendState.bind(this), process.env.STATE_INTERVAL);
   }
 
   onMQTTMessage(topic, messageBuffer) {
@@ -224,13 +223,6 @@ class MPOClient {
       process.env.MPO_ADDRESS,
       process.env.MPO_PK
     );
-  }
-
-  sendState() {
-    if (this.IO) {
-      var state = this.currentTaskID == 0 ? 0 : 1;
-      this.IO.in("machines_state").emit("MPO_state", state);
-    }
   }
 }
 

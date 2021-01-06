@@ -75,7 +75,6 @@ class VGRClient {
         this.Contract = Contract;
       }
     );
-    setInterval(this.sendState.bind(this), process.env.STATE_INTERVAL);
   }
 
   onMQTTMessage(topic, messageBuffer) {
@@ -279,13 +278,6 @@ class VGRClient {
       process.env.VGR_ADDRESS,
       process.env.VGR_PK
     );
-  }
-
-  sendState() {
-    if (this.IO) {
-      var state = this.currentTaskID == 0 ? 0 : 1;
-      this.IO.in("machines_state").emit("VGR_state", state);
-    }
   }
 }
 

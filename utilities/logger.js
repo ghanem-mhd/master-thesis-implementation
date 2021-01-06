@@ -90,19 +90,6 @@ logger.logEvent = function (eventLocation, eventDescription, payload = null) {
   console.log(
     "----------------------------------------------------------------------------------------------------------"
   );
-  const IO = require("./socket.js").getIO();
-  const DB = require("./db.js").getEventsLogDB();
-  if (DB) {
-    DB.insert(logMessage, function (err, newDoc) {
-      if (err) {
-        logger.error(err);
-      } else {
-        if (IO) {
-          IO.in("stream_log").emit("event_log", newDoc);
-        }
-      }
-    });
-  }
 };
 
 module.exports = logger;
