@@ -23,6 +23,10 @@ class Settings extends React.Component {
     };
   }
 
+  componentDidMount() {
+    document.title = "Settings";
+  }
+
   onSaveClicked() {
     localStorage.setItem("wsNetwork", this.state.wsNetworkState.value);
     store.addNotification({

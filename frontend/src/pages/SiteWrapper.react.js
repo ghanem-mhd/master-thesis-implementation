@@ -87,24 +87,12 @@ const navBarItems: Array<navItem> = [
     ],
   },
   {
-    value: "Logs",
+    value: "Events Log",
     icon: "rss",
-    subItems: [
-      {
-        value: "Stream",
-        to: "/events-log-stream",
-        LinkComponent: withRouter(({ staticContext, ...props }) => {
-          return <NavLink {...props} />;
-        }),
-      },
-      {
-        value: "Non Stream",
-        to: "/events-log-non-stream",
-        LinkComponent: withRouter(({ staticContext, ...props }) => {
-          return <NavLink {...props} />;
-        }),
-      },
-    ],
+    to: "/events-explorer",
+    LinkComponent: withRouter(({ staticContext, ...props }) => {
+      return <NavLink {...props} />;
+    }),
   },
   {
     value: "Settings",

@@ -102,66 +102,44 @@ class EventsLogStreamTable extends React.Component {
       });
   }
 
-  getMachinesList() {
-    this.registry.methods
-      .getMachineContractsCount()
-      .call()
-      .then((contractsCount) => {
-        for (let id = 0; id < contractsCount; id++) {
-          this.registry.methods
-            .getMachineContract(id)
-            .call()
-            .then((machineContractInfo) => {
-              ContractsLoader.loadMachineContract(
-                this.web3,
-                machineContractInfo[1]
-              )
-                .then((result) => {
-                  this.setMachineListeners(result.wsContract);
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  async getMachinesList() {
+    try {
+      let contractsCount = await this.registry.methods
+        .getMachineContractsCount()
+        .call();
+      for (let id = 0; id < contractsCount; id++) {
+        let machineContractInfo = await this.registry.methods
+          .getMachineContract(id)
+          .call();
+        let result = await ContractsLoader.loadMachineContract(
+          this.web3,
+          machineContractInfo[1]
+        );
+        this.setMachineListeners(result.wsContract);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  getProcessList() {
-    this.registry.methods
-      .getProcessesContractsCount()
-      .call()
-      .then((contractsCount) => {
-        for (let id = 0; id < contractsCount; id++) {
-          this.registry.methods
-            .getProcessContract(id)
-            .call()
-            .then((processContractInfo) => {
-              ContractsLoader.loadProcessContract(
-                this.web3,
-                processContractInfo[1]
-              )
-                .then((result) => {
-                  this.setProcessListeners(result.wsContract);
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  async getProcessList() {
+    try {
+      let contractsCount = await this.registry.methods
+        .getProcessesContractsCount()
+        .call();
+      for (let id = 0; id < contractsCount; id++) {
+        let processContractInfo = await this.registry.methods
+          .getProcessContract(id)
+          .call();
+        let result = await ContractsLoader.loadProcessContract(
+          this.web3,
+          processContractInfo[1]
+        );
+        this.setProcessListeners(result.wsContract);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   onNewEvent(contractName, ethereumEvent) {
@@ -190,7 +168,10 @@ class EventsLogStreamTable extends React.Component {
             <Grid.Row>
               <Grid.Col>
                 <Card title={this.props.title} isCollapsible isFullscreenable>
-                  <EventsTable rows={this.state.rows} />
+                  <EventsTable
+                    rows={this.state.rows}
+                    emptyStateMessage={"Listening for new events..."}
+                  />
                 </Card>
               </Grid.Col>
             </Grid.Row>

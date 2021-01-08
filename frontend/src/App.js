@@ -16,8 +16,7 @@ import Process from "./pages/process/Process";
 import ProcessInstances from "./pages/process/ProcessInstances";
 
 import CreateProduct from "./pages/product/CreateProduct";
-import EventsLogStream from "./pages/log/EventsLogStream";
-import EventsLogNonStream from "./pages/log/EventsLogNonStream";
+import EventsExplorer from "./pages/log/EventsExplorer";
 
 import DIDResolver from "./pages/DID/DIDResolver";
 import VCResolver from "./pages/DID/VCResolver";
@@ -183,11 +182,8 @@ class App extends React.Component {
               <Route exact path="/create-product">
                 <CreateProduct />
               </Route>
-              <Route exact path="/events-log-stream">
-                <EventsLogStream />
-              </Route>
-              <Route exact path="/events-log-non-stream">
-                <EventsLogNonStream />
+              <Route exact path="/events-explorer">
+                <EventsExplorer />
               </Route>
               <Route exact path="/did-resolver/:address?">
                 <DIDResolver />

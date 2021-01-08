@@ -23,6 +23,7 @@
     "react-notifications-component": "^2.4.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
+    "react-select": "^3.1.1",
     "socket.io-client": "^2.3.1",
     "styled-components": "^5.2.1",
     "tabler-react": "^1.30.1",

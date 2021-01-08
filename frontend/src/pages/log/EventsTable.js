@@ -42,7 +42,9 @@ class EventsTable extends React.Component {
         paginationPerPage={5}
         expandableRows
         noHeader={true}
-        noDataComponent={<div className="emptyListStatus">{"No Events"}</div>}
+        noDataComponent={
+          <div className="emptyListStatus">{this.props.emptyStateMessage}</div>
+        }
         expandableRowDisabled={(row) => row.payload == null}
         expandableRowsComponent={<EventLogDetails />}
         paginationRowsPerPageOptions={[5, 10, 20, 50, 100, 200]}
