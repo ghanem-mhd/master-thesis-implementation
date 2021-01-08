@@ -93,13 +93,13 @@ abstract contract Machine is Ownable {
     mapping (uint => Task) private tasks;
     event TaskAssigned(uint indexed taskID,
         string taskName,
-        address productDID,
+        address indexed productDID,
         uint processID,
-        address processContractAddress,
+        address indexed processContractAddress,
         address processOwner);
-    event TaskStarted(uint indexed taskID, string taskName, address productDID, uint processID, address processContractAddress);
-    event TaskFinished(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress, TaskStatus status);
-    event TaskKilled(uint indexed taskID, string taskName, address productDID,uint processID, address processContractAddress);
+    event TaskStarted(uint indexed taskID, string taskName, address indexed productDID, uint processID, address indexed processContractAddress);
+    event TaskFinished(uint indexed taskID, string taskName, address indexed productDID,uint processID, address indexed processContractAddress, TaskStatus status);
+    event TaskKilled(uint indexed taskID, string taskName, address indexed productDID,uint processID, address indexed processContractAddress);
 
     function assignTask(uint processID, address productDID, uint taskType) public virtual onlyProcess returns (uint){
         taskIDCounter.increment();
