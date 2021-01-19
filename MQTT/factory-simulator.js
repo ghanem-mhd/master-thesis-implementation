@@ -2,14 +2,54 @@ require("dotenv").config();
 
 const mqtt = require("mqtt");
 const Topics = require("./topics");
-
 var Logger = require("../utilities/logger");
 var ClientUtils = require("./client-utilities");
 
 class FactorySimulator {
-  static DELAY = 1000;
+  static DELAY = 100;
   static ReadingsFreq = 5000;
   static StockFreq = 5000;
+
+  stock = {
+    stockItems: [
+      {
+        location: "A1",
+        workpiece: null,
+      },
+      {
+        location: "A2",
+        workpiece: null,
+      },
+      {
+        location: "A3",
+        workpiece: null,
+      },
+      {
+        location: "B1",
+        workpiece: null,
+      },
+      {
+        location: "B2",
+        workpiece: null,
+      },
+      {
+        location: "B3",
+        workpiece: null,
+      },
+      {
+        location: "C1",
+        workpiece: null,
+      },
+      {
+        location: "C2",
+        workpiece: null,
+      },
+      {
+        location: "C3",
+        workpiece: null,
+      },
+    ],
+  };
 
   constructor() {}
 
@@ -58,38 +98,31 @@ class FactorySimulator {
   }
 
   sendStock() {
-    var newStock = {};
-    newStock["ts"] = new Date().toISOString();
-    newStock.stockItems = [
-      {
-        location: "A2",
-        workpiece: {
-          id: "04963f92186580",
-          state: "RAW",
-          type: "BLUE",
-          product_DID: "0xbc437717e7bfc77fbd26d94ef9fc3901291e2482",
-        },
-      },
-      {
-        location: "A3",
-        workpiece: {
-          id: "041c3f92186581",
-          state: "RAW",
-          type: "RED",
-          product_DID: "0x6b6b9266E98AFa468E60ce93DBC65eCb92c7f936",
-        },
-      },
-      {
-        location: "A3",
-        workpiece: {
-          id: "041c3f92186581",
-          state: "RAW",
-          type: "WHITE",
-          product_DID: "0x8333CcEa4069C22E1BdC9b0B30A69315f96a164E",
-        },
-      },
-    ];
-    this.mqttClient.publish(Topics.TOPIC_STOCK, JSON.stringify(newStock));
+    this.stock["ts"] = new Date().toISOString();
+    this.mqttClient.publish(Topics.TOPIC_STOCK, JSON.stringify(this.stock));
+  }
+
+  storeWorkPiece(workpiece, productDID) {
+    for (var i = 0; i < this.stock.stockItems.length; i++) {
+      if (this.stock.stockItems[i].workpiece == null) {
+        this.stock.stockItems[i].workpiece = workpiece;
+        this.stock.stockItems[i].workpiece.product_DID = productDID;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  fetchWorkPiece(productDID) {
+    for (var i = 0; i < this.stock.stockItems.length; i++) {
+      if (this.stock.stockItems[i].workpiece != null) {
+        if (this.stock.stockItems[i].workpiece.product_DID == productDID) {
+          this.stock.stockItems[i].workpiece = null;
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   onMQTTError(error) {
@@ -139,8 +172,47 @@ class FactorySimulator {
     }
 
     if (incomingMessageTopic == Topics.TOPIC_HBW_DO) {
+      if (incomingMessage.code == 3) {
+        // store workpiece
+        var stored = this.storeWorkPiece(
+          incomingMessage.workpiece,
+          incomingMessage.productDID
+        );
+        if (stored) {
+          setTimeout(
+            () => this.sendHBWAck(incomingMessage, 2),
+            FactorySimulator.DELAY
+          );
+          return;
+        } else {
+          setTimeout(
+            () => this.sendHBWAck(incomingMessage, 0),
+            FactorySimulator.DELAY
+          );
+          return;
+        }
+      }
+
+      if (incomingMessage.code == 4) {
+        // fetch workpiece
+        var fetched = this.fetchWorkPiece(incomingMessage.productDID);
+        if (fetched) {
+          setTimeout(
+            () => this.sendHBWAck(incomingMessage, 7),
+            FactorySimulator.DELAY
+          );
+          return;
+        } else {
+          setTimeout(
+            () => this.sendHBWAck(incomingMessage, 5),
+            FactorySimulator.DELAY
+          );
+          return;
+        }
+      }
+
       setTimeout(
-        () => this.sendHBWAck(incomingMessage),
+        () => this.sendHBWAck(incomingMessage, incomingMessage.code),
         FactorySimulator.DELAY
       );
     }
@@ -185,9 +257,10 @@ class FactorySimulator {
     this.mqttClient.publish(ackTopic, JSON.stringify(outgoingMessage));
   }
 
-  sendHBWAck(incomingMassage) {
+  sendHBWAck(incomingMassage, code) {
     var ackTopic = Topics.TOPIC_HBW_ACK;
     var outgoingMessage = incomingMassage;
+    outgoingMessage["code"] = code;
     Logger.logEvent(
       this.clientName,
       `Sending ack message to ${ackTopic}`,

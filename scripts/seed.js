@@ -5,6 +5,7 @@ const ContractsManager = require("../utilities/contracts-manager");
 const ProviderManager = require("../utilities/providers-manager");
 const Logger = require("../utilities/logger");
 const Helper = require("../utilities/helper");
+const KeysManager = require("../utilities/keys-manager");
 
 var adminProvider = ProviderManager.getHttpProvider(
   process.env.NETWORK,
@@ -84,12 +85,6 @@ Promise.all(contractsAsyncGets)
       Logger.info("Fund Process Owner " + receipt.transactionHash);
       receipt = await web3.eth.sendTransaction({
         from: adminProvider.addresses[0],
-        to: process.env.MAINTAINER_ADDRESS,
-        value: web3.utils.toWei("100", "ether"),
-      });
-      Logger.info("Fund Maintainer " + receipt.transactionHash);
-      receipt = await web3.eth.sendTransaction({
-        from: adminProvider.addresses[0],
         to: process.env.PRODUCT_OWNER_ADDRESS,
         value: web3.utils.toWei("100", "ether"),
       });
@@ -107,13 +102,23 @@ Promise.all(contractsAsyncGets)
     }
 
     try {
-      Logger.info("Product seeding started");
-      receipt = await Helper.sendTransaction(
-        productContract.createProduct(process.env.DUMMY_PRODUCT, {
-          from: process.env.PRODUCT_OWNER_ADDRESS,
-        })
+      Logger.info("Products seeding started");
+      var mnemonic = String(process.env.PRODUCTS_MNEMONIC).replace(
+        /['"]+/g,
+        ""
       );
-      Logger.info("createProduct " + receipt.transactionHash);
+      for (var i = 1; i <= 9; i++) {
+        var productAddress = KeysManager.getAddressFromMnemonic(
+          mnemonic.toString(),
+          i
+        );
+        receipt = await Helper.sendTransaction(
+          productContract.createProduct(productAddress, {
+            from: process.env.PRODUCT_OWNER_ADDRESS,
+          })
+        );
+        Logger.info("createProduct" + i + " " + receipt.transactionHash);
+      }
     } catch (error) {
       Logger.logError(error, "Seed");
     } finally {
