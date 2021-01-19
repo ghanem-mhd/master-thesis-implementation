@@ -82,6 +82,23 @@ const Misc = {
       return new Date(timestamp.toString() * 1000).toLocaleString();
     }
   },
+  getAvailableProductDIDs(DIDsInStock) {
+    var allProductsDIDsSet = [
+      "0x1EbFbf2Ffb7b2218eB974Cc885Ad4A165A310283",
+      "0x6125C20d75Bd7b25032B2cbF5e5244A1b640241C",
+      "0x2964ed17E1B236e61F3D837C9cC03D462bC2c300",
+      "0xD9E6BAcA6A9a4852A8b8f3AcEfB8CaF5D222b8C0",
+      "0xb2C056785E3d3892ddA5d1C28988789Ef3d84DC2",
+      "0x3e3A546E7315b28be7b722b8Fecc4f36BD7A16Ed",
+      "0xa985ebAD0E7FA5FD90d507c417fC48396AB16187",
+      "0x7e9956FFFFd8C4a494007236a35DDee27B245BfC",
+      "0xFB77D1efFf654bAd54b289cc7143210a603D70eb",
+    ];
+    var availableDIDs = allProductsDIDsSet.filter(
+      (x) => !DIDsInStock.includes(x)
+    );
+    return availableDIDs;
+  },
 };
 
 module.exports = Misc;

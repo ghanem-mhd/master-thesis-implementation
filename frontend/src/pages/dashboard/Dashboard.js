@@ -33,6 +33,7 @@ class Dashboard extends React.Component {
           this.web3 = connectionContext.web3;
           this.registry = connectionContext.registry;
           this.socket = connectionContext.socket;
+          this.contracts = connectionContext.contracts;
           return (
             <Page.Content
               title="Dashboard"
@@ -73,6 +74,7 @@ class Dashboard extends React.Component {
                   registry={this.registry}
                   socket={this.socket}
                   web3={this.web3}
+                  productContract={this.contracts["Product"]}
                 />
               </Dimmer>
             </Page.Content>
