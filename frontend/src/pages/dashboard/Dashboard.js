@@ -69,13 +69,13 @@ class Dashboard extends React.Component {
                     </Grid.Row>
                   )
                 )}
-                <EventsLogStreamTable title={"Events Log"} />
                 <Stock
                   registry={this.registry}
                   socket={this.socket}
                   web3={this.web3}
                   productContract={this.contracts["Product"]}
                 />
+                <EventsLogStreamTable title={"Events Log"} />
               </Dimmer>
             </Page.Content>
           );

@@ -90,79 +90,100 @@ class SupplyingProcessClient {
   }
 
   async onVGRTaskFinished(taskFinishedEvent) {
-    var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
-    if (task.taskName == VGRClient.TASK1) {
-      this.supplyingProcessContract
-        .step2(task.processID, {
-          from: this.address,
-          gas: process.env.DEFAULT_GAS,
-        })
-        .then((receipt) => {
-          Logger.logEvent(
-            this.clientName,
-            "Supplying process step 2 started",
-            receipt
-          );
-        })
-        .catch((error) => {
-          Logger.logError(error, this.clientName);
-        });
-    }
-    if (task.taskName == VGRClient.TASK2) {
-      this.supplyingProcessContract
-        .step4(task.processID, {
-          from: this.address,
-          gas: process.env.DEFAULT_GAS,
-        })
-        .then((receipt) => {
-          Logger.logEvent(
-            this.clientName,
-            "Supplying process step 4 started",
-            receipt
-          );
-        })
-        .catch((error) => {
-          Logger.logError(error, this.clientName);
-        });
+    try {
+      var task = ClientUtils.getTaskInfoFromTaskFinishedEvent(
+        taskFinishedEvent
+      );
+      if (task.taskName == VGRClient.TASK1) {
+        if (task.status == 3 || task.state == 4) {
+          this.finishProcess(task.processID, 2);
+          return;
+        }
+        var receipt = await this.supplyingProcessContract.step2(
+          task.processID,
+          {
+            from: this.address,
+            gas: process.env.DEFAULT_GAS,
+          }
+        );
+        Logger.logEvent(
+          this.clientName,
+          "Supplying process step 2 started",
+          receipt
+        );
+      }
+      if (task.taskName == VGRClient.TASK2) {
+        if (task.status == 3 || task.state == 4) {
+          this.finishProcess(task.processID, 2);
+          return;
+        }
+        var receipt = await this.supplyingProcessContract.step4(
+          task.processID,
+          {
+            from: this.address,
+            gas: process.env.DEFAULT_GAS,
+          }
+        );
+        Logger.logEvent(
+          this.clientName,
+          "Supplying process step 4 started",
+          receipt
+        );
+      }
+    } catch (error) {
+      Logger.logError(error, this.clientName);
     }
   }
 
   async onHBWTaskFinished(taskFinishedEvent) {
-    var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
-    if (task.taskName == HBWClient.TASK1) {
-      this.supplyingProcessContract
-        .step3(task.processID, {
-          from: this.address,
-          gas: process.env.DEFAULT_GAS,
-        })
-        .then((receipt) => {
-          Logger.logEvent(
-            this.clientName,
-            "Supplying process step 3 started",
-            receipt
-          );
-        })
-        .catch((error) => {
-          Logger.logError(error, this.clientName);
-        });
-    }
+    try {
+      var task = ClientUtils.getTaskInfoFromTaskFinishedEvent(
+        taskFinishedEvent
+      );
+      if (task.taskName == HBWClient.TASK1) {
+        if (task.status == 3 || task.state == 4) {
+          this.finishProcess(task.processID, 2);
+          return;
+        }
+        var receipt = await this.supplyingProcessContract.step3(
+          task.processID,
+          {
+            from: this.address,
+            gas: process.env.DEFAULT_GAS,
+          }
+        );
+        Logger.logEvent(
+          this.clientName,
+          "Supplying process step 3 started",
+          receipt
+        );
+      }
 
-    if (task.taskName == HBWClient.TASK3) {
-      this.supplyingProcessContract
-        .finishProcess(task.processID, 1, {
+      if (task.taskName == HBWClient.TASK3) {
+        this.finishProcess(task.processID, 1);
+      }
+    } catch (error) {
+      Logger.logError(error, this.clientName);
+    }
+  }
+
+  async finishProcess(processID, status) {
+    try {
+      var receipt = await this.supplyingProcessContract.finishProcess(
+        processID,
+        status,
+        {
           from: this.address,
           gas: process.env.DEFAULT_GAS,
-        })
-        .then((receipt) => {
-          Logger.logEvent(
-            this.clientName,
-            "Supplying process finished.",
-            receipt
-          );
-        })
-        .catch((error) => {
-          Logger.logError(error, this.clientName);
-        });
+        }
+      );
+      Logger.logEvent(
+        this.clientName,
+        "Supplying process finished with status " + status,
+        receipt
+      );
+    } catch (error) {
+      Logger.logError(error, this.clientName);
     }
   }
 }

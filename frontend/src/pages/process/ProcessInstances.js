@@ -13,7 +13,7 @@ class ProcessInstances extends React.Component {
   StatusTypes = {
     0: "Started",
     1: "Finished Successfully",
-    2: "Finished UnSuccessfully",
+    2: "Finished Unsuccessfully",
     3: "Killed",
   };
 
@@ -37,7 +37,7 @@ class ProcessInstances extends React.Component {
     processInstance.status = processInstanceResult[3];
     processInstance.currentStep = processInstanceResult[4];
 
-    if (processInstance.currentStep === -1) {
+    if (processInstance.currentStep === "-1") {
       processInstance.currentStep = "n.a.";
     }
 

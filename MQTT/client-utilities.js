@@ -21,6 +21,16 @@ module.exports = {
     task.processContractAddress = event.returnValues["processContractAddress"];
     return task;
   },
+  getTaskInfoFromTaskFinishedEvent: function (event) {
+    var task = {};
+    task.taskID = event.returnValues["taskID"];
+    task.taskName = event.returnValues["taskName"];
+    task.productDID = event.returnValues["productDID"];
+    task.processID = event.returnValues["processID"];
+    task.processContractAddress = event.returnValues["processContractAddress"];
+    task.status = event.returnValues["status"];
+    return task;
+  },
   getProductOperationFromEvent: function (event) {
     var productOperation = {};
     productOperation.operationID = event.returnValues["operationID"];

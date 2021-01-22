@@ -30,4 +30,4 @@ then
     cd ..
 fi
 
-node server.js
+nodemon server.js

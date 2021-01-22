@@ -12,14 +12,6 @@ const ClientUtils = require("../client-utilities");
 const Wallet = require("ethereumjs-wallet");
 
 class ProductionProcessClient {
-  //ORDERED
-  //IN_PROCESS
-  //SHIPPED
-  //WAITING_FOR_ORDER
-
-  static TOPIC_ORDER = "f/o/order";
-  static TOPIC_ORDER_STATUS = "f/i/order";
-
   constructor() {}
 
   connect() {
@@ -31,7 +23,6 @@ class ProductionProcessClient {
     this.mqttClient.on("message", (topic, messageBuffer) =>
       this.onMQTTMessage(topic, messageBuffer)
     );
-    this.publishOrderState("WAITING_FOR_ORDER", "");
     this.provider = ProviderManager.getHttpProvider(
       process.env.NETWORK,
       process.env.PROCESS_OWNER_PK
@@ -114,8 +105,12 @@ class ProductionProcessClient {
   }
 
   async onHBWTaskFinished(taskFinishedEvent) {
-    var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
+    var task = ClientUtils.getTaskInfoFromTaskFinishedEvent(taskFinishedEvent);
     if (task.taskName == HBWClient.TASK4) {
+      if (task.status == 3 || task.state == 4) {
+        this.finishProcess(task.processID, 2);
+        return;
+      }
       this.productionProcessContract
         .step2(task.processID, {
           from: this.address,
@@ -135,48 +130,40 @@ class ProductionProcessClient {
   }
 
   async onVGRTaskFinished(taskFinishedEvent) {
-    var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
-    if (task.taskName == VGRClient.TASK3) {
-      this.publishOrderState("IN_PROCESS", this.orderColor);
-      this.productionProcessContract
-        .step3(task.processID, {
+    try {
+      var task = ClientUtils.getTaskInfoFromTaskFinishedEvent(
+        taskFinishedEvent
+      );
+      if (task.taskName == VGRClient.TASK3) {
+        if (task.status == 3 || task.state == 4) {
+          this.finishProcess(task.processID, 2);
+          return;
+        }
+        var receipt = this.productionProcessContract.step3(task.processID, {
           from: this.address,
           gas: process.env.DEFAULT_GAS,
-        })
-        .then((receipt) => {
-          Logger.logEvent(
-            this.clientName,
-            "Production process step 3 started",
-            receipt
-          );
-        })
-        .catch((error) => {
-          Logger.logError(error, this.clientName);
         });
-    }
-
-    if (task.taskName == VGRClient.TASK4) {
-      this.productionProcessContract
-        .finishProcess(task.processID, 1, {
-          from: this.address,
-          gas: process.env.DEFAULT_GAS,
-        })
-        .then((receipt) => {
-          Logger.logEvent(
-            this.clientName,
-            "Production process finished.",
-            receipt
-          );
-        })
-        .catch((error) => {
-          Logger.logError(error, this.clientName);
-        });
+        Logger.logEvent(
+          this.clientName,
+          "Production process step 3 started",
+          receipt
+        );
+      }
+      if (task.taskName == VGRClient.TASK4) {
+        this.finishProcess(task.processID, 1);
+      }
+    } catch (error) {
+      Logger.logError(error, this.clientName);
     }
   }
 
   async onMPOTaskFinished(taskFinishedEvent) {
-    var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
+    var task = ClientUtils.getTaskInfoFromTaskFinishedEvent(taskFinishedEvent);
     if (task.taskName == MPOClient.PROCESSING_TASK_NAME) {
+      if (task.status == 3 || task.state == 4) {
+        this.finishProcess(task.processID, 2);
+        return;
+      }
       this.productionProcessContract
         .step4(task.processID, {
           from: this.address,
@@ -196,8 +183,12 @@ class ProductionProcessClient {
   }
 
   async onSLDTaskFinished(taskFinishedEvent) {
-    var task = ClientUtils.getTaskInfoFromTaskAssignedEvent(taskFinishedEvent);
+    var task = ClientUtils.getTaskInfoFromTaskFinishedEvent(taskFinishedEvent);
     if (task.taskName == SLDClient.SORTING_TASK_NAME) {
+      if (task.status == 3 || task.state == 4) {
+        this.finishProcess(task.processID, 2);
+        return;
+      }
       this.productionProcessContract
         .step5(task.processID, {
           from: this.address,
@@ -216,12 +207,24 @@ class ProductionProcessClient {
     }
   }
 
-  async publishOrderState(state, color) {
-    var message = ClientUtils.getOrderStateMessage(state, color);
-    this.mqttClient.publish(
-      ProductionProcessClient.TOPIC_ORDER_STATUS,
-      JSON.stringify(message)
-    );
+  async finishProcess(processID, status) {
+    try {
+      var receipt = await this.productionProcessContract.finishProcess(
+        processID,
+        status,
+        {
+          from: this.address,
+          gas: process.env.DEFAULT_GAS,
+        }
+      );
+      Logger.logEvent(
+        this.clientName,
+        "Production process finished with status " + status,
+        receipt
+      );
+    } catch (error) {
+      Logger.logError(error, this.clientName);
+    }
   }
 }
 
