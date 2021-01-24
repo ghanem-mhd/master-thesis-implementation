@@ -7,7 +7,6 @@ const Logger = require("../../utilities/logger");
 const HBWClient = require("../machines/hbw-client");
 const VGRClient = require("../machines/vgr-client");
 const ClientUtils = require("../client-utilities");
-const Wallet = require("ethereumjs-wallet");
 
 class SupplyingProcessClient {
   constructor() {}

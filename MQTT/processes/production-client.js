@@ -9,7 +9,6 @@ const VGRClient = require("../machines/vgr-client");
 const SLDClient = require("../machines/sld-client");
 const MPOClient = require("../machines/mpo-client");
 const ClientUtils = require("../client-utilities");
-const Wallet = require("ethereumjs-wallet");
 
 class ProductionProcessClient {
   constructor() {}
