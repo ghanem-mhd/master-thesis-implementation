@@ -2,7 +2,6 @@
 
 import * as React from "react";
 
-import ProcessStepper from "../process/ProcessStepper";
 import { Page, Grid, Dimmer } from "tabler-react";
 import EventsLogStreamTable from "../log/EventsLogStreamTable";
 import ConnectionContext from "../utilities/ConnectionContext";
@@ -56,19 +55,6 @@ class Dashboard extends React.Component {
                     </Grid.Col>
                   ))}
                 </Grid.Row>
-                {["Supplying Process", "Production Process"].map(
-                  (processName, index) => (
-                    <Grid.Row key={processName}>
-                      <Grid.Col>
-                        <ProcessStepper
-                          registry={this.registry}
-                          web3={this.web3}
-                          processName={processName}
-                        />
-                      </Grid.Col>
-                    </Grid.Row>
-                  )
-                )}
                 <Stock
                   registry={this.registry}
                   socket={this.socket}
