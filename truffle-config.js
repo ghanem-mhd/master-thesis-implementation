@@ -20,6 +20,14 @@ module.exports = {
       type: "quorum",
       gasPrice: 0,
     },
+    "quorum-local": {
+      host: "127.0.0.1",
+      port: 22000,
+      wsPort: 23000,
+      network_id: "*",
+      type: "quorum",
+      gasPrice: 0,
+    }
   },
   compilers: {
     solc: {
