@@ -58,7 +58,12 @@ class RequestReading extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Request New Reading" isCollapsible>
+          <Card
+            title="Request New Reading"
+            isFullscreenable
+            isClosable
+            isCollapsible
+          >
             <Card.Body>
               <Form.Group label="Reading Type">
                 <Form.SelectGroup onChange={this.handleChange.bind(this)}>
@@ -93,6 +98,7 @@ class RequestReading extends React.Component {
             <Card.Footer>
               <div align="right">
                 <Button
+                  size="sm"
                   disabled={this.state.readingType == null}
                   onClick={this.onRequestButtonClicked.bind(this)}
                   color="primary"

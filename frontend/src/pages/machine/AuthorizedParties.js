@@ -9,30 +9,23 @@ class AuthorizedParties extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      list: [],
+      processesList: [],
     };
   }
 
-  getAuthorizedParties() {
-    this.props.MachineContract.methods["getAuthorizedProcesses"]()
-      .call()
-      .then((processesList) => {
-        processesList.forEach((element) => {
-          this.setState((state, props) => {
-            return {
-              list: [
-                ...this.state.list,
-                {
-                  address: element,
-                },
-              ],
-            };
-          });
-        });
-      })
-      .catch((error) => {
-        console.log(error);
+  async getAuthorizedParties() {
+    try {
+      var processesList = await this.props.MachineContract.methods[
+        "getAuthorizedProcesses"
+      ]().call();
+      this.setState((state, props) => {
+        return {
+          processesList: processesList,
+        };
       });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   componentDidMount() {
@@ -78,10 +71,15 @@ class AuthorizedParties extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title={"Authorized Processes"} isCollapsible>
+          <Card
+            title={"Authorized Processes"}
+            isFullscreenable
+            isClosable
+            isCollapsible
+          >
             <Dimmer active={false}>
               <Card.Body>
-                {this.state.list.length === 0 ? (
+                {this.state.processesList.length === 0 ? (
                   <div className="emptyListStatus">
                     {"No Authorized Processes."}
                   </div>
@@ -94,11 +92,11 @@ class AuthorizedParties extends React.Component {
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                      {this.state.list.map((object, i) => (
-                        <Table.Row key={this.state.list[i].address}>
+                      {this.state.processesList.map((object, i) => (
+                        <Table.Row key={this.state.processesList[i].address}>
                           <Table.Col>
                             <AddressResolver
-                              address={this.state.list[i].address}
+                              address={this.state.processesList[i].address}
                             />
                           </Table.Col>
                           <Table.Col>

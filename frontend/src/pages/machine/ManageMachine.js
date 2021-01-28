@@ -48,7 +48,10 @@ class ManageMachine extends React.Component {
           return (
             <Page.Content
               title={
-                <AddressResolver address={this.props.match.params.address} />
+                <AddressResolver
+                  address={this.props.match.params.address}
+                  prefix="Manage "
+                />
               }
               subTitle=""
             >

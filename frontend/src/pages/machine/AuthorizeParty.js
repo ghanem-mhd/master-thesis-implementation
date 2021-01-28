@@ -79,7 +79,12 @@ class AuthorizeParty extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Authorize New Process" isCollapsible>
+          <Card
+            title="Authorize New Process"
+            isFullscreenable
+            isClosable
+            isCollapsible
+          >
             <Card.Body>
               <AddressInput
                 label="Process Smart Contract Address"
@@ -94,6 +99,7 @@ class AuthorizeParty extends React.Component {
             <Card.Footer>
               <div align="right">
                 <Button
+                  size="sm"
                   disabled={!this.state.inputValidity.partyAddress}
                   onClick={this.onAuthorizeButtonClicked.bind(this)}
                   color="primary"

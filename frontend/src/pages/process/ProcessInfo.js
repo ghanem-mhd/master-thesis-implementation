@@ -68,7 +68,7 @@ class ProcessInfo extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Process Info" isCollapsible>
+          <Card title="Process Info" isFullscreenable isClosable isCollapsible>
             <Dimmer active={false} loader>
               <Card.Body>
                 {this.state.info.length === 0 ? (

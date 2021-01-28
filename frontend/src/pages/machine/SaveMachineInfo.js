@@ -75,7 +75,12 @@ class SaveMachineInfo extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Save Machine Info" isCollapsible>
+          <Card
+            title="Save Machine Info"
+            isFullscreenable
+            isClosable
+            isCollapsible
+          >
             <Card.Body>
               <InfoInput
                 onInfoValidityChanged={this.onInfoValidityChanged.bind(this)}
@@ -85,6 +90,7 @@ class SaveMachineInfo extends React.Component {
             <Card.Footer>
               <div align="right">
                 <Button
+                  size="sm"
                   disabled={!this.state.inputValidity.info}
                   onClick={this.onSaveButtonClicked.bind(this)}
                   color="primary"

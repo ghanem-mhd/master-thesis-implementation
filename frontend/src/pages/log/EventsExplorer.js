@@ -307,7 +307,12 @@ class EventsExplorer extends React.Component {
             <Page.Content title="Events Log Explorer">
               <Grid.Row>
                 <Grid.Col>
-                  <Card title="Events Log Search Options">
+                  <Card
+                    title="Events Log Search Options"
+                    isFullscreenable
+                    isClosable
+                    isCollapsible
+                  >
                     <Card.Body>
                       <Form.Group label="Smart Contracts">
                         <Select
