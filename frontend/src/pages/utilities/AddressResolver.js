@@ -21,7 +21,11 @@ class AddressResolver extends React.Component {
         .call()
         .then((result) => {
           if (result.toString() === "") {
-            this.setState({ value: address });
+            if (this.props.emptyString) {
+              this.setState({ value: this.props.emptyString });
+            } else {
+              this.setState({ value: address });
+            }
           } else {
             this.setState({ value: result });
           }

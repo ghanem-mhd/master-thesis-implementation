@@ -161,6 +161,7 @@ class SiteWrapper extends React.Component<Props, State> {
                         <span className="ml-2 d-none d-lg-block">
                           <span className="text-default">
                             <AddressResolver
+                              emptyString={"Unregistered Address"}
                               address={this.state.currentAccount}
                             />
                           </span>
