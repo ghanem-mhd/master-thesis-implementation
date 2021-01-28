@@ -59,18 +59,19 @@ class MachineTasks extends React.Component {
     try {
       let tasksCount = await Contract.methods["getTasksCount"]().call();
       this.setState({ loading: false });
+      var tasks = [];
       for (let taskID = 1; taskID <= tasksCount; taskID++) {
         let taskResult = await Contract.methods["getTask"](taskID).call();
         let processInfo = await Contract.methods["getTaskProcessInfo"](
           taskID
         ).call();
-        let task = this.getTaskObject(taskID, taskResult, processInfo);
-        this.setState((state, props) => {
-          return {
-            tasks: [...this.state.tasks, task],
-          };
-        });
+        tasks.push(this.getTaskObject(taskID, taskResult, processInfo));
       }
+      this.setState((state, props) => {
+        return {
+          tasks: tasks,
+        };
+      });
     } catch (error) {
       console.log(error);
     }

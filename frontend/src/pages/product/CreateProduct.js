@@ -86,6 +86,7 @@ class CreateProduct extends React.Component {
                     <Card.Footer>
                       <div align="right">
                         <Button
+                          size="sm"
                           disabled={this.state.createDisabled}
                           onClick={this.onCreateButtonClicked.bind(this)}
                           color="primary"

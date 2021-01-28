@@ -1,7 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 import { withRouter } from "react-router";
-import { Table, Grid, Card, Page, Dimmer } from "tabler-react";
+import { Table, Grid, Card, Page, Dimmer, Button } from "tabler-react";
 import ProductDIDResolver from "./ProductDIDResolver";
 import ConnectionContext from "../utilities/ConnectionContext";
 import DIDLink from "../utilities/DIDLink";
@@ -19,17 +20,16 @@ class Products extends React.Component {
     try {
       let productsCount = await c.methods["getProductsCount"]().call();
       this.setState({ loading: false });
+      var products = [];
       for (let productID = 1; productID <= productsCount; productID++) {
         let productDID = await c.methods["getProductDID"](productID).call();
-        this.setState((state, props) => {
-          return {
-            products: [
-              ...this.state.products,
-              { ID: productID, DID: productDID },
-            ],
-          };
-        });
+        products.push({ ID: productID, DID: productDID });
       }
+      this.setState((state, props) => {
+        return {
+          products: products,
+        };
+      });
     } catch (error) {
       console.log(error);
     }
@@ -54,7 +54,22 @@ class Products extends React.Component {
               <Dimmer active={this.state.loading} loader>
                 <Grid.Row>
                   <Grid.Col>
-                    <Card title="Products" isCollapsible isFullscreenable>
+                    <Card>
+                      <Card.Header>
+                        <Card.Title>Products</Card.Title>
+                        <Card.Options>
+                          <Link to={"/create-product/"}>
+                            <Button
+                              color="success"
+                              icon="plus"
+                              size="sm"
+                              outline={true}
+                            >
+                              Create
+                            </Button>
+                          </Link>
+                        </Card.Options>
+                      </Card.Header>
                       <Card.Body>
                         {this.state.products.length === 0 ? (
                           <div className="emptyListStatus">

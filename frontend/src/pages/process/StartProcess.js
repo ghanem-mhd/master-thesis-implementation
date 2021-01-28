@@ -75,6 +75,7 @@ class StartProcess extends React.Component {
             <Card.Footer>
               <div align="right">
                 <Button
+                  size="sm"
                   disabled={this.state.startDisabled}
                   onClick={this.onStartClicked.bind(this)}
                   color="primary"

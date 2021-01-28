@@ -167,7 +167,13 @@ class EventsLogStreamTable extends React.Component {
           return (
             <Grid.Row>
               <Grid.Col>
-                <Card title={this.props.title} isCollapsible isFullscreenable>
+                <Card
+                  title={this.props.title}
+                  isFullscreenable
+                  isClosable
+                  isCollapsible
+                  footer="Events emitted by machines and processes smart contracts"
+                >
                   <EventsTable
                     rows={this.state.rows}
                     emptyStateMessage={"Listening for new events..."}
