@@ -94,6 +94,32 @@ class MPOClient {
         processID,
         code,
       } = ClientUtils.getAckMessageInfo(incomingMessage);
+
+      if (code == 3) {
+        var operationName = "Melting";
+        var temp = this.readingsClient.getRecentReading("t");
+        var operationResult = `Melted at ${temp}°C`;
+        this.saveProductOperation(
+          productDID,
+          taskID,
+          operationName,
+          operationResult
+        );
+        return;
+      }
+
+      if (code == 4) {
+        var operationName = "Milling";
+        var operationResult = "ISO 1701-2";
+        this.saveProductOperation(
+          productDID,
+          taskID,
+          operationName,
+          operationResult
+        );
+        return;
+      }
+
       if (code == 2) {
         this.currentTaskID = 0;
         ClientUtils.sendFinishTaskTransaction(
@@ -105,46 +131,25 @@ class MPOClient {
         );
       }
     }
+  }
 
-    if (topic == Topics.TOPIC_MPO_OPERATIONS) {
-      Logger.info(
-        "MPOClient - Received TOPIC_MPO_OPERATIONS message " +
-          JSON.stringify(message)
-      );
-      var productID = message["productID"];
-      var operationName = message["operationName"];
-      var operationResult = message["operationResult"];
-
-      if (operationName == "Melting") {
-        var temp = this.readingsClient.getRecentReading("t");
-        operationResult = `Melted at ${temp}°C`;
-      }
-
-      ClientUtils.createCredential(3, productID, operationName, operationResult)
-        .then((encodedCredential) => {
-          ClientUtils.storeCredential(
-            this.clientName,
-            productID,
-            encodedCredential,
-            operationName,
-            operationResult
-          );
-        })
-        .catch((error) => {
-          Logger.logError(error, this.clientName);
-        });
-      try {
-        this.Contract.saveProductOperation(
-          productID,
-          Helper.toHex(operationName),
-          operationResult,
-          { from: this.machineAddress, gas: process.env.DEFAULT_GAS }
-        ).then((receipt) => {
-          Logger.info("MPOClient - operation has been saved in smart contract");
-        });
-      } catch (error) {
-        Logger.logError(error, this.clientName);
-      }
+  async saveProductOperation(
+    productDID,
+    taskID,
+    operationName,
+    operationResult
+  ) {
+    try {
+      this.Contract.saveProductOperation(
+        taskID,
+        operationName,
+        operationResult,
+        { from: this.machineAddress, gas: process.env.DEFAULT_GAS }
+      ).then((receipt) => {
+        Logger.info("MPOClient - operation has been saved in smart contract");
+      });
+    } catch (error) {
+      Logger.logError(error, this.clientName);
     }
   }
 

@@ -6,7 +6,7 @@ var Logger = require("../utilities/logger");
 var ClientUtils = require("./client-utilities");
 
 class FactorySimulator {
-  static DELAY = 100;
+  static DELAY = 3000;
   static ReadingsFreq = 5000;
   static StockFreq = 5000;
 
@@ -104,7 +104,7 @@ class FactorySimulator {
 
   storeWorkPiece(workpiece, productDID) {
     for (var i = 0; i < this.stock.stockItems.length; i++) {
-      if (this.stock.stockItems[i].workpiece == null) {
+      if (this.stock.stockItems[i].location == "C2") {
         this.stock.stockItems[i].workpiece = workpiece;
         this.stock.stockItems[i].workpiece.product_DID = productDID;
         return true;
@@ -166,8 +166,16 @@ class FactorySimulator {
 
     if (incomingMessageTopic == Topics.TOPIC_MPO_DO) {
       setTimeout(
-        () => this.sendProcessingAck(incomingMessage, "2"),
+        () => this.sendProcessingAck(incomingMessage, "3"),
         FactorySimulator.DELAY * 2
+      );
+      setTimeout(
+        () => this.sendProcessingAck(incomingMessage, "4"),
+        FactorySimulator.DELAY * 4
+      );
+      setTimeout(
+        () => this.sendProcessingAck(incomingMessage, "2"),
+        FactorySimulator.DELAY * 8
       );
     }
 
