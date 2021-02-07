@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
-import { Table, Grid, Card, Dimmer, Button } from "tabler-react";
+import { Table, Grid, Card, Dimmer } from "tabler-react";
 import AddressResolver from "../utilities/AddressResolver";
 import Misc from "../utilities/Misc";
 
@@ -9,89 +8,58 @@ class MachineInfo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      info: [],
+      infoData: [],
       loading: true,
     };
   }
 
-  getMachineInfo(machine) {
-    var newState = {};
-    newState.info = [];
-    this.setState(newState);
-
-    this.props.MachineContract.methods["getMachineDID"]()
-      .call()
-      .then((result) => {
-        this.setState((state, props) => {
-          var info = this.state.info;
-          var fullMachineDID = "did:ethr:" + result;
-          info.push({
-            infoName: "Machine DID",
-            infoValue: fullMachineDID,
-            link: "/did-resolver/" + result,
-          });
-          return {
-            info: info,
-          };
-        });
-      })
-      .catch((error) => {
-        console.log(error);
+  async getMachineInfo(machine) {
+    try {
+      var infoData = [];
+      var machineDID = await this.props.MachineContract.methods[
+        "getMachineDID"
+      ]().call();
+      infoData.push({
+        infoName: "Machine DID",
+        infoValue: "did:ethr:" + machineDID,
+        link: "/did-resolver/" + machineDID,
       });
-
-    this.props.MachineContract.methods["getMachineOwner"]()
-      .call()
-      .then((result) => {
-        this.setState((state, props) => {
-          var info = this.state.info;
-          info.push({
-            infoName: "Machine Owner",
-            infoValue: result,
-            isResolvableAddress: true,
-          });
-          info.push({
-            infoName: "Contract Address",
-            infoValue: this.props.MachineContract._address,
-          });
-          return {
-            info: info,
-          };
-        });
-      })
-      .catch((error) => {
-        console.log(error);
+      var machineOwner = await this.props.MachineContract.methods[
+        "getMachineOwner"
+      ]().call();
+      infoData.push({
+        infoName: "Machine Owner",
+        infoValue: machineOwner,
+        isResolvableAddress: true,
       });
-
-    this.props.MachineContract.methods["getMachineInfoNames"]()
-      .call()
-      .then((infoNames) => {
-        if (infoNames.length > 0) {
-          for (let infoName of infoNames) {
-            this.props.MachineContract.methods["getMachineInfo"](infoName)
-              .call()
-              .then((infoValue) => {
-                var infoNameString = Misc.toString(this.props.web3, infoName);
-                var infoValueString = Misc.toString(this.props.web3, infoValue);
-                this.setState((state, props) => {
-                  var info = this.state.info;
-                  info.push({
-                    infoName: infoNameString,
-                    infoValue: infoValueString,
-                  });
-                  return {
-                    info: info,
-                  };
-                });
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          }
+      infoData.push({
+        infoName: "Contract Address",
+        infoValue: this.props.MachineContract._address,
+      });
+      var infoNames = await this.props.MachineContract.methods[
+        "getMachineInfoNames"
+      ]().call();
+      if (infoNames.length > 0) {
+        for (let infoName of infoNames) {
+          let infoValue = await this.props.MachineContract.methods[
+            "getMachineInfo"
+          ](infoName);
+          var infoNameString = Misc.toString(this.props.web3, infoName);
+          var infoValueString = Misc.toString(this.props.web3, infoValue);
+          infoData.push({
+            infoName: infoNameString,
+            infoValue: infoValueString,
+          });
         }
-      })
-      .catch((error) => {
-        console.log(error);
+      }
+      this.setState((state, props) => {
+        return {
+          infoData: infoData,
+        };
       });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   componentDidMount() {
@@ -122,31 +90,10 @@ class MachineInfo extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card>
+          <Card title="Machine Info" isFullscreenable isClosable isCollapsible>
             <Dimmer active={false} loader>
-              <Card.Header>
-                <Card.Title>Machine Info</Card.Title>
-                <Card.Options>
-                  <Link
-                    to={
-                      "/machine/" +
-                      this.props.MachineContract._address +
-                      "/manage"
-                    }
-                  >
-                    <Button
-                      color="success"
-                      icon="edit"
-                      size="sm"
-                      outline={true}
-                    >
-                      Manage
-                    </Button>
-                  </Link>
-                </Card.Options>
-              </Card.Header>
               <Card.Body>
-                {this.state.info.length === 0 ? (
+                {this.state.infoData.length === 0 ? (
                   <div className="emptyListStatus">{"No Machine Info."}</div>
                 ) : (
                   <Table className="table-vcenter">
@@ -157,10 +104,12 @@ class MachineInfo extends React.Component {
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                      {this.state.info.map((object, i) => (
-                        <Table.Row key={this.state.info[i].infoName}>
-                          <Table.Col>{this.state.info[i].infoName}</Table.Col>
-                          {this.getValueColumn(this.state.info[i])}
+                      {this.state.infoData.map((object, i) => (
+                        <Table.Row key={this.state.infoData[i].infoName}>
+                          <Table.Col>
+                            {this.state.infoData[i].infoName}
+                          </Table.Col>
+                          {this.getValueColumn(this.state.infoData[i])}
                         </Table.Row>
                       ))}
                     </Table.Body>

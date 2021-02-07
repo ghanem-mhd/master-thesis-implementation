@@ -33,20 +33,11 @@ class AuthorizedParties extends React.Component {
   }
 
   onDeauthorizeButtonClicked(object) {
-    var partyAddress = object.address;
-
-    var methodName = null;
-    if (object.type.toString() === "Process") {
-      methodName = "deauthorizeProcess";
-    } else {
-      methodName = "deauthorizeMaintainer";
-    }
-
     Misc.getCurrentAccount(this.props.web3, (error, account) => {
       if (error) {
         Misc.showAccountNotConnectedNotification(store);
       } else {
-        this.props.MachineContract.methods[methodName](partyAddress)
+        this.props.MachineContract.methods["deauthorizeProcess"](object)
           .send({
             from: account,
             gas: process.env.REACT_APP_DEFAULT_GAS,
@@ -93,10 +84,10 @@ class AuthorizedParties extends React.Component {
                     </Table.Header>
                     <Table.Body>
                       {this.state.processesList.map((object, i) => (
-                        <Table.Row key={this.state.processesList[i].address}>
+                        <Table.Row key={this.state.processesList[i]}>
                           <Table.Col>
                             <AddressResolver
-                              address={this.state.processesList[i].address}
+                              address={this.state.processesList[i]}
                             />
                           </Table.Col>
                           <Table.Col>

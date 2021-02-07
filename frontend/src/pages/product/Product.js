@@ -20,6 +20,7 @@ class Product extends React.Component {
   }
   componentDidMount() {
     this.initiateGetProductData(this.props.match.params.address);
+    document.title = "Product Digital Twin";
   }
 
   async getProductData(productDID) {
@@ -87,11 +88,9 @@ class Product extends React.Component {
       newState.product = {};
       newState.product.info = [];
       newState.product.operations = [];
-
-      var fullProductDID = "did:ethr:" + productDID;
       newState.product.info.push({
         infoName: "Product DID",
-        infoValue: fullProductDID,
+        infoValue: productDID,
         type: "DID",
       });
       newState.product.info.push({
@@ -153,7 +152,12 @@ class Product extends React.Component {
               {this.state.product && this.state.product.info && (
                 <Grid.Row>
                   <Grid.Col>
-                    <Card title="Product Info" isCollapsible isFullscreenable>
+                    <Card
+                      title="Product Info"
+                      isFullscreenable
+                      isClosable
+                      isCollapsible
+                    >
                       <Card.Body>
                         <Table>
                           <Table.Header>
@@ -188,14 +192,12 @@ class Product extends React.Component {
                     contracts={this.contracts}
                     productDID={this.state.productDID}
                   />
-                  {false && (
-                    <SaveProductInfo
-                      contracts={this.contracts}
-                      web3={this.web3}
-                      productDID={this.state.productDID}
-                      updateCallback={this.updateCallback.bind(this)}
-                    />
-                  )}
+                  <SaveProductInfo
+                    contracts={this.contracts}
+                    web3={this.web3}
+                    productDID={this.state.productDID}
+                    updateCallback={this.updateCallback.bind(this)}
+                  />
                 </div>
               )}
             </Page.Content>

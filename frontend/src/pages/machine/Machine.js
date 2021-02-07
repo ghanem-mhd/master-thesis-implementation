@@ -1,9 +1,8 @@
 // @flow
 
 import * as React from "react";
-import { withRouter } from "react-router-dom";
-import { Page, Dimmer, Grid, GalleryCard } from "tabler-react";
-
+import { withRouter, Link } from "react-router-dom";
+import { Page, Dimmer, Grid, GalleryCard, Button } from "tabler-react";
 import ConnectionContext from "../utilities/ConnectionContext";
 import MachineInfo from "./MachineInfo";
 import MachineMetrics from "./MachineMetrics";
@@ -61,6 +60,24 @@ class Machine extends React.Component {
             <Page.Content
               title={
                 <AddressResolver address={this.props.match.params.address} />
+              }
+              options={
+                <div className="mr-2">
+                  <Link
+                    to={
+                      "/machine/" + this.props.match.params.address + "/manage"
+                    }
+                  >
+                    <Button
+                      color="success"
+                      icon="edit"
+                      size="sm"
+                      outline={true}
+                    >
+                      Manage Machine
+                    </Button>
+                  </Link>
+                </div>
               }
             >
               <Dimmer active={this.state.machineContract == null} loader>

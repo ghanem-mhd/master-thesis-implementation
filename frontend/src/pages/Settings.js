@@ -76,7 +76,7 @@ class Settings extends React.Component {
           <Grid.Col>
             <Card title="Settings Preferences">
               <Card.Body>
-                <Form.Group label="Network WS URL">
+                <Form.Group label="Network Websocket URL">
                   <Form.Input
                     value={this.state.wsNetworkState.value}
                     invalid={this.state.wsNetworkState.invalid}
@@ -92,6 +92,7 @@ class Settings extends React.Component {
               <Card.Footer>
                 <div align="right">
                   <Button
+                    size="sm"
                     disabled={!this.state.wsNetworkState.valid}
                     onClick={this.onSaveClicked.bind(this)}
                     color="primary"

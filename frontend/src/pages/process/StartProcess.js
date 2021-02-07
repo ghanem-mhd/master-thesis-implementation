@@ -6,6 +6,7 @@ import { Grid, Card, Button } from "tabler-react";
 
 import AddressInput from "../utilities/AddressInput";
 import { store } from "react-notifications-component";
+import ProcessStepper from "../process/ProcessStepper";
 import Misc from "../utilities/Misc";
 
 class StartProcess extends React.Component {
@@ -60,7 +61,7 @@ class StartProcess extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Start Process" isCollapsible>
+          <Card title="Start Process" isFullscreenable isClosable isCollapsible>
             <Card.Body>
               <AddressInput
                 label="Product DID"
@@ -72,6 +73,12 @@ class StartProcess extends React.Component {
                 ref={this.addressInputRef}
               />
             </Card.Body>
+            <ProcessStepper
+              registry={this.props.registry}
+              web3={this.props.web3}
+              showDetails={false}
+              contract={this.props.ProcessContract}
+            />
             <Card.Footer>
               <div align="right">
                 <Button

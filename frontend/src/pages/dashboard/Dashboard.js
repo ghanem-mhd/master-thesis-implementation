@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Page, Grid, Dimmer } from "tabler-react";
+import { Page, Grid, Dimmer, Card, Button } from "tabler-react";
 import EventsLogStreamTable from "../log/EventsLogStreamTable";
 import ConnectionContext from "../utilities/ConnectionContext";
 import MachineState from "../machine/MachineState";
@@ -61,7 +61,30 @@ class Dashboard extends React.Component {
                   web3={this.web3}
                   productContract={this.contracts["Product"]}
                 />
-                <EventsLogStreamTable title={"Events Log"} />
+                <Grid.Row>
+                  <Grid.Col>
+                    {false && (
+                      <Card
+                        title="NFC Reader"
+                        isFullscreenable
+                        isClosable
+                        isCollapsible
+                      >
+                        <Card.Body></Card.Body>
+                        <Card.Footer>
+                          <div style={{ float: "right" }}>
+                            <Button size="sm" color="primary" className="mr-4">
+                              NFC delete
+                            </Button>
+                            <Button color="primary" size="sm">
+                              NFC read
+                            </Button>
+                          </div>
+                        </Card.Footer>
+                      </Card>
+                    )}
+                  </Grid.Col>
+                </Grid.Row>
               </Dimmer>
             </Page.Content>
           );

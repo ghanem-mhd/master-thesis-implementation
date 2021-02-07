@@ -54,7 +54,10 @@ class AddressResolver extends React.Component {
           return (
             <React.Fragment>
               <span className="d-none d-lg-block">
-                <span>{this.state.value}</span>
+                <span>
+                  {this.props.prefix}
+                  {this.state.value}
+                </span>
               </span>
             </React.Fragment>
           );

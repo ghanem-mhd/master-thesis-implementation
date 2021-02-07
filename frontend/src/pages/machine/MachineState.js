@@ -1,9 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Grid, Avatar, Text, Header, Card } from "tabler-react";
+import { Grid, Avatar, Card } from "tabler-react";
 import ContractsLoader from "../utilities/ContractsLoader";
+import ProductDIDResolver from "../utilities/ProductDIDResolver";
 
 function getStateElement(state) {
+  // eslint-disable-next-line
   let className = "";
   let stateLabel = "";
   if (state === -1) {
@@ -18,18 +20,31 @@ function getStateElement(state) {
     className = "status-icon bg-success";
     stateLabel = "Active";
   }
-  return (
-    <div>
-      <span className={className} />
-      {" " + stateLabel}
-    </div>
-  );
+  return stateLabel;
+}
+
+function getStatusColor(state) {
+  if (state === -1) {
+    return "red";
+  }
+  if (state === 0) {
+    return "yellow";
+  }
+  if (state === 1) {
+    return "green";
+  }
 }
 
 class MachineState extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { machineState: 0 };
+    this.state = {
+      machineState: 0,
+      taskName: "-",
+      taskID: "-",
+      productDID: "-",
+    };
+    this.initialState = this.state;
   }
 
   async componentDidMount() {
@@ -56,7 +71,16 @@ class MachineState extends React.Component {
         if (error) {
           this.setState({ machineState: -1 });
         } else {
-          this.setState({ machineState: 1 });
+          this.setState({
+            machineState: 1,
+            taskID: event.returnValues["taskID"],
+            productDID: (
+              <ProductDIDResolver
+                productDID={event.returnValues["productDID"]}
+              />
+            ),
+            taskName: event.returnValues["taskName"],
+          });
         }
       }
     );
@@ -66,7 +90,7 @@ class MachineState extends React.Component {
         if (error) {
           this.setState({ machineState: -1 });
         } else {
-          this.setState({ machineState: 0 });
+          this.setState(this.initialState);
         }
       }
     );
@@ -83,21 +107,51 @@ class MachineState extends React.Component {
 
   render() {
     return (
-      <Card>
+      <Card
+        title={
+          <Link
+            to={"/machine/" + this.state.machineContractAddress}
+            target="_blank"
+          >
+            {this.props.machineName}
+          </Link>
+        }
+        statusColor={getStatusColor(this.state.machineState)}
+        isFullscreenable
+        isClosable
+        isCollapsible
+      >
         <Card.Body>
-          <Grid.Row>
+          <Grid.Row className="align-items-center">
             <Grid.Col auto>
-              <Avatar size="xxl" imageURL={"/" + this.state.symbol + ".jpg"} />
+              <Avatar
+                className="imageSquare2"
+                size="xxl"
+                imageURL={"/" + this.state.symbol + ".jpg"}
+              />
             </Grid.Col>
             <Grid.Col className="align-self-center">
-              <Header size={4} className="m-0">
-                <Link to={"/machine/" + this.state.machineContractAddress}>
-                  <small>{this.props.machineName + " Status"}</small>
-                </Link>
-              </Header>
-              <Text.Small muted>
-                {getStateElement(this.state.machineState)}
-              </Text.Small>
+              {[
+                {
+                  title: "Machine Status:",
+                  content: getStateElement(this.state.machineState),
+                },
+                { title: "Task ID:", content: this.state.taskID },
+                { title: "Task Name:", content: this.state.taskName },
+                {
+                  title: "Product:",
+                  content: this.state.productDID,
+                },
+              ].map((d, i) => (
+                <Grid.Row key={i}>
+                  <Grid.Col sm={4}>
+                    <b>{d.title} </b>
+                  </Grid.Col>
+                  <Grid.Col sm={8} className="text-center">
+                    {d.content}
+                  </Grid.Col>
+                </Grid.Row>
+              ))}
             </Grid.Col>
           </Grid.Row>
         </Card.Body>

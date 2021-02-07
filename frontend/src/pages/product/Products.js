@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
 import { withRouter } from "react-router";
 import { Table, Grid, Card, Page, Dimmer, Button } from "tabler-react";
 import ProductDIDResolver from "./ProductDIDResolver";
@@ -50,26 +49,25 @@ class Products extends React.Component {
             <Page.Content
               title={"Products List"}
               subTitle="A list of all products registered in the system"
+              options={
+                <div className="mr-2">
+                  <Link to={"/create-product/"}>
+                    <Button
+                      color="success"
+                      icon="plus"
+                      size="sm"
+                      outline={true}
+                    >
+                      Create New Product
+                    </Button>
+                  </Link>
+                </div>
+              }
             >
               <Dimmer active={this.state.loading} loader>
                 <Grid.Row>
                   <Grid.Col>
                     <Card>
-                      <Card.Header>
-                        <Card.Title>Products</Card.Title>
-                        <Card.Options>
-                          <Link to={"/create-product/"}>
-                            <Button
-                              color="success"
-                              icon="plus"
-                              size="sm"
-                              outline={true}
-                            >
-                              Create
-                            </Button>
-                          </Link>
-                        </Card.Options>
-                      </Card.Header>
                       <Card.Body>
                         {this.state.products.length === 0 ? (
                           <div className="emptyListStatus">

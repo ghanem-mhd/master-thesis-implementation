@@ -1,10 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import AddressResolver from "../utilities/AddressResolver";
 import { Table, Grid, Card, Dimmer } from "tabler-react";
 
 function getContractDynamicInfo() {
   return [
+    {
+      methodName: "getProcessOwner",
+      infoName: "Process Owner",
+      postfix: "",
+    },
     {
       methodName: "getProcessesCount",
       infoName: "Process Instance Count",
@@ -42,6 +47,9 @@ class ProcessInfo extends React.Component {
             newInfo.link =
               "/process/" + this.props.ProcessContract._address + "/instances";
           }
+          if (element.methodName === "getProcessOwner") {
+            newInfo.address = result;
+          }
           newInfo.infoName = element.infoName;
           if (element.postfix) {
             newInfo.infoValue = result + " " + element.postfix;
@@ -62,6 +70,24 @@ class ProcessInfo extends React.Component {
 
   componentDidMount() {
     this.getProcessInfo();
+  }
+
+  getInfoValueElement(info) {
+    if (info.address) {
+      return (
+        <Table.Col alignContent="center">
+          <AddressResolver address={info.address} />{" "}
+        </Table.Col>
+      );
+    }
+    if (info.link) {
+      return (
+        <Table.Col alignContent="center">
+          <Link to={info.link}>{info.infoValue}</Link>
+        </Table.Col>
+      );
+    }
+    return <Table.Col alignContent="center">{info.infoValue}</Table.Col>;
   }
 
   render() {
@@ -87,18 +113,7 @@ class ProcessInfo extends React.Component {
                       {this.state.info.map((object, i) => (
                         <Table.Row key={this.state.info[i].infoName}>
                           <Table.Col>{this.state.info[i].infoName}</Table.Col>
-                          {this.state.info[i].link && (
-                            <Table.Col alignContent="center">
-                              <Link to={this.state.info[i].link}>
-                                {this.state.info[i].infoValue}
-                              </Link>
-                            </Table.Col>
-                          )}
-                          {!this.state.info[i].link && (
-                            <Table.Col alignContent="center">
-                              {this.state.info[i].infoValue}
-                            </Table.Col>
-                          )}
+                          {this.getInfoValueElement(this.state.info[i])}
                         </Table.Row>
                       ))}
                     </Table.Body>

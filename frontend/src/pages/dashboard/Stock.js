@@ -1,46 +1,59 @@
 // @flow
 
 import * as React from "react";
-import { Link } from "react-router-dom";
-import { Grid, Card, Dimmer, Table, Button } from "tabler-react";
+import { Grid, Card, Dimmer, Button } from "tabler-react";
+import EventsLogStreamTable from "../log/EventsLogStreamTable";
 import ContractsLoader from "../utilities/ContractsLoader";
 import Misc from "../utilities/Misc";
 import Select from "react-select";
+import ProcessStepper from "../process/ProcessStepper";
 import { store } from "react-notifications-component";
+import StockItem from "./StockItem";
 
-function getStockItemImage(stockItem) {
-  if (stockItem.workpiece == null) {
+function getStockItemImage(type) {
+  if (type == null) {
     return "";
   }
 
-  if (stockItem.workpiece.type === "RED") {
+  if (type === "RED") {
     return "/ic_ft_workpiece_red.svg";
   }
 
-  if (stockItem.workpiece.type === "BLUE") {
+  if (type === "BLUE") {
     return "/ic_ft_workpiece_blue.svg";
   }
 
-  if (stockItem.workpiece.type === "WHITE") {
+  if (type === "WHITE") {
     return "/ic_ft_workpiece_white.svg";
   }
 }
 
 class Stock extends React.Component {
+  _isMounted = false;
+
   constructor(props) {
     super(props);
     this.state = {
       stockItems: [],
       availableDIDsList: [],
+      filledStockItems: [],
       loading: true,
       errorMessage: null,
-      orderButtonEnabled: false,
+      executeButton1Enabled: false,
+      executeButton2Enabled: false,
+      lastTimestamp: "N/A",
     };
   }
 
   componentDidMount() {
+    this._isMounted = true;
     this.props.socket.on("f/i/stock", (message) => {
-      this.setData(JSON.parse(JSON.stringify(message)).stockItems);
+      if (this._isMounted) {
+        this.setData(
+          JSON.parse(JSON.stringify(message)).stockItems,
+          message.ts
+        );
+      }
     });
     this.props.socket.on("connect_error", (err) => {
       this.setState({
@@ -49,6 +62,11 @@ class Stock extends React.Component {
       });
     });
     this.getProcessesContract();
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+    this.props.socket.off("f/i/stock");
   }
 
   async getProcessesContract() {
@@ -76,7 +94,17 @@ class Stock extends React.Component {
     }
   }
 
-  setData(stockItems) {
+  setData(stockItems, timestamp) {
+    this.setState({
+      lastTimestamp: new Date(timestamp).toLocaleString(),
+      loading: false,
+      stockItems: stockItems,
+    });
+    this.setAvailableDIDs(stockItems);
+    this.setFilledStockItems(stockItems);
+  }
+
+  async setAvailableDIDs(stockItems) {
     var filledStockItems = stockItems.filter(
       (stockItem) => stockItem.workpiece != null
     );
@@ -84,43 +112,71 @@ class Stock extends React.Component {
       (stockItem) => stockItem.workpiece.product_DID
     );
     var availableDIDs = Misc.getAvailableProductDIDs(DIDsInStock);
-    this.setAvailableDIDs(availableDIDs);
-    this.setState({
-      stockItems: stockItems.filter((stockItem) => stockItem.workpiece != null),
-      loading: false,
-    });
-  }
-
-  async setAvailableDIDs(availableDIDs) {
     var availableDIDsList = [];
-    for (var i = 0; i < availableDIDs.length; i++) {
+    for (var i = 0; i < 6; i++) {
       var DID = availableDIDs[i];
-      var productID = await this.props.productContract.methods
-        .getProductID(DID)
-        .call();
-      availableDIDsList.push({
-        label: `Product ${productID} (did:ethr:${DID})`,
-        value: DID,
-      });
+      try {
+        var productID = await this.props.productContract.methods
+          .getProductID(DID)
+          .call();
+        availableDIDsList.push({
+          label: `Product ${productID} (did:ethr:${DID})`,
+          value: DID,
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
     this.setState({
       availableDIDsList: availableDIDsList,
     });
   }
 
-  onProduceClick(e) {
-    let productDID = e.workpiece.product_DID;
-    if (this.state.productionProcessContract) {
-      this.startProcess(this.state.productionProcessContract, productDID);
+  async setFilledStockItems(stockItems) {
+    stockItems = stockItems.filter((stockItem) => stockItem.workpiece != null);
+    var filledStockItems = [];
+    for (var i = 0; i < stockItems.length; i++) {
+      var stockItem = stockItems[i];
+      try {
+        var productID = await this.props.productContract.methods
+          .getProductID(stockItem.workpiece.product_DID)
+          .call();
+      } catch (error) {
+        productID = "Unknown";
+      }
+      filledStockItems.push({
+        value: stockItem.workpiece.product_DID,
+        productID: productID,
+        physicalID: stockItem.workpiece.id,
+        type: stockItem.workpiece.type,
+      });
     }
+    this.setState({
+      filledStockItems: filledStockItems,
+    });
   }
 
-  onOrderClick(e) {
-    if (this.state.supplyingProcessContract && this.state.selectedDID) {
-      this.startProcess(
-        this.state.supplyingProcessContract,
-        this.state.selectedDID.value
-      );
+  onExecuteButtonClicked(e) {
+    if (e === "Supplying") {
+      if (
+        this.state.supplyingProcessContract &&
+        this.state.selectedSupplyingProduct
+      ) {
+        this.startProcess(
+          this.state.supplyingProcessContract,
+          this.state.selectedSupplyingProduct.value
+        );
+      }
+    } else {
+      if (
+        this.state.productionProcessContract &&
+        this.state.selectedProductionProduct
+      ) {
+        this.startProcess(
+          this.state.productionProcessContract,
+          this.state.selectedProductionProduct.value
+        );
+      }
     }
   }
 
@@ -137,11 +193,11 @@ class Stock extends React.Component {
           })
           .on("transactionHash", (hash) => {
             this.notificationID = Misc.showTransactionHashMessage(store, hash);
-            this.setState({ selectedDID: null, orderButtonEnabled: false });
+            this.reset();
           })
           .on("confirmation", (confirmationNumber, receipt) => {
             store.removeNotification(this.notificationID);
-            this.setState({ selectedDID: null, orderButtonEnabled: false });
+            this.reset();
           })
           .on("error", (error) => {
             store.removeNotification(this.notificationID);
@@ -151,8 +207,47 @@ class Stock extends React.Component {
     });
   }
 
-  handleEventsSelect(selectedOption) {
-    this.setState({ selectedDID: selectedOption, orderButtonEnabled: true });
+  reset() {
+    this.setState({
+      selectedSupplyingProduct: null,
+      selectedProductionProduct: null,
+      executeButton1Enabled: false,
+      executeButton2Enabled: false,
+    });
+  }
+
+  handleSupplyingProductSelection(selectedOption) {
+    this.setState({
+      selectedSupplyingProduct: selectedOption,
+      executeButton1Enabled: true,
+    });
+  }
+
+  handleProductionProductSelection(selectedOption) {
+    this.setState({
+      selectedProductionProduct: selectedOption,
+      executeButton2Enabled: true,
+    });
+  }
+
+  formatOptionLabel(option) {
+    return (
+      <Grid.Row>
+        <Grid.Col lg={2} sm={2} className="text-lg-center">
+          <img
+            alt={option.value}
+            className="productSmall"
+            src={getStockItemImage(option.type)}
+          />
+        </Grid.Col>
+        <Grid.Col lg={7} sm={7}>
+          {`Product ${option.productID} (did:ethr:${option.value})`}
+        </Grid.Col>
+        <Grid.Col lg={3} sm={3}>
+          {`NFC: ${option.physicalID}`}
+        </Grid.Col>
+      </Grid.Row>
+    );
   }
 
   render() {
@@ -160,106 +255,145 @@ class Stock extends React.Component {
       <React.Fragment>
         <Grid.Row>
           <Grid.Col>
-            <Card title="Produce Products" isCollapsible>
-              <Dimmer active={this.state.loading} loader>
-                <Card.Body>
-                  {this.state.stockItems.length === 0 ? (
-                    <div className="emptyListStatus">
-                      {this.state.errorMessage !== null
-                        ? this.state.errorMessage
-                        : "Warehouse is Empty."}
-                    </div>
-                  ) : (
-                    <Table
-                      className="table-vcenter"
-                      striped={true}
-                      responsive={true}
-                    >
-                      <Table.Header>
-                        <Table.Row>
-                          <Table.ColHeader alignContent="center">
-                            Product
-                          </Table.ColHeader>
-                          <Table.ColHeader>Product DID</Table.ColHeader>
-                          <Table.ColHeader alignContent="center">
-                            Physical Identifer
-                          </Table.ColHeader>
-                          <Table.ColHeader alignContent="center"></Table.ColHeader>
-                        </Table.Row>
-                      </Table.Header>
-                      <Table.Body>
-                        {this.state.stockItems.map((stockItem, i) => (
-                          <Table.Row key={i}>
-                            <Table.Col alignContent="center">
-                              <img
-                                className="imgClassName"
-                                src={getStockItemImage(stockItem)}
-                                alt={stockItem.workpiece.product_DID}
-                              />
-                            </Table.Col>
-                            <Table.Col>
-                              <Link
-                                to={stockItem.workpiece.product_DID}
-                                target="_blank"
-                              >
-                                {"did:ethr:" + stockItem.workpiece.product_DID}
-                              </Link>
-                            </Table.Col>
-                            <Table.Col alignContent="center">
-                              {stockItem.workpiece.id}
-                            </Table.Col>
-                            <Table.Col alignContent="center">
-                              <Button
-                                color="primary"
-                                size="sm"
-                                onClick={this.onProduceClick.bind(
-                                  this,
-                                  stockItem
-                                )}
-                              >
-                                Produce
-                              </Button>
-                            </Table.Col>
-                          </Table.Row>
-                        ))}
-                      </Table.Body>
-                    </Table>
-                  )}
-                </Card.Body>
-              </Dimmer>
-            </Card>
-          </Grid.Col>
-        </Grid.Row>
-        <Grid.Row>
-          <Grid.Col>
-            <Card title="Order Product to Warehouse" isCollapsible>
+            <Card
+              title="Supplying Process"
+              isFullscreenable
+              isClosable
+              isCollapsible
+            >
               <Dimmer active={this.state.loading} loader>
                 <Card.Body>
                   <Select
-                    value={this.state.selectedDID}
-                    onChange={this.handleEventsSelect.bind(this)}
-                    placeholder="Select one product"
+                    value={this.state.selectedSupplyingProduct}
+                    onChange={this.handleSupplyingProductSelection.bind(this)}
+                    placeholder="Select a product"
                     styles={{
                       menu: (styles) => Object.assign(styles, { zIndex: 1000 }),
                     }}
                     options={this.state.availableDIDsList}
                   />
                 </Card.Body>
+                <ProcessStepper
+                  registry={this.props.registry}
+                  web3={this.props.web3}
+                  processName={"Supplying Process"}
+                  showDetails={false}
+                />
               </Dimmer>
               <Card.Footer>
-                <div align="right">
+                <div style={{ float: "left" }}>
+                  Ordering a product will execute a new supplying process
+                  instance.
+                </div>
+                <div style={{ float: "right" }}>
                   <Button
+                    size="sm"
                     color="primary"
-                    onClick={this.onOrderClick.bind(this)}
-                    disabled={!this.state.orderButtonEnabled}
+                    onClick={this.onExecuteButtonClicked.bind(
+                      this,
+                      "Supplying"
+                    )}
+                    disabled={!this.state.executeButton1Enabled}
                   >
-                    Order
+                    Execute
                   </Button>
                 </div>
               </Card.Footer>
             </Card>
           </Grid.Col>
         </Grid.Row>
+        <Grid.Row>
+          <Grid.Col>
+            <Card
+              title="Production Process"
+              isFullscreenable
+              isClosable
+              isCollapsible
+            >
+              <Dimmer active={this.state.loading} loader>
+                <Card.Body>
+                  <Select
+                    value={this.state.selectedProductionProduct}
+                    formatOptionLabel={this.formatOptionLabel}
+                    onChange={this.handleProductionProductSelection.bind(this)}
+                    placeholder="Select a product"
+                    styles={{
+                      menu: (styles) => Object.assign(styles, { zIndex: 1000 }),
+                    }}
+                    options={this.state.filledStockItems}
+                  />
+                </Card.Body>
+                <ProcessStepper
+                  registry={this.props.registry}
+                  web3={this.props.web3}
+                  processName={"Production Process"}
+                  showDetails={false}
+                />
+              </Dimmer>
+              <Card.Footer>
+                <div style={{ float: "left" }}>
+                  Producing a product will execute a new production process
+                  instance.
+                </div>
+                <div style={{ float: "right" }}>
+                  <Button
+                    size="sm"
+                    color="primary"
+                    onClick={this.onExecuteButtonClicked.bind(
+                      this,
+                      "Production"
+                    )}
+                    disabled={!this.state.executeButton2Enabled}
+                  >
+                    Execute
+                  </Button>
+                </div>
+              </Card.Footer>
+            </Card>
+          </Grid.Col>
+        </Grid.Row>
+        <EventsLogStreamTable title={"Events Log"} />
+        {true && (
+          <Grid.Row>
+            <Grid.Col>
+              <Card
+                title="Warehouse Storage"
+                isFullscreenable
+                isClosable
+                isCollapsible
+              >
+                <Card.Body>
+                  <Dimmer
+                    active={this.state.loading}
+                    loader
+                    className="dimmerCentered"
+                  >
+                    <Grid.Row gutters="xs">
+                      {this.state.stockItems.map((stockItem, i) => (
+                        <StockItem
+                          key={i}
+                          stockItem={stockItem}
+                          registry={this.props.registry}
+                          web3={this.props.web3}
+                        />
+                      ))}
+                    </Grid.Row>
+                  </Dimmer>
+                </Card.Body>
+                <Card.Footer>
+                  <div style={{ float: "left" }}>
+                    {`Last update: ${this.state.lastTimestamp}`}
+                  </div>
+                  <div style={{ float: "right" }}>
+                    <Button className="invisible" size="sm" color="primary">
+                      Execute
+                    </Button>
+                  </div>
+                </Card.Footer>
+              </Card>
+            </Grid.Col>
+          </Grid.Row>
+        )}
       </React.Fragment>
     );
   }

@@ -58,7 +58,10 @@ class SaveMachineInfo extends React.Component {
           })
           .on("error", (error) => {
             store.removeNotification(this.notificationID);
-            Misc.showErrorMessage(store, error.message);
+            Misc.showErrorMessage(
+              store,
+              "Transactions reverted: Only machine owner can make this operation."
+            );
             console.log(error);
           });
       }

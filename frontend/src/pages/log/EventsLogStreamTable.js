@@ -55,6 +55,16 @@ class EventsLogStreamTable extends React.Component {
             }
           }
         );
+        machineContract.events.ProductOperationSaved(
+          { fromBlock: "latest" },
+          (error, event) => {
+            if (error) {
+              console.log(error);
+            } else {
+              this.onNewEvent(machineName, event);
+            }
+          }
+        );
       })
       .catch((error) => {
         console.log(error);
@@ -153,7 +163,7 @@ class EventsLogStreamTable extends React.Component {
     };
     this.setState((state, props) => {
       return {
-        rows: [...this.state.rows, row],
+        rows: [row, ...this.state.rows],
       };
     });
   }

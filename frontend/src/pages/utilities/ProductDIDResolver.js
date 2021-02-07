@@ -1,9 +1,9 @@
 // @flow
 
 import * as React from "react";
+import { Link } from "react-router-dom";
 
 import ConnectionContext from "../utilities/ConnectionContext";
-import { Link } from "react-router-dom";
 
 class ProductDIDResolver extends React.Component {
   constructor(props) {
@@ -12,25 +12,34 @@ class ProductDIDResolver extends React.Component {
   }
 
   componentDidMount() {
+    this.resolveDID(this.props.productDID);
+  }
+
+  resolveDID(productDID) {
     try {
       this.productContract.methods
-        .getProductID(this.props.productDID)
+        .getProductID(productDID)
         .call()
         .then((result) => {
           if (result.toString() === "") {
-            this.setState({ value: this.props.productDID });
+            this.setState({ value: productDID });
           } else {
             this.setState({ value: result });
           }
         })
         .catch((error) => {
-          this.setState({ value: this.props.productDID });
+          this.setState({ value: productDID });
         });
     } catch (error) {
-      console.log(error);
       this.setState({
-        value: "Invalid product DID: '" + this.props.address + "'",
+        value: "Invalid product DID: 'did:ethr:" + productDID + "'",
       });
+    }
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (this.props.productDID !== nextProps.productDID) {
+      this.resolveDID(nextProps.productDID);
     }
   }
 
@@ -41,7 +50,9 @@ class ProductDIDResolver extends React.Component {
           this.productContract = connectionContext.contracts["Product"];
           return (
             <Link to={"/product/" + this.props.productDID} target="_blank">
-              {"Product " + this.state.value}
+              <span className="d-none d-lg-block">
+                <span>{"Product " + this.state.value}</span>
+              </span>
             </Link>
           );
         }}

@@ -124,7 +124,7 @@ class SiteWrapper extends React.Component<Props, State> {
 
   handleAccountsChanged(accounts) {
     if (accounts.length === 0) {
-      Misc.showAccountNotConnectedNotification(store);
+      //Misc.showAccountNotConnectedNotification(store);
     } else {
       this.setState({
         currentAccount: this.web3.utils.toChecksumAddress(accounts[0]),

@@ -433,6 +433,7 @@ class EventsExplorer extends React.Component {
                     <Card.Footer>
                       <div align="right">
                         <Button
+                          size="sm"
                           disabled={!this.state.findButtonEnable}
                           color="primary"
                           onClick={this.onFindClick.bind(this)}

@@ -39,7 +39,7 @@ class EventsTable extends React.Component {
         columns={columns}
         data={this.props.rows}
         pagination={true}
-        paginationPerPage={10}
+        paginationPerPage={2}
         expandableRows
         noHeader={true}
         noDataComponent={

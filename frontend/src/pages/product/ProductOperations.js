@@ -63,7 +63,12 @@ class ProductOperations extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Product Operations" isCollapsible isFullscreenable>
+          <Card
+            title="Product Operations"
+            isFullscreenable
+            isClosable
+            isCollapsible
+          >
             <Card.Body>
               {this.state.operations.length !== 0 ? (
                 <Table className="table-vcenter text-left">

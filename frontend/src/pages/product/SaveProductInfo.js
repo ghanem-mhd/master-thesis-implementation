@@ -73,7 +73,12 @@ class SaveProductInfo extends React.Component {
     return (
       <Grid.Row>
         <Grid.Col>
-          <Card title="Save Product Info" isCollapsible>
+          <Card
+            title="Save Product Info"
+            isFullscreenable
+            isClosable
+            isCollapsible
+          >
             <Card.Body>
               <InfoInput
                 onInfoValidityChanged={this.onInfoValidityChanged.bind(this)}
@@ -83,6 +88,7 @@ class SaveProductInfo extends React.Component {
             <Card.Footer>
               <div align="right">
                 <Button
+                  size="sm"
                   disabled={!this.state.inputValidity}
                   onClick={this.onSaveButtonClicked.bind(this)}
                   color="primary"

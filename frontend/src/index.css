@@ -8,14 +8,38 @@
   color: #9aa0ac !important;
 }
 
-.imgClassName {
+.productSmall {
   width: 15%;
 }
 
-.whiteAndBlack {
-  filter: grayscale(100%);
+.machineMainImage {
+  width: 25%;
 }
 
-.machineMainImage {
-  width: 35%;
+.imageSquare {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 1rem !important;
+}
+
+.imageSquare2 {
+  border-radius: 0% !important;
+  width: 5.5rem !important;
+  height: 5.5rem !important;
+  background-size: contain !important;
+  background-color: white !important;
+}
+
+.warehouse {
+  height: 21.2rem;
+}
+
+.dimmerCentered {
+  position: revert !important;
+}
+
+@media screen and (max-width: 1200px) {
+  .test {
+    display: none !important;
+  }
 }

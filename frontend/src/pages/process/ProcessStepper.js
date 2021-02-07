@@ -127,63 +127,95 @@ class ProcessStepper extends React.Component {
     );
   }
 
-  render() {
+  getStepper() {
     return (
-      <Grid.Row>
-        <Grid.Col>
-          <Card
-            title={this.props.processName + " Execution"}
-            isCollapsible
-            isFullscreenable
-          >
-            {this.state.fatalError !== null ? (
-              <Card.Body>
-                <div className="emptyListStatus">{this.state.fatalError}</div>
-              </Card.Body>
-            ) : (
-              <React.Fragment>
-                <Card.Body>
-                  {this.state.steps.length === 0 ? (
-                    <div className="emptyListStatus">
-                      {"No info about process steps."}
-                    </div>
-                  ) : (
-                    <Stepper
-                      activeStep={this.state.activeStep}
-                      alternativeLabel
-                    >
-                      {this.state.steps.map((step, index) => {
-                        return (
-                          <Step key={step.taskName}>
-                            <StepLabel>
-                              {step.taskName}
-                              <br />
-                              {step.machineName}
-                            </StepLabel>
-                          </Step>
-                        );
-                      })}
-                    </Stepper>
-                  )}
-                </Card.Body>
-                <Card.Footer>
-                  <Grid.Row>
-                    <Grid.Col sm={6}>
-                      <b>Product DID: </b>
-                      {this.state.productDID}
-                    </Grid.Col>
-                    <Grid.Col sm={6}>
-                      <b>Process ID: </b>
-                      {this.state.processInstanceID}
-                    </Grid.Col>
-                  </Grid.Row>
-                </Card.Footer>
-              </React.Fragment>
-            )}
-          </Card>
-        </Grid.Col>
-      </Grid.Row>
+      <div>
+        {this.state.steps.length === 0 ? (
+          <div className="emptyListStatus">
+            {"No info about process steps."}
+          </div>
+        ) : (
+          <div>
+            <Stepper activeStep={this.state.activeStep} alternativeLabel>
+              {this.state.steps.map((step, index) => {
+                return (
+                  <Step key={step.taskName}>
+                    <StepLabel>
+                      {step.taskName}
+                      <br />
+                      {step.machineName}
+                    </StepLabel>
+                  </Step>
+                );
+              })}
+            </Stepper>
+          </div>
+        )}
+      </div>
     );
+  }
+
+  render() {
+    if (this.props.showDetails) {
+      return (
+        <Grid.Row>
+          <Grid.Col>
+            <Card
+              statusColor={this.props.statusColor}
+              title={this.props.processName + " Execution"}
+              isCollapsible
+              isFullscreenable
+            >
+              {this.state.fatalError !== null ? (
+                <Card.Body>
+                  <div className="emptyListStatus">{this.state.fatalError}</div>
+                </Card.Body>
+              ) : (
+                <React.Fragment>
+                  <Card.Body>{this.getStepper()}</Card.Body>
+                  <Card.Footer>
+                    <Grid.Row>
+                      <Grid.Col sm={6}>
+                        <b>Product DID: </b>
+                        {this.state.productDID}
+                      </Grid.Col>
+                      <Grid.Col sm={6}>
+                        <b>Process ID: </b>
+                        {this.state.processInstanceID}
+                      </Grid.Col>
+                    </Grid.Row>
+                  </Card.Footer>
+                </React.Fragment>
+              )}
+            </Card>
+          </Grid.Col>
+        </Grid.Row>
+      );
+    } else {
+      return (
+        <React.Fragment>
+          {this.state.fatalError !== null ? (
+            <div className="emptyListStatus">{this.state.fatalError}</div>
+          ) : (
+            <React.Fragment>
+              {this.getStepper()}
+              <Card.Footer>
+                <Grid.Row>
+                  <Grid.Col sm={6}>
+                    <b>Product DID: </b>
+                    {this.state.productDID}
+                  </Grid.Col>
+                  <Grid.Col sm={6}>
+                    <b>Process ID: </b>
+                    {this.state.processInstanceID}
+                  </Grid.Col>
+                </Grid.Row>
+              </Card.Footer>
+            </React.Fragment>
+          )}
+        </React.Fragment>
+      );
+    }
   }
 }
 

@@ -55,14 +55,9 @@ class Process extends React.Component {
                   <React.Fragment>
                     <ProcessInfo ProcessContract={this.state.processContract} />
                     <StartProcess
-                      web3={this.web3}
-                      ProcessContract={this.state.processContract}
-                    />
-                    <ProcessStepper
                       registry={this.registry}
                       web3={this.web3}
-                      processName="Process "
-                      contract={this.state.processContract}
+                      ProcessContract={this.state.processContract}
                     />
                   </React.Fragment>
                 )}
