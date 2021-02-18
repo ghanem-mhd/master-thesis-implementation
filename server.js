@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const express = require("express");
 const http = require("http");
 const path = require("path");
@@ -19,10 +18,6 @@ const Logger = require("./utilities/logger");
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "frontend/build")));
-app.get("*", function (req, res) {
-  res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
-});
 
 app.get("/events", function (req, res) {
   let page = req.query.page;
@@ -72,6 +67,13 @@ app.get("/operation-vc/:operationID", function (req, res) {
   });
 });
 
+if (process.env.BUILD_FRONTEND == "true") {
+  app.use(express.static(path.join(__dirname, "frontend/build")));
+  app.get("*", function (req, res) {
+    res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
+  });
+}
+
 server.listen(port, () => Logger.info(`Express Listening on port ${port}`));
 
-mqttHandler.connect();
+mqttHandler.connect(app);

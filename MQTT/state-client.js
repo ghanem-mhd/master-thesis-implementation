@@ -7,7 +7,7 @@ const Topics = require("./topics");
 class StateClient {
   constructor() {}
 
-  connect() {
+  connect(app) {
     this.clientName = this.constructor.name;
     this.mqttClient = mqtt.connect(process.env.MQTT_BROKER);
     this.mqttClient.on("error", (error) => this.onMQTTError(error));
@@ -17,6 +17,22 @@ class StateClient {
       this.onMQTTMessage(topic, messageBuffer)
     );
     this.IO = require("../utilities/socket.js").getIO();
+
+    app.get("/nfc-read", (req, res) => {
+      var message = {};
+      message["ts"] = new Date().toISOString();
+      message["cmd"] = "read";
+      this.mqttClient.publish(Topics.TOPIC_NFC_READ, JSON.stringify(message));
+      return res.json({});
+    });
+
+    app.get("/nfc-delete", (req, res) => {
+      var message = {};
+      message["ts"] = new Date().toISOString();
+      message["cmd"] = "delete";
+      this.mqttClient.publish(Topics.TOPIC_NFC_READ, JSON.stringify(message));
+      return res.json({});
+    });
   }
 
   onMQTTError(error) {
@@ -40,12 +56,12 @@ class StateClient {
     this.mqttClient.subscribe(Topics.TOPIC_LDR, { qos: 0 });
     this.mqttClient.subscribe(Topics.TOPIC_STOCK, { qos: 0 });
     this.mqttClient.subscribe(Topics.TOPIC_NFC, { qos: 0 });
-    this.mqttClient.subscribe(Topics.TOPIC_CAMERA, { qos: 0 });
   }
 
   onMQTTMessage(topic, messageBuffer) {
     var message = JSON.parse(messageBuffer.toString());
     if (this.IO) {
+      Logger.logEvent(this.clientName, topic, message);
       this.IO.in("data_from_mqtt").emit(topic, message);
     }
   }

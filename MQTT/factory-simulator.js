@@ -54,6 +54,9 @@ class FactorySimulator {
   constructor() {}
 
   connect() {
+    if (process.env.MQTT_BROKER == "mqtt://192.168.0.10:1883") {
+      return;
+    }
     this.clientName = this.constructor.name;
     this.mqttClient = mqtt.connect(process.env.MQTT_BROKER);
     this.mqttClient.on("error", (error) => this.onMQTTError(error));
@@ -140,6 +143,7 @@ class FactorySimulator {
     this.mqttClient.subscribe(Topics.TOPIC_MPO_DO, { qos: 0 });
     this.mqttClient.subscribe(Topics.TOPIC_HBW_DO, { qos: 0 });
     this.mqttClient.subscribe(Topics.TOPIC_VGR_DO, { qos: 0 });
+    this.mqttClient.subscribe(Topics.TOPIC_NFC_READ, { qos: 0 });
   }
 
   onMQTTMessage(incomingMessageTopic, messageBuffer) {
@@ -237,6 +241,15 @@ class FactorySimulator {
           FactorySimulator.DELAY
         );
       }
+    }
+
+    if (incomingMessageTopic == Topics.TOPIC_NFC_READ) {
+      var outgoingMessage = {};
+      outgoingMessage["id"] = "04963f92186580";
+      this.mqttClient.publish(
+        Topics.TOPIC_NFC,
+        JSON.stringify(outgoingMessage)
+      );
     }
   }
 

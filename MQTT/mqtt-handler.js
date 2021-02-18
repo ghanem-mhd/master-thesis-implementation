@@ -16,10 +16,11 @@ var StateClient = require("./state-client");
 class MQTTHandler {
   constructor() {}
 
-  connect() {
+  connect(app) {
     this.mqttClient = mqtt.connect(process.env.MQTT_BROKER);
     this.mqttClient.on("error", (error) => this.onMQTTError(error));
     this.mqttClient.on("connect", () => this.onMQTTConnect());
+    this.app = app;
   }
 
   onMQTTError(error) {
@@ -46,7 +47,7 @@ class MQTTHandler {
     mpoClient.connect();
     supplyingProcessClient.connect();
     productionProcessClient.connect();
-    stateClient.connect();
+    stateClient.connect(this.app);
   }
 }
 

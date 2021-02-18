@@ -20,5 +20,6 @@ module.exports = (function () {
     TOPIC_LDR: "i/ldr",
     TOPIC_NFC: "f/i/nfc/ds",
     TOPIC_CAMERA: "i/cam",
+    TOPIC_NFC_READ: "f/o/nfc/ds",
   };
 })();
