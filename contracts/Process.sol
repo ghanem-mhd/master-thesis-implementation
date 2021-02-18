@@ -80,7 +80,7 @@ abstract contract Process is Ownable {
     function markStepAsStarted(uint processID, int nextStep) public processInstanceExists(processID) onlyProcessOwner() {
         address productDID  = getProductDID(processID);
         int currentStep = instances[processID].currentStep;
-        //require(currentStep == nextStep - 1, "Step can't be started in wrong order.");
+        require(currentStep == nextStep - 1, "Step can't be started in wrong order.");
         instances[processID].currentStep = nextStep;
         emit ProcessStepStarted(processID, productDID, nextStep);
     }
@@ -89,7 +89,6 @@ abstract contract Process is Ownable {
         require(instances[processID].finishingTime == 0, "Process already finished.");
         instances[processID].finishingTime = now;
         instances[processID].status = status;
-        instances[processID].currentStep = -1;
         emit ProcessFinished(processID, instances[processID].productDID);
     }
 
