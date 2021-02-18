@@ -113,7 +113,7 @@ class Stock extends React.Component {
     );
     var availableDIDs = Misc.getAvailableProductDIDs(DIDsInStock);
     var availableDIDsList = [];
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < availableDIDs.length; i++) {
       var DID = availableDIDs[i];
       try {
         var productID = await this.props.productContract.methods
@@ -382,7 +382,8 @@ class Stock extends React.Component {
                 </Card.Body>
                 <Card.Footer>
                   <div style={{ float: "left" }}>
-                    {`Last update: ${this.state.lastTimestamp}`}
+                    <b>Last update::</b>
+                    {this.state.lastTimestamp}
                   </div>
                   <div style={{ float: "right" }}>
                     <Button className="invisible" size="sm" color="primary">

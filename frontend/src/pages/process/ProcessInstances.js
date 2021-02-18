@@ -130,7 +130,7 @@ class ProcessInstances extends React.Component {
                                   Finishing Time
                                 </Table.ColHeader>
                                 <Table.ColHeader alignContent="center">
-                                  Current Step
+                                  Step
                                 </Table.ColHeader>
                                 <Table.ColHeader alignContent="center">
                                   Product

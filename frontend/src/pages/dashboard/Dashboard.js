@@ -2,12 +2,12 @@
 
 import * as React from "react";
 
-import { Page, Grid, Dimmer, Card, Button } from "tabler-react";
-import EventsLogStreamTable from "../log/EventsLogStreamTable";
+import { Page, Dimmer, Grid } from "tabler-react";
 import ConnectionContext from "../utilities/ConnectionContext";
 import MachineState from "../machine/MachineState";
 import ErrorPage from "../utilities/ErrorPage";
 import Stock from "./Stock";
+import NFCRead from "./NFCRead";
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -63,26 +63,12 @@ class Dashboard extends React.Component {
                 />
                 <Grid.Row>
                   <Grid.Col>
-                    {false && (
-                      <Card
-                        title="NFC Reader"
-                        isFullscreenable
-                        isClosable
-                        isCollapsible
-                      >
-                        <Card.Body></Card.Body>
-                        <Card.Footer>
-                          <div style={{ float: "right" }}>
-                            <Button size="sm" color="primary" className="mr-4">
-                              NFC delete
-                            </Button>
-                            <Button color="primary" size="sm">
-                              NFC read
-                            </Button>
-                          </div>
-                        </Card.Footer>
-                      </Card>
-                    )}
+                    <NFCRead
+                      registry={this.registry}
+                      socket={this.socket}
+                      web3={this.web3}
+                      productContract={this.contracts["Product"]}
+                    />
                   </Grid.Col>
                 </Grid.Row>
               </Dimmer>

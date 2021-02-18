@@ -7,8 +7,6 @@ import { Site, Nav, Button, Grid, List } from "tabler-react";
 
 import ConnectionContext from "./utilities/ConnectionContext";
 import AddressResolver from "./utilities/AddressResolver";
-import { store } from "react-notifications-component";
-import Misc from "./utilities/Misc";
 
 type Props = {|
   +children: React.Node,

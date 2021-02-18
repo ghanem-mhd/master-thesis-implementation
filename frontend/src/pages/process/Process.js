@@ -6,7 +6,6 @@ import { Page, Dimmer } from "tabler-react";
 
 import ProcessInfo from "./ProcessInfo";
 import StartProcess from "./StartProcess";
-import ProcessStepper from "./ProcessStepper";
 import ConnectionContext from "../utilities/ConnectionContext";
 import ContractsLoader from "../utilities/ContractsLoader";
 import AddressResolver from "../utilities/AddressResolver";
