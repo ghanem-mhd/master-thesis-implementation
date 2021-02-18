@@ -8,6 +8,7 @@ COPY package*.json ./
 
 RUN npm install --silent
 RUN npm install -g truffle@5.1.50 --silent
+RUN npm install -g nodemon --silent
 
 EXPOSE 5000
 
