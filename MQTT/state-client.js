@@ -7,7 +7,7 @@ const Topics = require("./topics");
 class StateClient {
   constructor() {}
 
-  connect(app) {
+  connect() {
     this.clientName = this.constructor.name;
     this.mqttClient = mqtt.connect(process.env.MQTT_BROKER);
     this.mqttClient.on("error", (error) => this.onMQTTError(error));
@@ -17,22 +17,6 @@ class StateClient {
       this.onMQTTMessage(topic, messageBuffer)
     );
     this.IO = require("../utilities/socket.js").getIO();
-
-    app.get("/nfc-read", (req, res) => {
-      var message = {};
-      message["ts"] = new Date().toISOString();
-      message["cmd"] = "read";
-      this.mqttClient.publish(Topics.TOPIC_NFC_READ, JSON.stringify(message));
-      return res.json({});
-    });
-
-    app.get("/nfc-delete", (req, res) => {
-      var message = {};
-      message["ts"] = new Date().toISOString();
-      message["cmd"] = "delete";
-      this.mqttClient.publish(Topics.TOPIC_NFC_READ, JSON.stringify(message));
-      return res.json({});
-    });
   }
 
   onMQTTError(error) {

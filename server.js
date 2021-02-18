@@ -1,15 +1,19 @@
 require("dotenv").config();
 const express = require("express");
+const mqtt = require("mqtt");
 const http = require("http");
 const path = require("path");
 const bodyParser = require("body-parser");
 const MQTTHandler = require("./MQTT/mqtt-handler");
 const app = express();
 const cors = require("cors");
+const Topics = require("./MQTT/topics");
 
 const mqttHandler = new MQTTHandler();
 const port = process.env.NODE_PORT || 5000;
 const server = http.createServer(app);
+
+const mqttClient = mqtt.connect(process.env.MQTT_BROKER);
 
 const IO = require("./utilities/socket.js").init(server);
 const DB = require("./utilities/db.js").init();
@@ -67,13 +71,27 @@ app.get("/operation-vc/:operationID", function (req, res) {
   });
 });
 
-if (process.env.BUILD_FRONTEND == "true") {
-  app.use(express.static(path.join(__dirname, "frontend/build")));
-  app.get("*", function (req, res) {
-    res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
-  });
-}
+app.get("/nfc-read", (req, res) => {
+  var message = {};
+  message["ts"] = new Date().toISOString();
+  message["cmd"] = "read";
+  mqttClient.publish(Topics.TOPIC_NFC_READ, JSON.stringify(message));
+  return res.json({});
+});
+
+app.get("/nfc-delete", (req, res) => {
+  var message = {};
+  message["ts"] = new Date().toISOString();
+  message["cmd"] = "delete";
+  mqttClient.publish(Topics.TOPIC_NFC_READ, JSON.stringify(message));
+  return res.json({});
+});
+
+app.use(express.static(path.join(__dirname, "frontend/build")));
+app.get("*", function (req, res) {
+  res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
+});
 
 server.listen(port, () => Logger.info(`Express Listening on port ${port}`));
 
-mqttHandler.connect(app);
+mqttHandler.connect();

@@ -245,7 +245,8 @@ class FactorySimulator {
 
     if (incomingMessageTopic == Topics.TOPIC_NFC_READ) {
       var outgoingMessage = {};
-      outgoingMessage["id"] = "04963f92186580";
+      outgoingMessage["workpiece"] = {};
+      outgoingMessage["workpiece"]["id"] = "04963f92186580";
       this.mqttClient.publish(
         Topics.TOPIC_NFC,
         JSON.stringify(outgoingMessage)
