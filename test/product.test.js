@@ -209,7 +209,7 @@ describe("Product", function () {
     StoredOperation = await this.ProductContract.getProductOperation(1);
     expect(StoredOperation[0]).to.equal(MachineDID);
     expect(StoredOperation[1].toString()).to.equal("100");
-    expect(StoredOperation[3]).to.equal("Physical Identification");
+    expect(StoredOperation[3]).to.equal("PhysicalIdentification");
     expect(StoredOperation[4]).to.equal("ID1111");
   });
 

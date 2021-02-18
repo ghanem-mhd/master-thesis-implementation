@@ -18,6 +18,7 @@ contract VGR is Machine {
     function finishGetInfoTask(uint taskID, string memory nfcTag, string memory color) public {
         super.saveProductOperation(taskID, "NFCTagReading", nfcTag);
         super.saveProductOperation(taskID, "ColorDetection", color);
+        super.saveIdentificationOperation(taskID, nfcTag);
         super.finishTask(taskID, TaskStatus.FinishedSuccessfully, "");
     }
 

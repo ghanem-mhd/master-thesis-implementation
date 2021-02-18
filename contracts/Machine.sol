@@ -210,6 +210,12 @@ abstract contract Machine is Ownable {
         emit ProductOperationSaved(operationID, taskID, productDID, operationName, operationResult);
     }
 
+    function saveIdentificationOperation(uint taskID, string memory physicalID) public taskExists(taskID) onlyMachine {
+        address productDID = tasks[taskID].productDID;
+        uint operationID = productContract.saveIdentificationOperation(productDID, taskID, physicalID);
+        emit ProductOperationSaved(operationID, taskID, productDID, "Physical Identification", physicalID);
+    }
+
     function getProductOperation(uint opeationID) public view returns (address, uint, uint, string memory, string memory) {
         return productContract.getProductOperation(opeationID);
     }

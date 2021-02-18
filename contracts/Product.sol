@@ -144,9 +144,9 @@ contract Product is Ownable {
         return (productsOperations[productDID]);
     }
 
-    function saveIdentificationOperation(address productDID, uint taskID, string memory physicalID) public productExists(productDID)  {
-        saveProductOperation(productDID, taskID, "Physical Identification", physicalID);
+    function saveIdentificationOperation(address productDID, uint taskID, string memory physicalID) public productExists(productDID) returns (uint) {
         productPhysicalIDMapping[physicalID] = productDID;
+        return saveProductOperation(productDID, taskID, "PhysicalIdentification", physicalID);
     }
 
     function getProductFromPhysicalID(string memory physicalID) public view returns (address) {
