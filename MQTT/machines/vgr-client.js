@@ -70,6 +70,12 @@ class VGRClient {
       (productOperationSavedEvent) =>
         this.onProductOperationSaved(productOperationSavedEvent)
     );
+    ClientUtils.registerCallbackForEvent(
+      this.clientName,
+      "VGR",
+      "NewAlert",
+      (newAlertEvent) => this.onNewAlert(newAlertEvent)
+    );
     ContractManager.getTruffleContract(this.provider, "VGR").then(
       (Contract) => {
         this.Contract = Contract;
@@ -79,10 +85,6 @@ class VGRClient {
 
   onMQTTMessage(topic, messageBuffer) {
     var incomingMessage = JSON.parse(messageBuffer.toString());
-
-    if (topic == Topics.TOPIC_VGR_STATE) {
-      Logger.logEvent(this.clientName, "Status", incomingMessage);
-    }
 
     if (topic == Topics.TOPIC_VGR_ACK) {
       Logger.logEvent(
@@ -277,6 +279,18 @@ class VGRClient {
       productOperationSavedEvent,
       process.env.VGR_ADDRESS,
       process.env.VGR_PK
+    );
+  }
+
+  async onNewAlert(newAlertEvent) {
+    Logger.logEvent(
+      this.clientName,
+      `New alert has been saved: ${newAlertEvent.returnValues["reason"]}`,
+      null
+    );
+    this.mqttClient.publish(
+      Topics.TOPIC_VGR_DO,
+      JSON.stringify(ClientUtils.getSoundMessage(2))
     );
   }
 }

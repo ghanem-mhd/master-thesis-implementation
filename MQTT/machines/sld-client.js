@@ -84,9 +84,6 @@ class SLDClient {
 
   onMQTTMessage(topic, messageBuffer) {
     var incomingMessage = JSON.parse(messageBuffer.toString());
-    if (topic == Topics.TOPIC_SLD_STATE) {
-      Logger.logEvent(this.clientName, "Status", incomingMessage);
-    }
     if (topic == Topics.TOPIC_SLD_ACK) {
       Logger.logEvent(
         this.clientName,

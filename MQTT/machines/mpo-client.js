@@ -68,6 +68,12 @@ class MPOClient {
       (productOperationSavedEvent) =>
         this.onProductOperationSaved(productOperationSavedEvent)
     );
+    ClientUtils.registerCallbackForEvent(
+      this.clientName,
+      "MPO",
+      "NewAlert",
+      (newAlertEvent) => this.onNewAlert(newAlertEvent)
+    );
     ContractManager.getTruffleContract(this.provider, "MPO").then(
       (Contract) => {
         this.Contract = Contract;
@@ -77,10 +83,6 @@ class MPOClient {
 
   onMQTTMessage(topic, messageBuffer) {
     var incomingMessage = JSON.parse(messageBuffer.toString());
-
-    if (topic == Topics.TOPIC_MPO_STATE) {
-      Logger.logEvent(this.clientName, "Status", incomingMessage);
-    }
 
     if (topic == Topics.TOPIC_MPO_ACK) {
       Logger.logEvent(
@@ -227,6 +229,18 @@ class MPOClient {
       productOperationSavedEvent,
       process.env.MPO_ADDRESS,
       process.env.MPO_PK
+    );
+  }
+
+  async onNewAlert(newAlertEvent) {
+    Logger.logEvent(
+      this.clientName,
+      `New alert has been saved: ${newAlertEvent.returnValues["reason"]}`,
+      null
+    );
+    this.mqttClient.publish(
+      Topics.TOPIC_MPO_DO,
+      JSON.stringify(ClientUtils.getSoundMessage(2))
     );
   }
 }

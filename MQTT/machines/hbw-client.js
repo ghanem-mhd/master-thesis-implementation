@@ -71,6 +71,12 @@ class HBWClient {
       (productOperationSavedEvent) =>
         this.onProductOperationSaved(productOperationSavedEvent)
     );
+    ClientUtils.registerCallbackForEvent(
+      this.clientName,
+      "HBW",
+      "NewAlert",
+      (newAlertEvent) => this.onNewAlert(newAlertEvent)
+    );
     ContractManager.getTruffleContract(this.provider, "HBW").then(
       (Contract) => {
         this.Contract = Contract;
@@ -80,15 +86,6 @@ class HBWClient {
 
   onMQTTMessage(topic, messageBuffer) {
     var incomingMessage = JSON.parse(messageBuffer.toString());
-
-    if (topic == Topics.TOPIC_HBW_STATE) {
-      Logger.logEvent(this.clientName, "Status", incomingMessage);
-    }
-
-    if (topic == Topics.TOPIC_STOCK) {
-      Logger.logEvent(this.clientName, "Stock", incomingMessage);
-    }
-
     if (topic == Topics.TOPIC_HBW_ACK) {
       Logger.logEvent(
         this.clientName,
@@ -254,6 +251,18 @@ class HBWClient {
       productOperationSavedEvent,
       process.env.HBW_ADDRESS,
       process.env.HBW_PK
+    );
+  }
+
+  async onNewAlert(newAlertEvent) {
+    Logger.logEvent(
+      this.clientName,
+      `New alert has been saved: ${newAlertEvent.returnValues["reason"]}`,
+      null
+    );
+    this.mqttClient.publish(
+      Topics.TOPIC_HBW_DO,
+      JSON.stringify(ClientUtils.getSoundMessage(2))
     );
   }
 }
