@@ -4,6 +4,17 @@ This repository contains the prototype implementation for a [mater thesis](https
 
 The prototype demonstrates how blockchain can be used to build machine-to-machine communication for the manufacturing industry. The prototype uses the [Fischertechnik Factory Model](https://github.com/ghanem-mhd/fischertechnik-factory-simulation) as a hardware simulation of the machines.
 
+
+## Prototype
+This video demonstrates how the prototype is working in an exemplary use case.
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=_VNuOGsH1bk">
+    <img src="https://img.youtube.com/vi/_VNuOGsH1bk/0.jpg?raw=true" alt="Prototype">
+  </a>
+</p>
+
+Screenshots from the web application are available in this [folder](/screenshots).
+
 ## Architecture
 
 <p align="center">
