@@ -1,5 +1,8 @@
 [![Test](https://github.com/ghanem-mhd/master-thesis-implementation/actions/workflows/main.yml/badge.svg)](https://github.com/ghanem-mhd/master-thesis-implementation/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/ghanem-mhd/master-thesis-implementation/branch/master/graph/badge.svg?token=KMZ08Y0TLR)](https://codecov.io/gh/ghanem-mhd/master-thesis-implementation)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 
 # Master Thesis Implementation
 
