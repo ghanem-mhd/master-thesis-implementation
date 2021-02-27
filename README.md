@@ -1,3 +1,6 @@
+[![Test](https://github.com/ghanem-mhd/master-thesis-implementation/actions/workflows/main.yml/badge.svg)](https://github.com/ghanem-mhd/master-thesis-implementation/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/ghanem-mhd/master-thesis-implementation/branch/master/graph/badge.svg?token=KMZ08Y0TLR)](https://codecov.io/gh/ghanem-mhd/master-thesis-implementation)
+
 # Master Thesis Implementation
 
 This repository contains the prototype implementation for a [mater thesis](https://github.com/ghanem-mhd/master-thesis) in the domain of blockchain and industry 4.0. The thesis title is "A Blockchain-Based Concept and Implementation for Machine Identity and Machine-to-Machine Communication."
