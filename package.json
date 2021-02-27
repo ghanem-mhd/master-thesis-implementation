@@ -59,6 +59,7 @@
   "devDependencies": {
     "nodemon": "^2.0.5",
     "prettier": "2.1.2",
+    "solidity-coverage": "^0.7.15",
     "truffle-contract-size": "^2.0.1"
   },
   "prettier": {}
