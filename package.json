@@ -16,7 +16,8 @@
     "start": "node server.js",
     "heroku-postbuild": "cd frontend && npm install && npm install --only=dev --no-shrinkwrap && npm run build",
     "machine": "node ./utilities/run-client.js machine",
-    "task": "node ./utilities/task-generator.js task"
+    "task": "node ./utilities/task-generator.js task",
+    "coverage": "node ./scripts/coverage"
   },
   "nodemonConfig": {
     "ignore": [
