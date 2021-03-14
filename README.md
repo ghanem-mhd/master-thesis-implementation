@@ -24,8 +24,8 @@ Screenshots from the web application are available in this [folder](/screenshots
 ## Architecture
 
 <p align="center">
-  <a href="https://github.com/ghanem-mhd/master-thesis/blob/master/figures/architecture2.png">
-    <img src="https://github.com/ghanem-mhd/master-thesis/blob/master/figures/architecture2.png?raw=true" alt="architecture">
+  <a href="https://github.com/ghanem-mhd/master-thesis-implementation/blob/4f119342def6a0d815cdde0ed681c3797062ba00/screenshots/architecture.png">
+    <img src="https://github.com/ghanem-mhd/master-thesis-implementation/blob/4f119342def6a0d815cdde0ed681c3797062ba00/screenshots/architecture.png" alt="architecture">
   </a>
 </p>
 
